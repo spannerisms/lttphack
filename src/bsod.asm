@@ -57,7 +57,7 @@ OOPS:
 	REP #$30
 	TSC
 
-	LDX.w #$8A67 ; this has a 34 for our bank lol
+	LDX.w #$D939 ; this has a 3F for our bank lol
 	TXS
 	PLB
 

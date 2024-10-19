@@ -1,3 +1,8 @@
+;	"Training" submenu
+;	mash counter using 60 byte circular buffer (ABXYLR show x/60 for all, individual, face; exit menu with select; keep record best for session)
+;	hover counter (show longest press and longest release, and number of successful; keep record best for session)
+
+
 math pri on
 
 sa1rom

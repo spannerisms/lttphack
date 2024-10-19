@@ -8,14 +8,16 @@ BadInterrupt:
 warnpc $00CFBE
 
 ;===================================================================================================
-; Improves the speed of OAM clearing by 2 scanlines; credit: MathOnNapkins
-; Has no effect on anything
-; But it gives us consistent improvements to account for practice hack lag
-;===================================================================================================
+
 org $00805D
-	JML WasteTimeIfNeeded
+	JML WasteTimeAsNeeded
 
 org $00841E
+	if !RANDO
+		LDA.l !config_fastrom
+		STA.l $420D
+	endif
+
 	LDA.b $F0 : STA.w SA1IRAM.CopyOf_F0
 	LDA.b $F2 : STA.w SA1IRAM.CopyOf_F2
 	LDA.b $F4 : STA.w SA1IRAM.CopyOf_F4
@@ -24,59 +26,29 @@ org $00841E
 	LDA.b #$81 ; fire an IRQ to request shortcuts
 	STA.w $2200
 
-	REP #$10
+	JSL ClearOAM
 
-	; 246,16 : 250,18
-	; Vanilla OAM cycles: 4 scanlines - 10
-	;
-	; Improved to: 2 scanlines + 87
-	; SA1 thing is 1 scanline + 52
-	; Waste time check is 38
-	; total is 3 scanlines + 184
-	;
-	; 152 left to waste
-	;
-	; NMI JSL+RTL = ~28 dots
-	; NMI cache = ~44+14+14 dots
-	; so NMI is ~100 dots
-	;
-	; 52 left to waste
-	;
-	; HUD uses ~38 dots
-
-	; set up
-	LDA.b #OAM_Cleaner>>16 : STA.w $4354
-	LDX.w #$8001 : STX.w $4350
-
-	LDA.b #$20
-
-	; first half
-	LDX.w #OAM_Cleaner : STX.w $4352
-	LDX.w #$0801 : STX.w $2181 : STZ.w $2183
-	LDX.w #$0080
-	STX.w $4355
-	STA.w $420B
-
-	; second half
-	STX.w $4355
-	LDX.w #$0901 : STX.w $2181
-	LDX.w #OAM_Cleaner : STX.w $4352
-	STA.w $420B
+	SEP #$30
 
 	BIT.w SA1IRAM.SHORTCUT_USED+1
 	BMI ++
-	SEP #$30
 
 	RTS
 
 	; if shortcut was used, exit
-++	PLX ; remove return point
+++	PLA ; remove return point
+	PLA
+
 	PEA.w RequestShortcut-1
-	SEP #$30
 
 	RTS
 
 warnpc $008489
+
+org $0085FC
+	JSL MergeOAM
+	JMP.w $00865C
+
 
 ;===================================================================================================
 ; This small joypad improvement of 8 cycles gives us a little more leeway
@@ -153,30 +125,82 @@ nmi_expand:
 
 	RTL
 
-;===================================================================================================
-; OAM cleaner optimization
-;===================================================================================================
-macro OAMVClear(pos)
-	db $F0, <pos>+$05, $F0, <pos>+$09, $F0, <pos>+$0D, $F0, <pos>+$11
-endmacro
 
-OAM_Cleaner:
-	%OAMVClear($00)
-	%OAMVClear($10)
-	%OAMVClear($20)
-	%OAMVClear($30)
-	%OAMVClear($40)
-	%OAMVClear($50)
-	%OAMVClear($60)
-	%OAMVClear($70)
-	%OAMVClear($80)
-	%OAMVClear($90)
-	%OAMVClear($A0)
-	%OAMVClear($B0)
-	%OAMVClear($C0)
-	%OAMVClear($D0)
-	%OAMVClear($E0)
-	%OAMVClear($F0)
+;===================================================================================================
+
+ClearOAM:
+	REP #$20
+
+	LDX.b #$F0
+
+	LDA.w #$0800
+	TCD
+
+	STX.b $01 : STX.b $05 : STX.b $09 : STX.b $0D
+	STX.b $11 : STX.b $15 : STX.b $19 : STX.b $1D
+	STX.b $21 : STX.b $25 : STX.b $29 : STX.b $2D
+	STX.b $31 : STX.b $35 : STX.b $39 : STX.b $3D
+	STX.b $41 : STX.b $45 : STX.b $49 : STX.b $4D
+	STX.b $51 : STX.b $55 : STX.b $59 : STX.b $5D
+	STX.b $61 : STX.b $65 : STX.b $69 : STX.b $6D
+	STX.b $71 : STX.b $75 : STX.b $79 : STX.b $7D
+	STX.b $81 : STX.b $85 : STX.b $89 : STX.b $8D
+	STX.b $91 : STX.b $95 : STX.b $99 : STX.b $9D
+	STX.b $A1 : STX.b $A5 : STX.b $A9 : STX.b $AD
+	STX.b $B1 : STX.b $B5 : STX.b $B9 : STX.b $BD
+	STX.b $C1 : STX.b $C5 : STX.b $C9 : STX.b $CD
+	STX.b $D1 : STX.b $D5 : STX.b $D9 : STX.b $DD
+	STX.b $E1 : STX.b $E5 : STX.b $E9 : STX.b $ED
+	STX.b $F1 : STX.b $F5 : STX.b $F9 : STX.b $FD
+
+	LDA.w #$0900
+	TCD
+
+	STX.b $01 : STX.b $05 : STX.b $09 : STX.b $0D
+	STX.b $11 : STX.b $15 : STX.b $19 : STX.b $1D
+	STX.b $21 : STX.b $25 : STX.b $29 : STX.b $2D
+	STX.b $31 : STX.b $35 : STX.b $39 : STX.b $3D
+	STX.b $41 : STX.b $45 : STX.b $49 : STX.b $4D
+	STX.b $51 : STX.b $55 : STX.b $59 : STX.b $5D
+	STX.b $61 : STX.b $65 : STX.b $69 : STX.b $6D
+	STX.b $71 : STX.b $75 : STX.b $79 : STX.b $7D
+	STX.b $81 : STX.b $85 : STX.b $89 : STX.b $8D
+	STX.b $91 : STX.b $95 : STX.b $99 : STX.b $9D
+	STX.b $A1 : STX.b $A5 : STX.b $A9 : STX.b $AD
+	STX.b $B1 : STX.b $B5 : STX.b $B9 : STX.b $BD
+	STX.b $C1 : STX.b $C5 : STX.b $C9 : STX.b $CD
+	STX.b $D1 : STX.b $D5 : STX.b $D9 : STX.b $DD
+	STX.b $E1 : STX.b $E5 : STX.b $E9 : STX.b $ED
+	STX.b $F1 : STX.b $F5 : STX.b $F9 : STX.b $FD
+
+	LDA.w #$0000
+	TCD
+
+	RTL
+
+MergeOAM:
+macro preponeoam(offset)
+	LDA.b $0A20+$03+(<offset>*4) : ASL : ASL
+	ORA.b $0A20+$02+(<offset>*4) : ASL : ASL
+	ORA.b $0A20+$01+(<offset>*4) : ASL : ASL
+	ORA.b $0A20+$00+(<offset>*4)
+	STA.b $0A00+<offset>
+endmacro
+	PEA.w $0000
+	PEA.w $0A00
+	PLD
+
+	%preponeoam($00) : %preponeoam($01) : %preponeoam($02) : %preponeoam($03)
+	%preponeoam($04) : %preponeoam($05) : %preponeoam($06) : %preponeoam($07)
+	%preponeoam($08) : %preponeoam($09) : %preponeoam($0A) : %preponeoam($0B)
+	%preponeoam($0C) : %preponeoam($0D) : %preponeoam($0E) : %preponeoam($0F)
+	%preponeoam($10) : %preponeoam($11) : %preponeoam($12) : %preponeoam($13)
+	%preponeoam($14) : %preponeoam($15) : %preponeoam($16) : %preponeoam($17)
+	%preponeoam($18) : %preponeoam($19) : %preponeoam($1A) : %preponeoam($1B)
+	%preponeoam($1C) : %preponeoam($1D) : %preponeoam($1E) : %preponeoam($1F)
+
+	PLD
+	RTL
 
 ;===================================================================================================
 ; Custom NMI for hud

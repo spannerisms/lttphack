@@ -108,13 +108,13 @@ CM_Return:
 	REP #$20
 	PLA ; remove the return of the JSR
 	PLD
-	PLB
 
 	JSL SetHUDItemGraphics
 	JSL CM_Exiting
 
 	LDA.b #$81 : STA.w $4200
 
+	PLB
 	RTL
 
 ;===================================================================================================
@@ -129,32 +129,25 @@ CM_Exiting:
 
 	LDY.b #$80
 	STY.w $2100
-
-	; trigger an update for deleting HUD lines if:
-	;   line sentry 4 is not active
-	;   line sentry 4 was active when the menu was opened
-	; TODO MAYBE ADD TEXT BOX SUPPORT? NOT THAT IMPORTANT
-	LDX.w SA1RAM.line4wasactive
-	BEQ .skipline4
-
-	LDX.w !config_hide_lines
-	BNE .doline4
-
-	LDX.w !config_linesentry4
-	BNE .skipline4
-
-.doline4
-	LDA.w #$6140
-	STA.w $2116
 	STY.w $2115
 
-	LDA.w #$007F
-	LDX.b #32
---	STA.w $2118
-	DEX
-	BNE --
+	LDY.b #$00
 
-.skipline4
+	LDX.w !config_hide_lines
+	BNE .hide_all
+
+	JSR GetHighestActiveLine
+
+.hide_all
+	CPY.w SA1RAM.highestline
+	BCS .no_hide
+
+	JSR ClearLineSentryLines
+
+	INY
+	BRA .hide_all
+
+.no_hide
 	JSL LoadCustomHUDGFX
 	JSL reinit_sentry_addresses
 
@@ -167,6 +160,25 @@ CM_Exiting:
 	JSL SNES_DISABLE_CUSTOM_NMI
 
 	RTL
+
+;===================================================================================================
+
+ClearLineSentryLines:
+	TYA
+	ASL
+	ASL
+	ASL
+	ASL
+	ASL
+	ADC.w #$60E5
+	STA.w $2116
+
+	LDA.w #$007F
+	LDX.b #26
+--	STA.w $2118
+	DEX
+	BNE --
+	RTS
 
 ;===================================================================================================
 
@@ -296,13 +308,31 @@ CM_CacheWRAM:
 	LSR
 	STA.w SA1RAM.cm_equipment_maxhp
 
-	LDA.w !config_linesentry4
-	CMP.b #$01
-	LDA.b #$00
-	ADC.b #$00
-	STA.w SA1RAM.line4wasactive
+	JSR GetHighestActiveLine
+	STY.w SA1RAM.highestline
 
 	RTL
+
+;===================================================================================================
+
+GetHighestActiveLine:
+	LDY.w !config_linesentry4 : BEQ ++
+	LDY.b #$04
+	RTS
+
+++	LDY.w !config_linesentry3 : BEQ ++
+	LDY.b #$03
+	RTS
+
+++	LDY.w !config_linesentry2 : BEQ ++
+	LDY.b #$02
+	RTS
+
+++	LDY.w !config_linesentry1 : BEQ ++
+
+	LDY.b #$01
+
+++	RTS
 
 ;===================================================================================================
 

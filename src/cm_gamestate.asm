@@ -175,7 +175,7 @@ cm_game_reset_dungeons_submenu:
 !CV = $FF ; caves and houses
 !UU = !CV ; unused caves, just for convenience
 
-#supertile_dungeons:
+#room_to_dungeon_id:
 	; eg1
 	dw !CV, !EX, !EX, !CV, !TR, !UU, !SP, !TH, !CV, !PD, !PD, !PD, !GT, !GT, !IP, !UU
 	dw !CV, !EX, !EX, !TR, !TR, !TR, !SP, !TH, !CV, !PD, !PD, !PD, !GT, !GT, !IP, !IP
@@ -214,7 +214,7 @@ reset_dungeon_func:
 
 	LDX.w #(256+40)*2 ; eg1 size + eg2 size, words
 
---	LDY.w supertile_dungeons,X
+--	LDY.w room_to_dungeon_id,X
 	CPY.b $00 : BNE ++
 	STA.l $7EF000,X
 ++	DEX #2 : BPL --
@@ -224,7 +224,7 @@ reset_dungeon_func:
 	BIT.b $1B : BEQ ++ ; make sure we're indoors
 
 	LDA.b $A0 : ASL : TAX
-	LDA.w supertile_dungeons,X
+	LDA.w room_to_dungeon_id,X
 	CMP.b $00 : BNE ++
 	STZ.w $0400 : STZ.w $0402 : STZ.w $0408
 

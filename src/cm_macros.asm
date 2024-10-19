@@ -678,8 +678,8 @@ macro choice_long_func_prgtext(name, addr,  max, func, addrtext)
 	db !CM_CHOICE_LONG_FUNC_PRGTEXT
 	dl <addr>
 	db <max>
-	dl <func>
 	dl select(equal(<addrtext>,this), ?here, <addrtext>)
+	dl <func>
 	db "<name>", $FF
 
 #?here:

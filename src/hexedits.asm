@@ -21,6 +21,17 @@ org $00FFD5 : db $23, $35 ; SA-1
 org $00FFD7 : db 11 ; 2mb ROM
 org $00FFD8 : db 8 ; 256k SRAM
 
+if !RANDO
+	incsrc "fastrom.asm"
+	pushpc
+	incsrc "rando.asm"
+	pullpc
+	org $00FFD5 : db $23
+endif
+
+
+
+
 ; interrupt changes
 org $00FFE4 : dw BadInterrupt
 org $00FFE6 : dw BadInterrupt
@@ -106,7 +117,3 @@ org $0DF829 ; boots gfx location moved
 	dw $3521, $3522, $3523, $3524
 
 ;===================================================================================================
-
-if !RANDO
-	incsrc "rando.asm"
-endif

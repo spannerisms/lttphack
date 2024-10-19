@@ -735,32 +735,32 @@ LoadPresetSafeties:
 
 ; PRESET LIST
 .vectors
-	dw .nmg
-	dw .hundo
-	dw .lownmg
-	dw .lowleg
-	dw .ad2020
-	dw .adold
-	dw .anyrmg
-	dw .bossrta
-	dw .admg
-	dw .rbo
+	dw LoadSafeties_nmg
+	dw LoadSafeties_hundo
+	dw LoadSafeties_lownmg
+	dw LoadSafeties_lowleg
+	dw LoadSafeties_ad2020
+	dw LoadSafeties_adold
+	dw LoadSafeties_anyrmg
+	dw LoadSafeties_bossrta
+	dw LoadSafeties_admg
+	dw LoadSafeties_rbo
 
 ; No safeties
-.bossrta
-.lownmg
-.lowleg
-.admg
-.rbo
+LoadSafeties_bossrta:
+LoadSafeties_lownmg:
+LoadSafeties_lowleg:
+LoadSafeties_admg:
+LoadSafeties_rbo:
 -- RTS
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 
-.nmg
+LoadSafeties_nmg:
 	; sanc heart
 	CPY.w #presetmenu_nmg_eastern_octorok : BCC --
 
-	LDA.w !config_safeties_nmg_sanc_heart : BEQ ..no_sanc
+	LDA.w !config_safeties_nmg_sanc_heart : BEQ .no_sanc
 
 	REP #$21
 
@@ -771,23 +771,23 @@ LoadPresetSafeties:
 
 	SEP #$20
 
-..no_sanc
+.no_sanc
 	; mushroom / powder / half magic
 	LDA.w !config_safeties_nmg_powder
-	BEQ ..no_powder
+	BEQ .no_powder
 
-	CPY.w #presetmenu_nmg_aga_after_lost_woods : BCC ..no_powder
+	CPY.w #presetmenu_nmg_aga_after_lost_woods : BCC .no_powder
 
-	CMP.b #$02 : BCC ..mushroom_only
+	CMP.b #$01 : BEQ .mushroom_only
 
-	CPY.w #presetmenu_nmg_thieves_after_activating_flute : BCC ..mushroom_only
+	CPY.w #presetmenu_nmg_thieves_after_activating_flute : BCC .mushroom_only
 
-	CMP.b #$03
+	CMP.b #$03 : BEQ .late_powder
 
 	LDA.b #$01
-	BCC ..no_half_magic
+	BCC .no_half_magic
 
-	CPY.w #presetmenu_nmg_skull_fence_dash : BCC ..no_half_magic
+	CPY.w #presetmenu_nmg_skull_fence_dash : BCC .no_half_magic
 
 	; flag bat
 	REP #$20
@@ -797,42 +797,64 @@ LoadPresetSafeties:
 	LDA.b #$01
 	STA.l $7EF37B
 
-..no_half_magic
-	; add ether if powder
+.no_half_magic
+	; add ether with powder
 	STA.l $7EF348
 
+.give_powder
 	; flag witch's hut
 	REP #$20
 	LDA.w #$0082 : STA.l $7EF000+($109*2)
 	SEP #$20
 
 	LDA.b #$02
+	BRA .set_powder
 
-..mushroom_only
+.late_powder
+	CPY.w #presetmenu_nmg_ice_medallion : BCS .give_powder
+
+.mushroom_only
+	LDA.b #$01
+
+.set_powder
 	STA.l $7EF344
 
-..no_powder
+.no_powder
 	; bottles
-	LDA.w !config_safeties_nmg_bottles : BEQ ..no_bottles
+	LDA.w !config_safeties_nmg_bottles : BEQ .no_bottles
 
-	CMP.b #$01 : BEQ ..early
+	CMP.b #$01 : BEQ .early
 
-..late
-	CPY.w #presetmenu_nmg_thieves_after_activating_flute : BCC ..no_bottles
-	BRA ..set_bottles
+.late
+	CPY.w #presetmenu_nmg_thieves_after_activating_flute : BCS .set_bottles
+	BRA .maybe_rupees
 
-..early
-	CPY.w #presetmenu_nmg_desert_water_dash : BCC ..no_bottles
+.early
+	CPY.w #presetmenu_nmg_desert_water_dash : BCS .set_bottles
 
-..set_bottles
+.maybe_rupees
+	CPY.w #presetmenu_nmg_eastern_stalfos_room : BCC .no_bottles
+
+	; Add 100 rupees for the bottles
+	REP #$21
+	LDA.l $7EF360
+	ADC.w #100
+	STA.l $7EF360
+	STA.l $7EF362
+
+	SEP #$20
+	BRA .no_bottles
+
+
+.set_bottles
 	LDA.b #$02 : STA.l $7EF34F ; select 2nd bottle
 	DEC : STA.l $7EF34D ; bug net
 	LDA.b #$06 : STA.l $7EF35C : STA.l $7EF35D ; fairy bottles
 
-..no_bottles
+.no_bottles
 	; red mail
-	LDA.w !config_safeties_nmg_red_mail : BEQ ..no_red_mail
-	CPY.w #presetmenu_nmg_gtower_floor_3 : BCC ..no_red_mail
+	LDA.w !config_safeties_nmg_red_mail : BEQ .no_red_mail
+	CPY.w #presetmenu_nmg_gtower_floor_3 : BCC .no_red_mail
 
 	LDA.b #$02 : STA.l $7EF35B
 
@@ -841,16 +863,16 @@ LoadPresetSafeties:
 	LDA.l $7EF000+($8C*2) : ORA.w #$0012 : STA.l $7EF000+($8C*2)
 	SEP #$20
 
-..no_red_mail
+.no_red_mail
 	; gold/silvers
-	CPY.w #presetmenu_nmg_trock_icerod_overworld : BCC ..no_gs
-	LDA.w !config_safeties_nmg_gs : BEQ ..no_gs
-	CMP.b #$01 : BEQ ..silvers_only
+	LDA.w !config_safeties_nmg_gs : BEQ .no_gs
+	CPY.w #presetmenu_nmg_trock_icerod_overworld : BCC .no_gs
+	CMP.b #$01 : BEQ .silvers_only
 
-..gold_sword
+.gold_sword
 	LDA.b #$04 : STA.l $7EF359
 
-..silvers_only
+.silvers_only
 	LDA.b #$03 : STA.l $7EF340
 
 	; flag fairy visits
@@ -860,61 +882,68 @@ LoadPresetSafeties:
 	SEP #$20
 	LDA.l $7EF2DB : ORA.b #$02 : STA.l $7EF2DB
 
-..no_gs
+.no_gs
 	RTS
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 
-.ad2020
-	CPY.w #presetmenu_ad2020_pod_kiki_skip : BCC ..no
-	LDA.w !config_safeties_ad2020_silvers : BEQ ..no
+LoadSafeties_ad2020:
+	CPY.w #presetmenu_ad2020_pod_kiki_skip : BCC .no
+	LDA.w !config_safeties_ad2020_silvers : BEQ .no
 
 	LDA.b #$03 : STA.l $7EF340
 
 	; flag fairy visits
 	REP #$20
+
 	LDA.l $7EF000+($116*2) : ORA.w #$0001 : STA.l $7EF000+($116*2)
+
 	SEP #$20
 
-..no
+.no
 	RTS
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 
-.adold
-	CPY.w #presetmenu_adold_pod_kiki_skip : BCC ..no
-	LDA.w !config_safeties_adold_silvers : BEQ ..no
+LoadSafeties_adold:
+	CPY.w #presetmenu_adold_pod_kiki_skip : BCC .no
+	LDA.w !config_safeties_adold_silvers : BEQ .no
 
 	LDA.b #$03 : STA.l $7EF340
 
 	; flag fairy visits
 	REP #$20
+
 	LDA.l $7EF000+($116*2) : ORA.w #$0001 : STA.l $7EF000+($116*2)
+
 	SEP #$20
 
-..no
+.no
 	RTS
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 
-.anyrmg
-	CPY.w #presetmenu_anyrmg_tempered_frog_dmd : BCC ..no
-	LDA.w !config_safeties_anyrmg_hook : BEQ ..no
+LoadSafeties_anyrmg:
+	CPY.w #presetmenu_anyrmg_tempered_frog_dmd : BCC .no
+	LDA.w !config_safeties_anyrmg_hook : BEQ .no
 
 	LDA.b #$01 : STA.l $7EF342
 
 	; flag hook shot stuff
 	REP #$20
+
 	LDA.w #$248F : STA.l $7EF000+($037*2)
 	LDA.w #$001F : STA.l $7EF000+($036*2)
+
 	SEP #$20
-..no
+
+.no
 	RTS
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 
-.hundo
-	LDA.w !config_safeties_100nmg_trinexx_boom : BEQ ..no
+LoadSafeties_hundo:
+	LDA.w !config_safeties_100nmg_trinexx_boom : BEQ .no
 
 	; flag boom chest
 	REP #$20
@@ -922,16 +951,16 @@ LoadPresetSafeties:
 	SEP #$20
 
 	LDA.b #$01
-	CPY.w #presetmenu_100nmg_escape_ball_n_chains : BCC ..no
+	CPY.w #presetmenu_100nmg_escape_ball_n_chains : BCC .no
 
-	CPY.w #presetmenu_100nmg_ice_palace_zoras_domain : BCC ..set_boom
+	CPY.w #presetmenu_100nmg_ice_palace_zoras_domain : BCC .set_boom
 
 	INC
 
-..set_boom
+.set_boom
 	STA.l $7EF341
 
-..no
+.no
 	RTS
 
 ;===================================================================================================
@@ -1106,6 +1135,8 @@ SaveALot:
 
 	RTS
 
+;===================================================================================================
+
 PullALot:
 	REP #$30
 	PLA
@@ -1118,3 +1149,5 @@ PullALot:
 
 	PHA
 	RTS
+
+;===================================================================================================

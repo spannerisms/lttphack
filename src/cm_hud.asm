@@ -14,7 +14,7 @@ HUDEXTRAS_SUBMENU:
 	%list_item("Classic Gray")
 
 ;===================================================================================================
-!sentry_count = 20
+!sentry_count = 22
 %choice("Sentry 1", !config_sentry1, !sentry_count, sentry_names)
 %choice("Sentry 2", !config_sentry2, !sentry_count, sentry_names)
 %choice("Sentry 3", !config_sentry3, !sentry_count, sentry_names)
@@ -43,6 +43,8 @@ endmacro
 	%new_sentry($001A, "Idle")
 	%new_sentry($001A, "Segment")
 	%new_sentry($001A, "Coordinates")
+	%new_sentry($001A, "Room (live)")
+	%new_sentry($001A, "Lag (live)")
 	%new_sentry($002A, "Subpixels")
 	%new_sentry($001A, "Room ID")
 	%new_sentry($00A9, "Quadrant")
@@ -147,7 +149,7 @@ endmacro
 
 %toggle_onoff("Hide lines", !config_hide_lines)
 
-%toggle_onoff("HUD lag", !config_hudlag_spinner)
+%toggle_onoff("HUD spinner", !config_hudlag_spinner)
 
 %toggle_onoff("State icons", !config_state_icons)
 

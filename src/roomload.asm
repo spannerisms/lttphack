@@ -327,11 +327,8 @@ LoadArbitraryRoom:
 
 	SEP #$30
 
-	LDA.b $23 : LSR
-	LDA.b #$00 : ROL : STA.b $A9
-
-	LDA.b $21 : LSR
-	LDA.b #$00 : ROL : ASL : STA.b $AA
+	LDA.b $23 : AND.b #$01 : STA.b $A9
+	LDA.b $21 : AND.b #$01 : ASL : STA.b $AA
 
 	LDA.w $040E : LSR : TAX
 	ORA.b $AA : ORA.b $A9
@@ -743,6 +740,12 @@ ResetBeforeLoading:
 	STZ.w $0131
 	STZ.w $06B0
 
+	STZ.w $0400
+	STZ.w $0402
+	STZ.w $0408
+	STZ.w $040A
+	STZ.w $040C
+	STZ.w $040E
 
 	LDX.w #$0CBA : JSR ClearSpriteProps ; Forced item drops
 	LDX.w #$0B80 : JSR ClearOverlordProps ; Previous room
@@ -775,6 +778,7 @@ ResetBeforeLoading:
 	STZ.w $0B9E
 	STZ.w $0F70
 
+	STZ.b $49
 	STZ.b $4B
 	STZ.b $57
 	STZ.b $5D
@@ -1186,12 +1190,12 @@ SetCameraToCoordinates:
 
 +	LDA.w $0600,X : BRA .set_y
 
-++	CMP.w $0604,X : BCC ++
+++	CMP.w $0604,X : BCC .set_y
 
 	LDA.w $0604,X
 
 .set_y
-++	STA.b $E8
+	STA.b $E8
 
 	LDA.w $0608
 	LDX.b $A6 : BEQ .set_x

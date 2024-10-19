@@ -67,14 +67,41 @@ EQUIPMENT_SUBMENU:
 	JML RedrawCurrentMenu
 
 ;===================================================================================================
-%choice_long_func_filtered_here("Sword", $7EF359, 5, set_sword)
-	%list_item("No")
+
+%choice_long_func_prgtext("Sword", $7EF359, 5, set_sword, draw_sword)
+#draw_sword:
+	INC
+	CMP.b #$06
+	BCS ..bad
+
+	REP #$30
+	AND.w #$00FF
+	ORA.w #(draw_sword>>8)&$FF00
+	STA.b SA1IRAM.cm_writer+1
+
+	AND.w #$00FF
+	ASL
+	ADC.w #..list
+	STA.b SA1IRAM.cm_writer+0
+
+	LDA.b [SA1IRAM.cm_writer+0]
+	JSL CMDRAW_WORD_LONG_LONG
+	RTL
+
+..bad
+	JML CMDRAW_ERROR
+
+..list
+%list_header(6)
+	%list_item("Turned in")
+	%list_item("None")
 	%list_item("Fighter")
 	%list_item("Master")
 	%list_item("Tempered")
 	%list_item("Gold")
 
 #set_sword:
+	SEP #$30
 	JSL DecompSwordGfx
 	JML Palette_Sword
 
@@ -86,6 +113,7 @@ EQUIPMENT_SUBMENU:
 	%list_item("Mirror")
 
 #set_shield:
+	SEP #$30
 	JSL DecompShieldGfx
 	JML Palette_Shield
 

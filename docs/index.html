@@ -199,7 +199,7 @@ title: LTTPHack - A Practice ROM for ALttP
 
 <h2>Common concerns</h2>
 <h3>How accurate is lag compared to the vanilla game?</h3>
-<p>As of version 14, very; about 1/10th of a scanline off. Here's a quick rundown of how it works:</p>
+<p>As of version 14, very; about 2% of a scanline off. Here's a quick rundown of how it works:</p>
 
 <h4>SA-1</h4>
 <p>The SA-1 is a coprocessor that can be used alongside the main SNES CPU. It can run code faster, but, more importantly, it can run at the same time as the SNES CPU without slowing it down. This allows the practice hack to handle certain features with minimal lag change from vanilla. Due to the limitations on memory access, not every feature can be handled lag-free on the SA-1.</p>
@@ -207,7 +207,7 @@ title: LTTPHack - A Practice ROM for ALttP
 <p>Features that run on the SA-1 will be marked with this badge: <sup class="badge sa1-badge">SA1</sup>.</p>
 
 <h4>Implementation</h4>
-<p>There are specific routines that get run at the beginning and end of every frame to manage the OAM buffer. The clearing routine isn't coded very efficiently, so it's been optimized to about twice its original speed. The SNES CPU then sends an interrupt request which tells the SA-1 to process controller input for shortcuts. If a shortcut is found, a vector pointing to its routine in ROM will be saved in memory. The next frame, the SNES will check for this vector, and respond accordingly.</p>
+<p>There are specific routines that get run at the beginning and end of every frame to manage the OAM buffer. These routine aren't coded very efficiently. They've been heavily to allow more CPU time for all the extra features. The SNES CPU then sends an interrupt request which tells the SA-1 to process controller input for shortcuts. If a shortcut is found, a vector pointing to its routine in ROM will be saved in memory. The next frame, the SNES will check for this vector, and respond accordingly.</p>
 <p>For the game HUD, almost every reference to its WRAM buffer has been changed to a location in BWRAM where the SA-1 can see it. Once the HUD's buffer has been modified by the game, it copies a handful of variables that are only visible to the SNES CPU into memory that is visible to both the SNES and the SA-1. This is where most of the time saved with OAM optimization is accounted for. After these variables are copied, the SNES sends another interrupt request to the SA-1 to indicate that the coprocessor can do its own changes to the tilemap before it gets drawn to the screen. Some features (such as the hearts) are still written to their original WRAM buffer. This way, they can contribute their normal CPU load without ruining the HUD.</p>
 <p>On any frame where the HUD doesn't update, a separate check makes sure that these variables are still copied over, as this copying is critical to balancing the practice hack back in line with vanilla. The rest of the code hacked in is very minimal, and those few extra cycles are very unlikely to create additional lag frames.</p>
 <p>Certain features require more variables to be copied over than others. These will necessarily require a slightly higher fraction of the CPU's time, but they will only take this time when the HUD is redrawn. Such features will be marked with this badge: <sup class="badge lag-badge">EX</sup>.</p>
@@ -219,7 +219,7 @@ title: LTTPHack - A Practice ROM for ALttP
 <h3 id="IKnowAboutItAlready">Known issues <a href="#IKnowAboutItAlready" class="headerLink">(link)</a></h3>
 <ul>
 	<li>Lag from mosaics can be inaccurate, depending on what you've already done in your current play session. I'm still investigating the best way to approach this problem.</li>
-	<li>Giving your sword to the smith will result in a BAD VAL in the equipment menu. I don't have an elegant solution for this yet.</li>
+<!--	<li>Fast walls randomly adds a second. I have tried and failed to fix this. It needs further investigation.</li>-->
 </ul>
 
 <h2>Trouble shooting</h2>
@@ -723,7 +723,7 @@ title: LTTPHack - A Practice ROM for ALttP
 			<dt>Numerical</dt>
 			<dd>Classic practice hack display under rupee count</dd>
 			<dt>Vanilla</dt>
-			<dd>Vanilla graphical display <strong class="lag"><b>NOTICE:</b> vanilla hearts will be drawn to the HUD first, and additional HUD features may be drawn over them.</strong></dd>
+			<dd>Vanilla graphical display <strong class="lag"><b>NOTICE:</b> vanilla hearts will be drawn to the HUD first; additional HUD features may be drawn over them.</strong></dd>
 		</dl>
 	</dd>
 	<dt>Input display<sup class="badge sa1-badge">SA1</sup></dt>
@@ -752,6 +752,10 @@ title: LTTPHack - A Practice ROM for ALttP
 			<dd>Time spent since the beginning of the last segment timer reset.</dd>
 			<dt>Coordinates</dt>
 			<dd>Absolute position of Link (X,Y)</dd>
+			<dt>Room (live)</dt>
+			<dd>Room time with continuous updates.</dd>
+			<dt>Lag (live)</dt>
+			<dd>Lag frames with continuous updates.</dd>
 			<dt>Subpixels</dt>
 			<dd>Current subpixel (Hexadecimal); address: $7E002A</dd>
 			<dt>Room ID</dt>
@@ -831,7 +835,7 @@ title: LTTPHack - A Practice ROM for ALttP
 	</dd>
 	<dt>Hide lines<sup class="badge sa1-badge">SA1</sup></dt>
 	<dd>Removes the line sentries from the HUD without the need to disable them.</dd>
-	<dt>HUD lag<sup class="badge sa1-badge">SA1</sup></dt>
+	<dt>HUD spinner<sup class="badge sa1-badge">SA1</sup></dt>
 	<dd>Animated spinning icon that indicates there is potential for HUD-related lag present.</dd>
 	<dt>State icons<sup class="badge sa1-badge">SA1</sup></dt>
 	<dd>Displays icons along the left side of the HUD for the following properties (top to bottom): superspeed, waterwalk, door state, stair drag.</dd>
@@ -981,7 +985,7 @@ title: LTTPHack - A Practice ROM for ALttP
 			<li class="colorDefine"><div class="colorBlock" style="background:#F858A8">F858A8</div>Pink</li>
 			<li class="colorDefine"><div class="colorBlock" style="background:#F76D61">F76D61</div>Peach42</li>
 			<li class="colorDefine"><div class="colorBlock" style="background:#2AA8D9">2AA8D9</div>Siriusly?</li>
-			<li class="colorDefine"><div class="colorBlock" style="background:#BADA55">BADA55</div>Almost BADA55</li>
+			<li class="colorDefine"><div class="colorBlock" style="background:#B8D850">B8D850</div>Chartreuse</li>
 			<li class="colorDefine"><div class="colorBlock" style="background:#FFBFFF">FFBFFF</div>Blunt pink</li>
 			<li class="colorDefine"><div class="colorBlock" style="background:#78886A">78886A</div>Igarashi Futaba</li>
 		</ul>

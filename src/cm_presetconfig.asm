@@ -25,7 +25,7 @@ PRESET_CONFIG_SUBMENU:
 %toggle("Random bats", SA1RAM.ganon_bats)
 
 ;===================================================================================================
-%toggle("Use preset load", !config_use_custom_load)
+%toggle("Preset loadout", !config_use_custom_load)
 
 ;===================================================================================================
 %func("Save loadout", this)
@@ -88,10 +88,11 @@ presetsafeties_nmg:
 
 %toggle_onoff("Sanc heart", !config_safeties_nmg_sanc_heart)
 
-%choice_here("Powder", !config_safeties_nmg_powder, 4)
+%choice_here("Powder", !config_safeties_nmg_powder, 5)
 	%list_item("No")
 	%list_item("Mushroom")
 	%list_item("Powder")
+	%list_item("Late powder")
 	%list_item("Half magic")
 
 %choice_here("Gold; Silvers", !config_safeties_nmg_gs, 3)

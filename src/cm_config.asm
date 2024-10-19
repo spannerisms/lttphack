@@ -1,11 +1,23 @@
+!config_count = 6
+
+if !RANDO
+	!config_count #= !config_count+2
+endif
+
 CONFIG_SUBMENU:
-%menu_header("CONFIGURATION", 6)
+%menu_header("CONFIGURATION", !config_count)
 
 ;===================================================================================================
 %submenu("System and ROM", SYSTEM_SUBMENU)
 
 ;===================================================================================================
 %toggle_onoff("Rerandomize", !config_rerandomize_toggle)
+
+;===================================================================================================
+if !RANDO
+	%toggle_onoff("FastROM", !config_fastrom)
+	%toggle_onoff("Vanilla items", !config_vanillaitems)
+endif
 
 ;===================================================================================================
 %toggle_func_onoff_here("Music", !config_feature_music)
@@ -167,7 +179,7 @@ color_list:
 	%fixed_color($F858A8, "Pink")
 	%fixed_color($F76D61, "Peach42")
 	%fixed_color($2AA8D9, "Siriusly?")
-	%fixed_color($BADA55, "BADA55")
+	%fixed_color($B8D850, "Chartreuse")
 
 	%fixed_color($FFBFFF, "Blunt pink")
 	%fixed_color($78886A, "Futaba")

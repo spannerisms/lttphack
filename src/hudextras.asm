@@ -27,7 +27,7 @@ pushpc
 
 org $008B7C
 	; need to calculate a dynamic size for it
-	LDX.w SA1IRAM.HUDSIZE ; make hud bigger, doesn't seem to cost any cycles
+	LDX.w SA1IRAM.HUDSIZE ; make hud bigger
 
 org $0EFD3E
 	dw $6145, $6244 ; make the higher textbox slightly lower
@@ -64,6 +64,10 @@ fire_hud_irq:
 
 	INC.b $16
 
+	if !RANDO
+		JSR WaitABitForSA1HUD
+	endif
+
 	RTS
 
 warnpc $0DDB3F
@@ -84,7 +88,39 @@ org $1ED632
 	JSL UpdateAgaCycles
 	NOP
 
+
+if !RANDO
+	org $0DFC26 : JMP ++ : ++
+	org $0DFBDD : JMP ++ : ++
+
+	org $0DFDCB
+	WaitABitForSA1HUD:
+		REP #$20
+		; 34 per heart for the loop + 26 inside
+		LDA.w #240
+	--	DEC : BNE --
+
+		SEP #$20
+		RTS
+endif
+
+
+
 pullpc
+
+;===================================================================================================
+
+HUDJumpCallA:
+	STA.w SA1RAM.EasyJMP
+
+HUDJumpCall:
+	JMP.w (SA1RAM.EasyJMP)
+
+;===================================================================================================
+
+HUDJumpCallY:
+	STY.w SA1RAM.EasyJMP
+	JMP.w (SA1RAM.EasyJMP)
 
 ;===================================================================================================
 
@@ -308,13 +344,22 @@ hex_to_dec_fast_table:
 
 ;===================================================================================================
 
+
+HUD_LineSize:
+	dw $0180
+	dw $01C0
+	dw $0200
+
+HUD_NMI_DMA_SIZE:
+	dw $0240
+
 draw_hud_extras:
 	PHP
 	PHB
 	PHK
 	PLB
 
-	; clear up sentriess
+	; clear up sentries
 	REP #$20
 
 	LDA.b SA1IRAM.TIMER_FLAG
@@ -359,8 +404,51 @@ draw_hud_extras:
 
 	REP #$30
 
-	JSR GetHUDLagTile
+	LDA.w !config_hudlag_spinner
+	BNE .dohudlag
+
+	LDA.w #$207F
+	BRA .write_spinner
+
+.dohudlag
+	LDA.b SA1IRAM.CopyOf_1A
+	AND.w #$000C
+	LSR
+	LSR
+	; Desired results:
+	; 00  ->  00
+	; 01  ->  01
+	; 10  ->  11
+	; 11  ->  10
+	; b0 = b1 ^ b0
+	; b1 = b1
+
+	LSR ; put b1 in b0
+	STA.b SA1IRAM.SCRATCH+0
+	ROL ; back to normal
+
+	EOR.b SA1IRAM.SCRATCH+0 ; b0 ^ b1
+	ROR ; get to bits 14 and 15
+	ROR
+	ROR
+
+	ORA.w #$253F
+
+.write_spinner
 	STA.w SA1RAM.HUD+$02
+
+if !RANDO
+	LDA.w !config_fastrom
+	LSR
+	LDA.w #$207F
+	BCC .write_fastrom
+
+	LDA.w #$2CA8
+
+.write_fastrom
+	STA.w SA1RAM.HUD+$00
+
+endif
 
 	SEP #$10
 
@@ -435,12 +523,7 @@ draw_hud_sentry:
 
 	PLA
 
-	PEA.w .return-1
-
-	DEY ; jump address
-	PHY
-
-	RTS ; call routine
+	JSR HUDJumpCallY
 
 .return
 	REP #$31
@@ -459,8 +542,10 @@ draw_hud_sentry:
 draw_hud_linesentrys:
 	REP #$30
 
-	LDA.w .hudsize ; use first entry
+	LDA.w #$014A ; vanilla size for 0 entries
 	STA.b SA1IRAM.HUDSIZE
+
+	STZ.b SA1IRAM.number_of_line_sentries
 
 	LDA.w !config_hide_lines
 	AND.w #$0001
@@ -469,9 +554,7 @@ draw_hud_linesentrys:
 	LDA.w #5*64+10 ; start position
 	LDY.w #$0000
 
-	; later rows may be further left
-	PEA.w 5*64+10
-	BRA .start
+;---------------------------------------------------------------------------------------------------
 
 .next_sentry
 	PHA
@@ -488,34 +571,22 @@ draw_hud_linesentrys:
 	TAY
 
 	LDA.w linesentry_routines,Y
-	DEC
+	STA.w SA1RAM.EasyJMP
 
-	PEA.w .return-1
-
-	PHA
-
-	LDA 5,S ; get value address position
+	LDA 1,S ; get value address position
 	ASL
 	ASL
 	ASL
 	TAY
 
-	RTS ; call routine
-
-	; for now, always draw 0x0200 for first 3 lines
-.hudsize
-	dw $0200
-	dw $0200
-	dw $0200
-
-#HUD_NMI_DMA_SIZE:
-	dw $0240
+	JSR HUDJumpCall
 
 .return
 	REP #$30
 
 	LDY.b SA1IRAM.cm_writer
-	LDA.w .hudsize,Y
+	STY.b SA1IRAM.number_of_line_sentries
+	LDA.w HUD_LineSize,Y
 	STA.b SA1IRAM.HUDSIZE
 
 #skipline_sentry:
@@ -747,11 +818,13 @@ draw_hearts_options:
 	STA.w SA1RAM.HUD+$036
 
 	LDA.b SA1IRAM.CopyOf_7EF36C
+	LSR ; shift both right at once
 	LSR
 	LSR
-	LSR
-	AND.w #$1F1F ; shift both right at once
+	AND.w #$1F1F
+
 	SEP #$10
+
 	TAX ; X has max health
 	XBA
 	TAY ; Y has current health
@@ -764,13 +837,11 @@ draw_hearts_options:
 	CPX.b #1 ; do we have at least 1 HP?
 	BMI ..done_hearts
 
-	CPY.b #1
-	BMI ..do_max_health
-
 	LDA.w #$24A0
-	BRA ..add_heart
 
-..do_max_health
+	CPY.b #1
+	BPL ..add_heart
+
 	LDA.w #$24A2
 
 ..add_heart
@@ -784,6 +855,7 @@ draw_hearts_options:
 	INC
 	CMP.w #SA1RAM.HUD+$07C
 	BEQ ..nextrow
+
 	CMP.w #SA1RAM.HUD+$0BC
 	BNE ..fine
 
@@ -792,13 +864,11 @@ draw_hearts_options:
 
 ..fine
 	STA.b SA1IRAM.SCRATCH+0
-	CPY.b #1 ; save pointer when we have 0 hearts left to add
-	BNE ..skip_save
+
+	CPY.b #$00
+	BNE ..next_filled_heart ; save pointer when we have 0 hearts left to add
 
 	STA.b SA1IRAM.SCRATCH+2
-
-..skip_save
-
 	BRA ..next_filled_heart
 
 ..done_hearts
@@ -817,6 +887,7 @@ draw_hearts_options:
 
 ..skip_partial
 	SEP #$20
+
 	LDA.b SA1IRAM.Moved_020A
 	BEQ ..done
 
@@ -824,7 +895,9 @@ draw_hearts_options:
 	LDA.b SA1IRAM.Moved_0209
 	ASL
 	TAX
+
 	REP #$20
+
 	LDA.l $0DFA29,X
 	STA.b (SA1IRAM.SCRATCH+2)
 
@@ -833,37 +906,7 @@ draw_hearts_options:
 
 ;===================================================================================================
 
-GetHUDLagTile:
-	LDA.w !config_hudlag_spinner
-	BNE .dohudlag
 
-	LDA.w #$207F
-	RTS
-
-.dohudlag
-	LDA.b SA1IRAM.CopyOf_1A
-	AND.w #$000C
-	LSR
-	LSR
-	; Desired results:
-	; 00  ->  00
-	; 01  ->  01
-	; 10  ->  11
-	; 11  ->  10
-	; b0 = b1 ^ b0
-	; b1 = b1
-
-	LSR ; put b1 in b0
-	STA.b SA1IRAM.SCRATCH+0
-	ROL ; back to normal
-
-	EOR.b SA1IRAM.SCRATCH+0 ; b0 ^ b1
-	ROR ; get to bits 14 and 15
-	ROR
-	ROR
-
-	ORA.w #$253F
-	RTS
 
 ;===================================================================================================
 
@@ -1214,6 +1257,8 @@ sentry_routines:
 	dw sentry_idle
 	dw sentry_segment
 	dw sentry_coords
+	dw sentry_room_live
+	dw sentry_lag_live
 	dw sentry_subpixels
 	dw sentry_roomid
 	dw sentry_quadrant
@@ -1250,6 +1295,28 @@ sentry_nothing:
 	RTS
 
 ;---------------------------------------------------------------------------------------------------
+
+
+sentry_room_live:
+	LDY.w #!yellow ; color
+	LDA.w #SA1IRAM.ROOM_TIME_F ; address
+	JSR Draw_all_two
+
+	DEX ; down 4
+	DEX
+	DEX
+	DEX
+	LDY.w #!white ; color
+	LDA.w #SA1IRAM.ROOM_TIME_S ; address
+	JMP Draw_short_three
+
+sentry_lag_live:
+	LDY.w #!red ; color
+	LDA.w #SA1IRAM.ROOM_TIME_LAG ; address
+	JMP Draw_short_three
+
+
+
 
 sentry_room:
 	LDY.w #!yellow ; color

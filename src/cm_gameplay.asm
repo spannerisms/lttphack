@@ -17,6 +17,7 @@ GAMEPLAY_SUBMENU:
 ++	RTL
 
 ;===================================================================================================
+
 %toggle_onoff("Fast walls", !config_fast_moving_walls)
 
 %toggle_onoff("Visible probes", !config_probe_toggle)

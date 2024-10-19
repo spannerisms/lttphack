@@ -83,7 +83,7 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 	.disabled_layers: skip 2
 	.layer_writer: skip 2
 
-	.line4wasactive: skip 1
+	.highestline: skip 2
 
 .end_of_clearable_sa1ram:
 
@@ -92,6 +92,13 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 
 	.cm_item_bow: skip 1
 	.cm_equipment_maxhp: skip 1
+
+	.EasyJMP: skip 2
+
+	.SaveStateMVN: skip 4
+
+	.MessageHighScratch: skip 2
+
 
 	warnpc $407FFF
 endstruct
@@ -243,6 +250,9 @@ endmacro
 %def_sram("somaria_pits", !OFF)
 
 %def_sram("hide_lines", !OFF)
+
+%def_sram("fastrom", !OFF)
+%def_sram("vanillaitems", !OFF)
 
 print ""
 print "Config end: $", hex(!last_config,3)

@@ -185,3 +185,102 @@ RoomHasPitDamage:
 	db 0, 0, 0, 0, 0, 0, 0, 0 ; 0x118
 	db 1, 0, 0, 1, 0, 0, 0, 0 ; 0x120
 	db 0, 0, 0, 0, 0, 0, 0, 0 ; 0x128
+
+;===================================================================================================
+
+CheckItemReceipt:
+	STY.w $02E4
+
+	LDA.w !config_vanillaitems
+	BNE .return
+
+	LDX.w $02D8
+
+	LDA.l ReplaceVanilla,X
+	STA.w $02D8
+
+.return
+	RTL
+
+jnk = $45
+ReplaceVanilla:
+	db jnk ; 00 - FIGHTER SWORD
+	db jnk ; 01 - MASTER SWORD
+	db jnk ; 02 - TEMPERED SWORD
+	db jnk ; 03 - BUTTER SWORD
+	db jnk ; 04 - FIGHTER SHIELD
+	db jnk ; 05 - FIRE SHIELD
+	db jnk ; 06 - MIRROR SHIELD
+	db jnk ; 07 - FIRE ROD
+	db jnk ; 08 - ICE ROD
+	db jnk ; 09 - HAMMER
+	db jnk ; 0A - HOOKSHOT
+	db jnk ; 0B - BOW
+	db jnk ; 0C - BOOMERANG
+	db jnk ; 0D - POWDER
+	db $0E ; 0E - BOTTLE REFILL (BEE)
+	db jnk ; 0F - BOMBOS
+	db jnk ; 10 - ETHER
+	db jnk ; 11 - QUAKE
+	db jnk ; 12 - LAMP
+	db jnk ; 13 - SHOVEL
+	db jnk ; 14 - FLUTE
+	db jnk ; 15 - SOMARIA
+	db jnk ; 16 - BOTTLE
+	db jnk ; 17 - HEART PIECE
+	db jnk ; 18 - BYRNA
+	db jnk ; 19 - CAPE
+	db jnk ; 1A - MIRROR
+	db jnk ; 1B - GLOVE
+	db jnk ; 1C - MITTS
+	db jnk ; 1D - BOOK
+	db jnk ; 1E - FLIPPERS
+	db jnk ; 1F - PEARL
+	db $20 ; 20 - CRYSTAL
+	db jnk ; 21 - NET
+	db jnk ; 22 - BLUE MAIL
+	db jnk ; 23 - RED MAIL
+	db $24 ; 24 - SMALL KEY
+	db $25 ; 25 - COMPASS
+	db jnk ; 26 - HEART CONTAINER FROM 4/4
+	db $27 ; 27 - BOMB
+	db $28 ; 28 - 3 BOMBS
+	db jnk ; 29 - MUSHROOM
+	db jnk ; 2A - RED BOOMERANG
+	db $2B ; 2B - FULL BOTTLE (RED)
+	db $2C ; 2C - FULL BOTTLE (GREEN)
+	db $2D ; 2D - FULL BOTTLE (BLUE)
+	db $2E ; 2E - POTION REFILL (RED)
+	db $2F ; 2F - POTION REFILL (GREEN)
+	db $30 ; 30 - POTION REFILL (BLUE)
+	db $31 ; 31 - 10 BOMBS
+	db $32 ; 32 - BIG KEY
+	db $33 ; 33 - MAP
+	db $34 ; 34 - 1 RUPEE
+	db $35 ; 35 - 5 RUPEES
+	db $36 ; 36 - 20 RUPEES
+	db $37 ; 37 - GREEN PENDANT
+	db $38 ; 38 - BLUE PENDANT
+	db $39 ; 39 - RED PENDANT
+	db jnk ; 3A - TOSSED BOW
+	db jnk ; 3B - SILVERS
+	db jnk ; 3C - FULL BOTTLE (BEE)
+	db jnk ; 3D - FULL BOTTLE (FAIRY)
+	db jnk ; 3E - BOSS HC
+	db jnk ; 3F - SANC HC
+	db $40 ; 40 - 100 RUPEES
+	db $41 ; 41 - 50 RUPEES
+	db $42 ; 42 - HEART
+	db $43 ; 43 - ARROW
+	db $44 ; 44 - 10 ARROWS
+	db $45 ; 45 - SMALL MAGIC
+	db $46 ; 46 - 300 RUPEES
+	db $47 ; 47 - 20 RUPEES GREEN
+	db jnk ; 48 - FULL BOTTLE (GOOD BEE)
+	db jnk ; 49 - TOSSED FIGHTER SWORD
+	db jnk ; 4A - FLUTE (ACTIVATED)
+	db jnk ; 4B - BOOTS
+
+;===================================================================================================
+
+

@@ -9,6 +9,8 @@ trigger points to update timers:
 
 keep track of velocity via link's coordinates on SA-1
 
+pre moldorms with empty tile room
+
 
 last frame of crystal fade = bad savestate
 
