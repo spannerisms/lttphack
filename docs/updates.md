@@ -19,7 +19,7 @@ title: Change log - ALTTP Practice Hack
   - Made the SA1 draw to the HUD earlier and vastly optimized some of it. Hopefully nothing is messed up.
   - Complete overhaul of sentry pickers into submenus for easier navigation and better organization.
   - Removed the per-line ancilla properties in favor of the more navigable menus.
-  - The sentries documentation has been moved to a new page: <a href="sentries.md">/sentries</a>.
+  - The sentries documentation has been moved to a new page: <a href="sentries">/sentries</a>.
   - Moved the floor indicator a little further left so that it can be handled by vanilla code entirely.
 - Bug fixes:
   - Crystal Maiden lag
