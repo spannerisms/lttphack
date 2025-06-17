@@ -57,8 +57,15 @@ ResetGameStack:
 Rerandomize:
 	LDA.w !config_rerandomize_toggle : BEQ .dont_rerandomize
 
-	JSL GetRandomInt : STA.b $1A
-	JSL GetRandomInt : STA.w $0FA1
+	REP #$20
+
+	LDA.w SA1IRAM.randomish
+
+	SEP #$20
+
+	STA.b $1A
+	XBA
+	STA.w $0FA1
 
 .dont_rerandomize
 	LDA.w SA1RAM.framerule
@@ -441,7 +448,7 @@ Shortcut_SkipText:
 
 Shortcut_DisableSprites:
 	SEP #$20
-	JML Sprite_DisableAll
+	JML $09C44E ; Disable all sprites
 
 ;===================================================================================================
 
@@ -490,11 +497,7 @@ Shortcut_FillEverything:
 .ignoreprogress
 	SEP #$30
 
-	JSL DecompSwordGfx
-	JSL Palette_Sword
-	JSL DecompShieldGfx
-	JSL Palette_Shield
-	JSL Palette_Armor
+	JSL set_link_equips
 
 	PLB
 	PLD

@@ -150,7 +150,7 @@ SaveLiteState:
 
 	REP #$30
 
-	LDA.b SA1IRAM.litestate_act
+	LDA.w SA1IRAM.litestate_act
 	AND.w #$00FF
 	XBA
 	ASL
@@ -221,11 +221,7 @@ LoadLiteState:
 	SEP #$30
 	PHA : PLB
 
-	JSL DecompSwordGfx
-	JSL Palette_Sword
-	JSL DecompShieldGfx
-	JSL Palette_Shield
-	JSL Palette_Armor
+	JSL set_link_equips
 
 	JSL ApplyAfterLoading
 

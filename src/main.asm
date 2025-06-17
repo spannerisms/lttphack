@@ -19,7 +19,6 @@ incsrc nmi.asm
 incsrc timers.asm
 incsrc gamemode.asm
 incsrc misc.asm
-incsrc hudextras.asm
 incsrc rng.asm
 incsrc presets.asm
 incsrc roomload.asm
@@ -45,6 +44,17 @@ incsrc cm_lite_states.asm
 incsrc cm_shortcuts.asm
 incsrc cm_config.asm
 incsrc cm_presetconfig.asm
+incsrc cm_sentry_picker.asm
+incsrc hudextras.asm
+incsrc sentries.asm
+
+print "Menu end: $", pc
+
+org $238000
+
+
+
+
 
 org $268000
 

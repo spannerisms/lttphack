@@ -4,7 +4,7 @@ GAMEPLAY_SUBMENU:
 ;===================================================================================================
 %toggle_onoff("Skip Triforce", !config_skip_triforce_toggle)
 
-%toggle("Disable beams", !disable_beams)
+%toggle("Disable beams", SA1RAM.disable_beams)
 
 ;===================================================================================================
 %toggle_func_onoff_here("Lit rooms", !config_lit_rooms_toggle)

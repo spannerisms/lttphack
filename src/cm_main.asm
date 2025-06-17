@@ -64,7 +64,6 @@ CM_Main:
 	JSR EmptyEntireMenu
 	JSR CM_ResetStackAndMenu
 	JSR DrawCurrentMenu
-	JSL NMI_RequestFullMenuUpdate
 
 .loop
 	SEP #$30
@@ -83,13 +82,14 @@ CM_Main:
 	BRA .loop
 
 .submodules
-	dw CM_Init
-	dw CM_DrawMenu
-	dw CM_Active
-	dw CM_Return
-	dw CM_ShortcutConfig
-	dw CM_SetLiteState
-	dw CM_DeleteLiteState
+	dw CM_Init              ; 00
+	dw CM_DrawMenu          ; 02
+	dw CM_Active            ; 04
+	dw CM_Return            ; 06
+	dw CM_ShortcutConfig    ; 08
+	dw CM_SetLiteState      ; 0A
+	dw CM_DeleteLiteState   ; 0C
+	dw CM_SetSentry         ; 0E
 
 ;===================================================================================================
 
@@ -97,10 +97,7 @@ CM_DrawMenu:
 	LDX.b #$04
 	STX.b SA1IRAM.cm_submodule
 
-	JSR DrawCurrentMenu
-	JSL NMI_RequestFullMenuUpdate
-
-	RTS
+	JMP DrawCurrentMenu
 
 ;===================================================================================================
 
@@ -122,36 +119,35 @@ CM_Return:
 CM_Exiting:
 	SEP #$30
 	STZ.w $4200
-	REP #$20
-
-	LDA.w #$0002
-	STA.w SA1IRAM.cm_submodule
 
 	LDY.b #$80
 	STY.w $2100
 	STY.w $2115
 
-	LDY.b #$00
+	REP #$30
 
-	LDX.w !config_hide_lines
-	BNE .hide_all
+	LDA.w #$0002
+	STA.w SA1IRAM.cm_submodule
 
 	JSR GetHighestActiveLine
 
 .hide_all
-	CPY.w SA1RAM.highestline
+	CPY.w SA1IRAM.highestline
 	BCS .no_hide
 
 	JSR ClearLineSentryLines
 
+	INY
 	INY
 	BRA .hide_all
 
 .no_hide
 	JSL LoadCustomHUDGFX
 	JSL reinit_sentry_addresses
+	JSL ConfigMenuSize
 
 	SEP #$30
+
 	LDA.b #$15 : STA.w $2142
 
 	STZ.b $12
@@ -169,12 +165,11 @@ ClearLineSentryLines:
 	ASL
 	ASL
 	ASL
-	ASL
 	ADC.w #$60E5
 	STA.w $2116
 
 	LDA.w #$007F
-	LDX.b #26
+	LDX.w #26
 --	STA.w $2118
 	DEX
 	BNE --
@@ -213,10 +208,7 @@ CM_ShortcutConfig:
 CM_UpdateHeldOption:
 	SEP #$30
 	LDY.b SA1IRAM.cm_cursor
-	JSR DrawCurrentRow_ShiftY
-	JSL NMI_RequestCurrentRowUpdateUnless
-
-	RTS
+	JMP DrawCurrentRow_ShiftY
 
 ;===================================================================================================
 
@@ -236,7 +228,7 @@ CM_SetLiteState:
 	BRA CM_UpdateHeldOption
 
 .save_litestate
-	LDA.b SA1IRAM.litestate_act
+	LDA.w SA1IRAM.litestate_act
 	JSL SaveLiteState
 	JSL CM_MenuSFX_shortcut_done
 
@@ -260,7 +252,7 @@ CM_DeleteLiteState:
 	BRA CM_UpdateHeldOption
 
 .delete_litestate
-	LDA.b SA1IRAM.litestate_act
+	LDA.w SA1IRAM.litestate_act
 	JSL DeleteLiteState
 	JSL CM_MenuSFX_empty
 
@@ -308,31 +300,47 @@ CM_CacheWRAM:
 	LSR
 	STA.w SA1RAM.cm_equipment_maxhp
 
+;===================================================================================================
+
+ConfigMenuSize:
+	REP #$30
+
 	JSR GetHighestActiveLine
-	STY.w SA1RAM.highestline
+	STY.w SA1IRAM.highestline
+
+	TYX
+	LDA.l HUD_LineSize,X
+	STA.w SA1IRAM.HUDSIZE
 
 	RTL
 
 ;===================================================================================================
 
 GetHighestActiveLine:
+	LDY.w !config_hide_lines
+	BNE .hide
+
 	LDY.w !config_linesentry4 : BEQ ++
-	LDY.b #$04
+	LDY.w #8
 	RTS
 
 ++	LDY.w !config_linesentry3 : BEQ ++
-	LDY.b #$03
+	LDY.w #6
 	RTS
 
 ++	LDY.w !config_linesentry2 : BEQ ++
-	LDY.b #$02
+	LDY.w #4
 	RTS
 
 ++	LDY.w !config_linesentry1 : BEQ ++
 
-	LDY.b #$01
+	LDY.w #2
+	RTS
 
+.hide
+	LDY.w #0
 ++	RTS
+
 
 ;===================================================================================================
 
@@ -400,6 +408,10 @@ CM_MenuSFX:
 	PEA.w $003C
 	BRA .continue
 
+.tinkle
+	PEA.w $0031
+	BRA .continue
+
 .continue
 	PHP
 	REP #$20
@@ -428,9 +440,7 @@ CM_BackToTipTop:
 	JSL CM_MenuSFX_submenuback
 	JSR EmptyCurrentMenu
 	JSR CM_ResetStackAndMenu
-	JSR DrawCurrentMenu
-	JSL NMI_RequestFullMenuUpdate
-	RTS
+	JMP DrawCurrentMenu
 
 ;===================================================================================================
 
@@ -479,9 +489,7 @@ CM_Active:
 
 	SEP #$30
 	LDY.b SA1IRAM.cm_cursor
-	JSR DrawCurrentRow_ShiftY
-	JSL NMI_RequestCurrentRowUpdateUnless
-	RTS
+	JMP DrawCurrentRow_ShiftY
 
 ;===================================================================================================
 
@@ -513,7 +521,6 @@ CM_AdjustForWrap:
 	JSR CM_PullMenuFromStack
 	JSR DrawCurrentMenu
 	JSL CM_MenuSFX_submenuback
-	JSL NMI_RequestFullMenuUpdate
 	RTS
 
 .find_max
@@ -557,7 +564,6 @@ CM_ReDrawCursorPosition:
 
 	PLY
 	PLX
-	JSL NMI_Request2RowsUpdate
 
 	RTS
 
@@ -568,6 +574,7 @@ CM_ReDrawCursorPosition:
 ;===================================================================================================
 CM_getcontroller:
 	REP #$20
+	SEP #$10
 	STZ.b SA1IRAM.cm_leftright
 	STZ.b SA1IRAM.cm_ax
 	STZ.b SA1IRAM.cm_y
@@ -607,7 +614,6 @@ CM_getcontroller:
 	AND.b #$C0
 
 	RTS
-
 
 .same_as_last_frame
 	CMP.w #$0001
@@ -652,7 +658,6 @@ CM_getcontroller:
 	STA.b SA1IRAM.cm_shoulder
 
 	; get actionable presses
-
 	LDA.b SA1IRAM.cm_leftright
 	ORA.b SA1IRAM.cm_shoulder
 	AND.b #$C0

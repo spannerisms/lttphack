@@ -205,60 +205,18 @@ endmacro
 ;===================================================================================================
 ; Custom NMI for hud
 ;===================================================================================================
-NMI_RequestFullMenuUpdate:
-	REP #$20
-
-	LDA.w #NMI_UpdatePracticeHUD_full
-	STA.w SA1RAM.SNES_NMI_VECTOR
-
-	SEP #$30
-
-	RTL
-
-NMI_Request2RowsUpdate:
-	REP #$20
-
-	LDA.w #NMI_UpdatePracticeHUD_two_rows
-	STA.w SA1RAM.SNES_NMI_VECTOR
-
-	SEP #$30
-
-	STX.w SA1RAM.SNES_NMI_args+0
-	STY.w SA1RAM.SNES_NMI_args+1
-
-	RTL
-
-NMI_RequestCurrentRowUpdateUnless:
-	REP #$20
-
-	LDA.w SA1RAM.SNES_NMI_VECTOR
-	CMP.w #NMI_UpdatePracticeHUD_full
-	BEQ .no
-
-	LDA.w #NMI_UpdatePracticeHUD_current_row
-	STA.w SA1RAM.SNES_NMI_VECTOR
-
-.no
-	SEP #$30
-	RTL
-
-;===================================================================================================
-
 NMI_UpdatePracticeHUD:
-
-.full
 	REP #$20
 
 	LDA.w #SA1RAM.MENU
-
 	STA.w $4352
+
 	LDA.w #$6C00
-
 	STA.w $2116
-	LDA.w #$0800
 
-.start
+	LDA.w #$0800
 	STA.w $4355
+
 	LDA.w #$1801
 	STA.w $4350
 
@@ -274,48 +232,9 @@ NMI_UpdatePracticeHUD:
 
 	RTS
 
-;---------------------------------------------------------------------------------------------------
-
-.current_row
-	REP #$20
-	LDA.w SA1IRAM.cm_cursor
-	BRA .do_row
-
-.two_rows
-	REP #$20
-	LDA.w SA1RAM.SNES_NMI_args+0
-	JSR .do_row
-
-	REP #$20
-	LDA.w SA1RAM.SNES_NMI_args+1
-
-;---------------------------------------------------------------------------------------------------
-
-.do_row
-	AND.w #$00FF
-	XBA
-	LSR
-	LSR
-	PHA
-	LSR
-	ADC.w #$6C60
-	STA.w $2116
-
-	PLA
-	ADC.w #SA1RAM.MENU+(64*3)
-	STA.w $4352
-
-	LDA.w #$0040
-	BRA .start
-
 ;===================================================================================================
 
 SNES_ENABLE_CUSTOM_NMI:
-	REP #$20
-
-	LDA.w #SNES_CUSTOM_NMI_nothing
-	STA.w SA1RAM.SNES_NMI_VECTOR
-
 --	SEP #$21
 
 	LDA.b #$11
@@ -381,7 +300,7 @@ SNES_CUSTOM_NMI:
 .good_to_go
 	INC.b $12
 
-	JSR.w (SA1RAM.SNES_NMI_VECTOR,X)
+	JSR.w NMI_UpdatePracticeHUD
 
 	PEA.w $0000 ; used to be D=0 later
 	PEA.w $2100
@@ -391,6 +310,7 @@ SNES_CUSTOM_NMI:
 	PLB
 
 	SEP #$30
+
 	LDA.b #$04 ; only show BG3
 	STA.b $212C
 	STZ.b $212D
@@ -469,11 +389,6 @@ SNES_CUSTOM_NMI:
 	LDA.b $F2 : STA.w SA1IRAM.CopyOf_F2
 	LDA.b $F4 : STA.w SA1IRAM.CopyOf_F4
 	LDA.b $F6 : STA.w SA1IRAM.CopyOf_F6
-
-	REP #$20
-
-	LDA.w #.nothing
-	STA.w SA1RAM.SNES_NMI_VECTOR
 
 .lagging
 	SEP #$20

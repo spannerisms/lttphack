@@ -215,7 +215,8 @@ UpdateOnMovingWallStart:
 ; mire/pod slow: 17"04 | fast: 00"17
 UpdateOnMovingWallEndPodMire:
 	LDA.w !config_fast_moving_walls : BEQ .slowwalls
-	LDA.w #$1647 : STA.w SA1IRAM.TIMER_ADD_SSFF
+
+	LDY.b #$02 : STY.w SA1IRAM.TIMER_ADD_INDEX
 
 .slowwalls
 	LDY.b #$02 : STY.w SA1IRAM.TIMER_FLAG
@@ -226,7 +227,7 @@ UpdateOnMovingWallEndPodMire:
 UpdateOnMovingWallEndDesert:
 	LDA.w !config_fast_moving_walls : BEQ .slowwalls
 
-	LDA.w #$0908 : STA.w SA1IRAM.TIMER_ADD_SSFF
+	LDY.b #$04 : STY.w SA1IRAM.TIMER_ADD_INDEX
 
 .slowwalls
 	LDY.b #$02 : STY.w SA1IRAM.TIMER_FLAG

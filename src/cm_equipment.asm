@@ -50,11 +50,10 @@ EQUIPMENT_SUBMENU:
 %numfield_long("Magic", $7EF36E, 0, $80, 8)
 
 ;===================================================================================================
-%func("Fill rupees", this)
+%numfield16_long_func("Rupees", $7EF360, 0, 999, 25, this)
 	REP #$20
 
-	LDA.w #999
-	STA.l $7EF360
+	LDA.l $7EF360
 	STA.l $7EF362
 
 	RTL
@@ -102,8 +101,8 @@ EQUIPMENT_SUBMENU:
 
 #set_sword:
 	SEP #$30
-	JSL DecompSwordGfx
-	JML Palette_Sword
+	JSL $00D308 ; decomp sword
+	JML $1BED03 ; sword palette
 
 ;===================================================================================================
 %choice_long_func_filtered_here("Shield", $7EF35A, 4, set_shield)
@@ -114,17 +113,26 @@ EQUIPMENT_SUBMENU:
 
 #set_shield:
 	SEP #$30
-	JSL DecompShieldGfx
-	JML Palette_Shield
+	JSL $00D348 ; decomp shield
+	JML $1BED29 ; shield palette
 
 ;===================================================================================================
-%choice_long_func_filtered_here("Armor", $7EF35B, 3, Palette_Armor)
+%choice_long_func_filtered_here("Armor", $7EF35B, 3, set_armor)
 	%list_item("Green")
 	%list_item("Blue")
 	%list_item("Red")
 
+#set_link_equips:
+	JSL set_sword
+	JSL set_shield
+
+#set_armor:
+	SEP #$30
+	JML $1BEDF9 ; mail palette
+
 ;===================================================================================================
-%choice_long_func_filtered_here("Gloves", $7EF354, 3, Palette_Armor)
+
+%choice_long_func_filtered_here("Gloves", $7EF354, 3, set_armor)
 	%list_item("No")
 	%list_item("Power glove")
 	%list_item("Titan's mitt")
@@ -134,7 +142,7 @@ EQUIPMENT_SUBMENU:
 
 #SetBootsFlag:
 	LDA.l $7EF355
-	LSR
+	CMP.b #$01
 
 	LDA.l $7EF379
 	AND.b #$FB
@@ -151,7 +159,7 @@ EQUIPMENT_SUBMENU:
 
 #SetFlippersFlag:
 	LDA.l $7EF356
-	LSR
+	CMP.b #$01
 
 	LDA.l $7EF379
 	AND.b #$FD

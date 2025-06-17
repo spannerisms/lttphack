@@ -1,28 +1,28 @@
 org $0DFEC3
 	dw $207F, $207F, $207F, $207F, $207F, $207F
 
-; SA-1 menu DMA is 1 dot slower
-; I'll let it slide
+!floorindicator = SA1RAM.HUD+$0A2
+
 org $008B71 : LDX.w #SA1RAM.HUD>>0
 org $008B77 : LDA.b #SA1RAM.HUD>>16
 
 ; move floor indicators (not just to iram, but also a different location)
-;org $0AFDB5 : STA.l SA1RAM.HUD+$0AA
-;org $0AFDB9 : STA.l SA1RAM.HUD+$0AC
-;org $0AFDBD : STA.l SA1RAM.HUD+$0EA
-;org $0AFDC1 : STA.l SA1RAM.HUD+$0EC
+org $0AFDB5 : STA.l !floorindicator+$0000
+org $0AFDB9 : STA.l !floorindicator+$0040
+org $0AFDBD : STA.l !floorindicator+$0002
+org $0AFDC1 : STA.l !floorindicator+$0042
 
 ; move timer locations (not just to iram, but also a different location)
-;org $0AFE25 : STA.l SA1RAM.HUD+$0F2,X
-;org $0AFE2C : STA.l SA1RAM.HUD+$132,X
+org $0AFE25 : STA.l !floorindicator+$0000,X
+org $0AFE2C : STA.l !floorindicator+$0040,X
 
 ; vanilla stuff to leave alone, so it writes nowhere useful
-;org $0AFD9F : STA.l SA1RAM.HUD+$0F2,X
-;org $0AFDA6 : STA.l SA1RAM.HUD+$132,X
-;org $0AFD48 : STA.l SA1RAM.HUD+$0F2
-;org $0AFD4D : STA.l SA1RAM.HUD+$134
-;org $0AFD52 : STA.l SA1RAM.HUD+$132
-;org $0AFD59 : STA.l SA1RAM.HUD+$0F4
+org $0AFD9F : STA.l !floorindicator+$0000,X
+org $0AFDA6 : STA.l !floorindicator+$0040,X
+org $0AFD48 : STA.l !floorindicator+$0000
+org $0AFD4D : STA.l !floorindicator+$0042
+org $0AFD52 : STA.l !floorindicator+$0040
+org $0AFD59 : STA.l !floorindicator+$0002
 
 org $0DFA99 : LDY.w #SA1RAM.HUD
 org $0DFA9C : MVN $0D,$0D
@@ -90,29 +90,3 @@ org $0DF18B : STA.w SA1IRAM.Moved_0208
 org $0DF19E : LDA.w SA1IRAM.Moved_0209
 org $0DF1A4 : STA.w SA1IRAM.Moved_0209
 org $0DF1AE : STZ.w SA1IRAM.Moved_020A
-
-; Neither does HUD number
-org $028DCD : STA.w SA1IRAM.Moved_04A0
-org $028DDA : STZ.w SA1IRAM.Moved_04A0
-org $029904 : STZ.w SA1IRAM.Moved_04A0
-org $09F32A : STZ.w SA1IRAM.Moved_04A0
-org $0AFD2E : LDA.w SA1IRAM.Moved_04A0
-org $0AFD3F : STA.w SA1IRAM.Moved_04A0
-
-org $028243 : STZ.w SA1IRAM.Moved_04B4
-org $02A49D : LDA.w SA1IRAM.Moved_04B4
-org $07959D : STA.w SA1IRAM.Moved_04B4
-org $07AAA3 : STA.w SA1IRAM.Moved_04B4
-org $09A08C : STA.w SA1IRAM.Moved_04B4
-org $09A2C4 : STA.w SA1IRAM.Moved_04B4
-org $09A2DF : LDA.w SA1IRAM.Moved_04B4
-org $09AB06 : LDA.w SA1IRAM.Moved_04B4
-org $09C471 : STA.w SA1IRAM.Moved_04B4
-org $0AFDCD : LDA.w SA1IRAM.Moved_04B4
-org $0AFDD2 : DEC.w SA1IRAM.Moved_04B4
-org $0AFDDD : LDA.w SA1IRAM.Moved_04B4
-org $0AFDE4 : STA.w SA1IRAM.Moved_04B4
-org $0AFDEB : LDA.w SA1IRAM.Moved_04B4
-org $1DFD14 : STA.w SA1IRAM.Moved_04B4
-org $1DFD18 : LDA.w SA1IRAM.Moved_04B4
-org $1DFD3E : STA.w SA1IRAM.Moved_04B4

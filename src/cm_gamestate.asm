@@ -13,7 +13,7 @@ GAMESTATE_SUBMENU:
 
 	LDA.b #$21 : STA.w $012F
 
-	JML Sprite_DisableAll
+	JML $09C44E ; Disable all sprites
 
 ;===================================================================================================
 %submenu("Reset dungeons", cm_game_reset_dungeons_submenu)

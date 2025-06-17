@@ -743,7 +743,6 @@ ResetBeforeLoading:
 	STZ.w $0400
 	STZ.w $0402
 	STZ.w $0408
-	STZ.w $040A
 	STZ.w $040C
 	STZ.w $040E
 
@@ -761,7 +760,8 @@ ResetBeforeLoading:
 
 	STZ.w $0112
 	STZ.w $0126
-	STZ.w $0128
+	STZ.w $0128 ; disable IRQ
+	STZ.w $012A
 	STZ.w $0133
 	STZ.w $0216
 	STZ.w $02E4
@@ -790,8 +790,6 @@ ResetBeforeLoading:
 	STZ.w SA1IRAM.BossCycles+0
 	STZ.w SA1IRAM.BossCycles+1
 	STZ.w SA1IRAM.BossCycles+2
-
-	STZ.w $0128 ; disable IRQ
 
 	; big blocks of zero
 	REP #$20
@@ -1821,17 +1819,17 @@ LoadCustomLoadOut:
 
 	LDX.w #$0021
 
---	LDA.l !config_custom_load,X
+--	LDA.l CustomLoadout.items,X
 	STA.l $7EF340,X
 
 	DEX
 	BPL --
 
-	LDA.l !config_custom_load_2+0 : STA.l $7EF36C
-	LDA.l !config_custom_load_2+1 : STA.l $7EF36D
-	LDA.l !config_custom_load_2+2 : STA.l $7EF36E
-	LDA.l !config_custom_load_2+3 : STA.l $7EF37B
-	LDA.l !config_custom_load_2+4 : STA.l $7E0303
+	LDA.l CustomLoadout.other+0 : STA.l $7EF36C
+	LDA.l CustomLoadout.other+1 : STA.l $7EF36D
+	LDA.l CustomLoadout.other+2 : STA.l $7EF36E
+	LDA.l CustomLoadout.other+3 : STA.l $7EF37B
+	LDA.l CustomLoadout.other+4 : STA.l $7E0303
 
 	JSL SetFlippersFlag
 	JSL SetBootsFlag

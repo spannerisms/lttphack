@@ -20,6 +20,31 @@
 ; %write8($7F2BE3, $00)
 ; %write8($7F2C9C, $00)
 ; %write8($7F2CA3, $00)
+
+
+; Items:
+; 0x00 - Nothing
+; 0x01 - Bow
+; 0x02 - Boomerang
+; 0x03 - Hookshot
+; 0x04 - Bombs
+; 0x05 - Mushroom/Powder
+; 0x06 - Fire rod
+; 0x07 - Ice rod
+; 0x08 - Bombos
+; 0x09 - Ether
+; 0x0A - Quake
+; 0x0B - Lamp
+; 0x0C - Hammer
+; 0x0D - Shovel/Flute
+; 0x0E - Net
+; 0x0F - Book
+; 0x10 - Bottle
+; 0x11 - Somaria
+; 0x12 - Byrna
+; 0x13 - Cape
+; 0x14 - Mirror
+
 ;===================================================================================================
 
 pushpc
@@ -262,7 +287,7 @@ LoadPreset:
 	; start loading preset data
 	LDA.w #$3000 : TCD
 
-	LDA.w #$FFFF : STA.b SA1IRAM.litestate_last
+	LDA.w #$FFFF : STA.w SA1IRAM.litestate_last
 
 	SEP #$20
 	LDA.b #$7E
@@ -312,14 +337,14 @@ LoadPreset:
 	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : PHA ; save this
 
 	; Link X and Y
-	LDA.b [SA1IRAM.preset_addr],Y : INY #2 : STA.w $0022
-	LDA.b [SA1IRAM.preset_addr],Y : INY #2 : STA.w $0020
+	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : STA.w $0022
+	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : STA.w $0020
 
 	; Camera H and V
-	LDA.b [SA1IRAM.preset_addr],Y : INY #2
+	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
 	STA.w $00E0 : STA.w $0120 : STA.w $00E2 : STA.w $011E
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY #2
+	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
 	STA.w $00E6 : STA.w $0124 : STA.w $00E8 : STA.w $0122
 
 	SEP #$20
@@ -396,12 +421,7 @@ LoadPreset:
 	PHA
 	PLB
 
-	; Reload graphics and palette for sword, shield and armor
-	JSL DecompSwordGfx
-	JSL Palette_Sword
-	JSL DecompShieldGfx
-	JSL Palette_Shield
-	JSL Palette_Armor
+	JSL set_link_equips
 
 	JSL ApplyAfterLoading
 
@@ -410,8 +430,9 @@ LoadPreset:
 	LDA.w SA1RAM.ganon_bats
 	BEQ ++
 
-	JSL GetRandomInt : STA.w $0B08
-	JSL GetRandomInt : STA.w $0B09
+	REP #$20
+	LDA.w SA1IRAM.randomish : STA.w $0B08
+	SEP #$20
 
 ++	JSL Rerandomize
 
@@ -503,7 +524,7 @@ LoadPreset:
 
 	LDX.w #$FFFE
 
-..next
+.next
 	LDA.b [SA1IRAM.preset_reader],Y
 	CMP.w #$0010 : BCC .new_command
 
@@ -511,7 +532,7 @@ LoadPreset:
 	INX : INX : CPX.w #$0008
 	INY
 
-	BCS ..skip
+	BCS .skip
 
 	PHX
 
@@ -526,10 +547,10 @@ LoadPreset:
 
 	PLX
 
-..skip
+.skip
 	INY : INY
 
-	BRA ..next
+	BRA .next
 
 .done_arb
 
@@ -767,7 +788,7 @@ LoadSafeties_nmg:
 	LDA.l $7EF36C : ADC.w #$0808 : STA.l $7EF36C
 
 	; flag sanc chest
-	LDA.l $7EF000+($12*2) : ORA.w #$0010 : STA.l $7EF000+($12*2)
+	LDA.l RoomFlags($12) : ORA.w #$0010 : STA.l RoomFlags($12)
 
 	SEP #$20
 
@@ -791,7 +812,7 @@ LoadSafeties_nmg:
 
 	; flag bat
 	REP #$20
-	LDA.w #$0007 : STA.l $7EF000+($E3*2)
+	LDA.w #$0007 : STA.l RoomFlags($E3)
 	SEP #$20
 
 	LDA.b #$01
@@ -804,7 +825,7 @@ LoadSafeties_nmg:
 .give_powder
 	; flag witch's hut
 	REP #$20
-	LDA.w #$0082 : STA.l $7EF000+($109*2)
+	LDA.w #$0082 : STA.l RoomFlags($109)
 	SEP #$20
 
 	LDA.b #$02
@@ -860,7 +881,7 @@ LoadSafeties_nmg:
 
 	; flag gt big chest
 	REP #$20
-	LDA.l $7EF000+($8C*2) : ORA.w #$0012 : STA.l $7EF000+($8C*2)
+	LDA.l RoomFlags($8C) : ORA.w #$0012 : STA.l RoomFlags($8C)
 	SEP #$20
 
 .no_red_mail
@@ -877,7 +898,7 @@ LoadSafeties_nmg:
 
 	; flag fairy visits
 	REP #$20
-	LDA.l $7EF000+($116*2) : ORA.w #$0001 : STA.l $7EF000+($116*2)
+	LDA.l RoomFlags($116) : ORA.w #$0001 : STA.l RoomFlags($116)
 
 	SEP #$20
 	LDA.l $7EF2DB : ORA.b #$02 : STA.l $7EF2DB
@@ -896,7 +917,7 @@ LoadSafeties_ad2020:
 	; flag fairy visits
 	REP #$20
 
-	LDA.l $7EF000+($116*2) : ORA.w #$0001 : STA.l $7EF000+($116*2)
+	LDA.l RoomFlags($116) : ORA.w #$0001 : STA.l RoomFlags($116)
 
 	SEP #$20
 
@@ -914,7 +935,7 @@ LoadSafeties_adold:
 	; flag fairy visits
 	REP #$20
 
-	LDA.l $7EF000+($116*2) : ORA.w #$0001 : STA.l $7EF000+($116*2)
+	LDA.l RoomFlags($116) : ORA.w #$0001 : STA.l RoomFlags($116)
 
 	SEP #$20
 
@@ -929,11 +950,11 @@ LoadSafeties_anyrmg:
 
 	LDA.b #$01 : STA.l $7EF342
 
-	; flag hook shot stuff
+	; flag hookshot stuff
 	REP #$20
 
-	LDA.w #$248F : STA.l $7EF000+($037*2)
-	LDA.w #$001F : STA.l $7EF000+($036*2)
+	LDA.w #$248F : STA.l RoomFlags($037)
+	LDA.w #$001F : STA.l RoomFlags($036)
 
 	SEP #$20
 
@@ -947,7 +968,7 @@ LoadSafeties_hundo:
 
 	; flag boom chest
 	REP #$20
-	LDA.l $7EF000+($71*2) : ORA.w #$0010 : STA.l $7EF000+($71*2)
+	LDA.l RoomFlags($71) : ORA.w #$0010 : STA.l RoomFlags($71)
 	SEP #$20
 
 	LDA.b #$01
@@ -969,13 +990,13 @@ LoadPresetOverworldData:
 	; preloaded with screen ID
 	STA.w $008A : STA.w $040A
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY #2
+	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
 	STA.w $061C : DEC : DEC : STA.w $061E
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY #2
+	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
 	STA.w $0618 : DEC : DEC : STA.w $061A
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY #2 : STA.w $0084
+	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : STA.w $0084
 	SEC : SBC.w #$0400 : AND.w #$0F80 : ASL : XBA : STA.w $0088
 	LDA.w $0084 : SEC : SBC.w #$0010 : AND.w #$003E : LSR : STA.w $0086
 
@@ -1110,7 +1131,7 @@ LoadPresetUnderworldData:
 	SEP #$20
 	BNE ++
 
-	JSL GetRandomInt : AND.b #$02 : STA.w $041A
+	LDA.w SA1IRAM.randomish : AND.b #$02 : STA.w $041A
 
 ++	RTS
 

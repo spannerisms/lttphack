@@ -309,12 +309,14 @@ CMDO_NUMFIELD_LONG_FUNC_PRGTEXT:
 	JSR CMDO_NUMFIELD_LONG
 	BRA CMDO_PERFORM_FUNC
 
+#CMDO_NUMFIELD16_LONG_FUNC:
+	JSR CMDO_NUMFIELD16_LONG
+	BRA CMDO_PERFORM_FUNC
+
 CMDO_NUMFIELD_HEX_UPDATEWHOLEMENU:
 	JSR CMDO_NUMFIELD
 	JSR EmptyCurrentMenu
-	JSR DrawCurrentMenu
-	JSL NMI_RequestFullMenuUpdate
-	RTS
+	JMP DrawCurrentMenu
 
 ;===================================================================================================
 
@@ -332,7 +334,6 @@ CMDO_CHOICE_LONG_PRGTEXT:
 
 	BIT.b SA1IRAM.cm_ax
 	BVS .empty
-	BMI .increment
 
 	BIT.b SA1IRAM.cm_leftright
 	BMI .decrement
@@ -391,7 +392,6 @@ CMDO_SUBMENU:
 
 .drawmenu
 	JSR DrawCurrentMenu
-	JSL NMI_RequestFullMenuUpdate
 
 	JSR CM_UpdateCurrentSelection
 	JSL CM_MenuSFX_submenu
@@ -485,7 +485,7 @@ CMDO_CTRL_SHORTCUT:
 
 CMDO_LITESTATE:
 	LDA.b [SA1IRAM.cm_current_selection],Y
-	STA.b SA1IRAM.litestate_act
+	STA.w SA1IRAM.litestate_act
 
 	BIT.b SA1IRAM.cm_ax
 	BMI .load
@@ -506,7 +506,7 @@ CMDO_LITESTATE:
 
 
 .delete
-	LDA.b SA1IRAM.litestate_act
+	LDA.w SA1IRAM.litestate_act
 	JSL ValidateLiteState
 	BCC .invalid
 
@@ -588,32 +588,50 @@ CMDO_NUMFIELD_HEX:
 	JSR CMDO_SAVE_ADDRESS_00
 	BRA .continue
 
+#CMDO_NUMFIELD16_LONG:
+	JSR CMDO_SAVE_ADDRESS_LONG
+	REP #$20
+	BRA .continue
+
 #CMDO_NUMFIELD_LONG:
 #CMDO_NUMFIELD_LONG_HEX:
 #CMDO_NUMFIELD_LONG_2DIGITS:
 	JSR CMDO_SAVE_ADDRESS_LONG
 
 .continue
+	PHX
+
+	CLC
+
+	LDA.b #$00
+	SEC ; if 16 bit, this will be a high byte
+	XBA ; put 00 in high byte
+	LDA.l .zero
+	ROL ; put carry in place
+	TAX
+
 	LDA.b [SA1IRAM.cm_writer]
-	BIT.b SA1IRAM.cm_ax
+	BIT.b SA1IRAM.cm_ax-1,X
 	BVS .delete
 
 	; Y currently points to our minimum value
-	BIT.b SA1IRAM.cm_y
+	BIT.b SA1IRAM.cm_y-1,X
 	BMI .get_max_min
 
-	BIT.b SA1IRAM.cm_leftright
+	BIT.b SA1IRAM.cm_leftright-1,X
 	BMI .decrement
 
-	INY ; Y now points to our maximum
+	JSR .iny_twice_if_16 ; Y now points to our maximum
 	BVS .increment
 
-	INY ; now point to slider size or whatever you wanna call it
-	BIT.b SA1IRAM.cm_shoulder
+	JSR .iny_twice_if_16 ; now point to slider size or whatever you wanna call it
+	BIT.b SA1IRAM.cm_shoulder-1,X
 	BMI .dec_big
 	BVS .inc_big
 
-	INY
+	JSR .iny_twice_if_16
+
+	PLX
 	CLC
 	RTS
 
@@ -631,39 +649,40 @@ CMDO_NUMFIELD_HEX:
 	BCC .in_range_max
 
 .clear_max
-	DEY ; point to min
+	JSR .dey_twice_if_16
 
 .clear_min
 	LDA.b [SA1IRAM.cm_current_selection],Y
 
 .in_range_min
-	INY ; point to max
+	JSR .iny_twice_if_16 ; point to max
 
 .in_range_max
-	INY ; point to slide
+	JSR .iny_twice_if_16 ; point to slide
 
 .in_range_slide
 .set
 	STA.b [SA1IRAM.cm_writer]
 
-	INY ; this should now point to after slide
+	JSR .iny_twice_if_16 ; this should now point to after slide
 	SEC
 	JSL CM_MenuSFX_bink
+	PLX
 	RTS
 
 .decrement
-	CMP.b #$00
+	CMP.l .zero
 	BEQ .get_max_min
 	DEC
 
 	; now our new value against the minimum
 	CMP.b [SA1IRAM.cm_current_selection],Y
-	INY ; point this to max, just in case we need it
+	JSR .iny_twice_if_16 ; point this to max, just in case we need it
 	BCS .in_range_max
 	BRA .get_max_max ; since we're already pointed there
 
 .get_max_min
-	INY
+	JSR .iny_twice_if_16
 
 .get_max_max
 	LDA.b [SA1IRAM.cm_current_selection],Y
@@ -672,10 +691,10 @@ CMDO_NUMFIELD_HEX:
 .dec_big ; also these shouldn't wrap on overflow
 	SEC
 	SBC.b [SA1IRAM.cm_current_selection],Y
-	DEY ; pointing to max
+	JSR .dey_twice_if_16 ; pointing to max
 	BCC .clear_max ; if we borrowed here, we need to floor ourselves
 
-	DEY ; pointing to min
+	JSR .dey_twice_if_16 ; pointing to min
 	CMP.b [SA1IRAM.cm_current_selection],Y
 	BCS .in_range_min ; we're fine
 	BRA .clear_min ; don't go past the minimum
@@ -683,9 +702,47 @@ CMDO_NUMFIELD_HEX:
 .inc_big
 	CLC
 	ADC.b [SA1IRAM.cm_current_selection],Y
-	DEY ; pointing to max
+	JSR .dey_twice_if_16 ; pointing to max
 	BCS .get_max_max ; if we went too high, cap now
 
 	CMP.b [SA1IRAM.cm_current_selection],Y
 	BCS .get_max_max ; will cap if we match, but that's fine
 	BRA .in_range_max
+
+.zero
+	dw 0
+
+
+.iny_twice_if_16
+	INY
+	INY
+
+	; if 8 bit, then it will DEY, otherwise it will BIT
+	BIT.b #$FF
+	DEY
+
+	RTS
+
+.dey_twice_if_16
+	DEY
+	DEY
+
+	; if 8 bit, then it will DEY, otherwise it will BIT
+	BIT.b #$FF
+	INY
+
+	RTS
+
+;===================================================================================================
+
+CMDO_SENTRY_PICKER:
+	LDX.b #$00
+
+	JMP GO_TO_SENTRY_PICKER
+
+CMDO_LINE_SENTRY_PICKER:
+	LDX.b #$02
+
+	JMP GO_TO_SENTRY_PICKER
+
+;===================================================================================================

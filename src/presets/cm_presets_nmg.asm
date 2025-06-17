@@ -3031,7 +3031,7 @@ dw $0000 ; Dead sprites
 dw $009B ; Screen ID
 dw $16D4, $1278 ; Link Coords
 dw $1600, $120B ; Camera HV
-db $02 ; Item
+db $03 ; Item
 db $06 ; Link direction
 ;-----------------------------
 db $37 ; Entrance
@@ -3742,6 +3742,7 @@ presetpersistent_nmg_thieves:
 presetpersistent_nmg_skull:
 ;-----------------------------
 .outside_thieves
+%write8($7E02A2, $00) ; slot 4 altitude
 ..end
 ;-----------------------------
 .cursed_dwarf
@@ -3765,7 +3766,6 @@ presetpersistent_nmg_skull:
 ..end
 ;-----------------------------
 .key_pot
-%write8($7E02A2, $00) ; slot 4 altitude
 ..end
 ;-----------------------------
 .skull_entrance
@@ -3787,7 +3787,6 @@ presetpersistent_nmg_ice:
 ..end
 ;-----------------------------
 .bridge_warp
-%write8($7E02A2, $00) ; slot 4 altitude
 %write_mirror($98, $00, $CB, $00)
 ..end
 ;-----------------------------
@@ -4969,7 +4968,6 @@ presetSRAM_nmg:
 ...end
 ;-----------------------------
 ..darkworld_warp
-%write8($7EF346, $01) ; Ice Rod
 ...end
 ;-----------------------------
 ..entrance

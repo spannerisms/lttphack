@@ -67,7 +67,7 @@ endmacro
 macro add_list_item(l)
 	!LIST_ITEM #= !LIST_ITEM+1
 	if !LIST_ITEM > !LAST_LIST_SIZE
-			error "Too many items\! !LIST_ITEM > !LAST_LIST_SIZE"
+		error "Too many items\! !LIST_ITEM > !LAST_LIST_SIZE"
 	endif
 
 	pushpc
@@ -265,17 +265,17 @@ endmacro
 
 ;---------------------------------------------------------------------------------------------------
 macro toggle_onoff(name, addr)
-	;%toggle_customtext(<name>, <addr>, CMDRAW_ONOFF)
+;	%toggle_customtext(<name>, <addr>, CMDRAW_ONOFF)
 	%toggle(<name>, <addr>)
 endmacro
 
 macro toggle_func_onoff(name, addr, func)
-	;%toggle_func_customtext(<name>, <addr>, <func>, CMDRAW_ONOFF)
+;	%toggle_func_customtext(<name>, <addr>, <func>, CMDRAW_ONOFF)
 	%toggle_func(<name>, <addr>, <func>)
 endmacro
 
 macro toggle_func_onoff_here(name, addr)
-	;%toggle_func_customtext(<name>, <addr>, ?here, CMDRAW_ONOFF)
+;	%toggle_func_customtext(<name>, <addr>, ?here, CMDRAW_ONOFF)
 	%toggle_func(<name>, <addr>, ?here)
 #?here:
 endmacro
@@ -334,6 +334,15 @@ macro numfield_long(name, addr, start, end, increment)
 	db !CM_NUMFIELD_LONG
 	dl <addr>
 	db <start>, <end>, <increment>
+	db "<name>", $FF
+endmacro
+
+%MenuAction("NUMFIELD16_LONG", 10, $6D)
+macro numfield16_long(name, addr, start, end, increment)
+	%add_self()
+	db !CM_NUMFIELD16_LONG
+	dl <addr>
+	dw <start>, <end>, <increment>
 	db "<name>", $FF
 endmacro
 
@@ -396,6 +405,17 @@ macro numfield_long_func(name, addr, start, end, increment, func)
 	db !CM_NUMFIELD_LONG_FUNC
 	dl <addr>
 	db <start>, <end>, <increment>
+	dl select(equal(<func>,this), ?here, <func>)
+	db "<name>", $FF
+#?here:
+endmacro
+
+%MenuAction("NUMFIELD16_LONG_FUNC", 13, $6D)
+macro numfield16_long_func(name, addr, start, end, increment, func)
+	%add_self()
+	db !CM_NUMFIELD16_LONG_FUNC
+	dl <addr>
+	dw <start>, <end>, <increment>
 	dl select(equal(<func>,this), ?here, <func>)
 	db "<name>", $FF
 #?here:
@@ -700,6 +720,26 @@ macro info4h(name, addr)
 	db !CM_INFO_4HEX
 	dl <addr>
 	db "<name>", $FF
+endmacro
+
+;---------------------------------------------------------------------------------------------------
+
+%MenuAction("SENTRY_PICKER", 4, $67)
+macro sentry_picker(index, addr)
+	%add_self()
+	db !CM_SENTRY_PICKER
+	dw <addr>
+	db <index>
+	db "Sentry <index>:", $FF
+endmacro
+
+%MenuAction("LINE_SENTRY_PICKER", 4, $67)
+macro line_sentry_picker(index, addr)
+	%add_self()
+	db !CM_LINE_SENTRY_PICKER
+	dw <addr>
+	db <index>
+	db "Line <index>:", $FF
 endmacro
 
 ;===================================================================================================

@@ -249,6 +249,14 @@ span.menuIcon.menuBinding {
 	background-position: -96px 0px
 }
 
+span.menuIcon.menuSelectionMenu {
+	background-position: -112px 0px
+}
+
+span.menuIcon.menuMemoryInfo {
+	background-position: -128px 0px
+}
+
 ul.fontList > li > span.fontName {
 	display: inline-block;
 	width: 50%;

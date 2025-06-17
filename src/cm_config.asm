@@ -20,7 +20,11 @@ if !RANDO
 endif
 
 ;===================================================================================================
-%toggle_func_onoff_here("Music", !config_feature_music)
+%toggle_func_customtext_here("Music", !config_feature_music, CONFIGMUSIC)
+	%list_item("Enabled")
+	%list_item("Muted")
+
+#CONFIGMUSIC:
 	LDA.w !config_feature_music
 
 	REP #$20

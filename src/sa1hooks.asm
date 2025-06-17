@@ -1,162 +1,4 @@
 pushpc
-org $008000
-struct SA1IRAM $003000
-	.SHORTCUT_USED: skip 2
-	.corruption_watcher: skip 2
-
-	.SCRATCH: skip 16
-
-	.CONTROLLER_1:
-	.CopyOf_F2: skip 1
-	.CopyOf_F0: skip 1
-
-	.CONTROLLER_1_FILTERED:
-	.CopyOf_F6: skip 1
-	.CopyOf_F4: skip 1
-
-	.CONTROLLER_1_NEW:
-
-	.JOYPAD2_NEW: skip 2
-
-	.HUDSIZE: skip 2
-	.number_of_line_sentries: skip 2
-	.number_of_timer_triggers: skip 2
-
-	.CachedThisFrame: skip 1
-	.cm_submodule: skip 2
-	.cm_cursor: skip 1 ; keep these together
-	.cm_current_menu: skip 4
-	.cm_current_selection: skip 4
-	.cm_current_draw: skip 4
-	.cm_draw_color: skip 2
-
-	; these can be shared because they're never used at the same time
-	.cm_writer:
-	.cm_draw_type_offset: skip 2
-	.cm_draw_filler: skip 2
-
-	.cm_leftright: skip 1 ; N=left V=right
-	.cm_updown: skip 1 ; N=up V=down
-	.cm_ax: skip 1 ; N=A V=X
-	.cm_y: skip 1 ; 
-	.cm_shoulder: skip 1 ; N=l V=r
-	skip 1 ; for safety
-
-	.cm_writer_args: skip 4
-
-	.preset_addr: skip 3
-
-	.preset_prog: skip 3
-	.preset_prog_end: skip 2
-
-	.preset_pert: skip 3
-	.preset_pert_end: skip 2
-
-	.preset_reader: skip 3
-	.preset_reader2: skip 3
-	.preset_writer: skip 2
-	.preset_type: skip 2
-	.preset_scratch: skip 4
-
-	.litestate_act: skip 2
-	.litestate_last: skip 2
-	.litestate_off: skip 2
-
-	reset bytes
-
-.savethis_start
-	.TIMER_FLAG: skip 2
-	.TIMER_ADD_SSFF: skip 2
-	.TIMER_ADD_SCRATCH: skip 2
-
-.timers_start
-	.ROOM_TIME_F: skip 2
-	.ROOM_TIME_S: skip 2
-	.ROOM_TIME_LAG: skip 2
-	.ROOM_TIME_IDLE: skip 2
-
-	.SEG_TIME_F: skip 2
-	.SEG_TIME_S: skip 2
-	.SEG_TIME_M: skip 2
-
-.timers_end
-	.ROOM_TIME_F_DISPLAY: skip 2
-	.ROOM_TIME_S_DISPLAY: skip 2
-	.ROOM_TIME_LAG_DISPLAY: skip 2
-	.ROOM_TIME_IDLE_DISPLAY: skip 2
-
-	.SEG_TIME_F_DISPLAY: skip 2
-	.SEG_TIME_S_DISPLAY: skip 2
-	.SEG_TIME_M_DISPLAY: skip 2
-
-	.SNTVAL1: skip 2
-	.SNTVAL2: skip 2
-	.SNTVAL3: skip 2
-	.SNTVAL4: skip 2
-	.SNTVAL5: skip 2
-
-	.SNTADD1: skip 2
-	.SNTADD2: skip 2
-	.SNTADD3: skip 2
-	.SNTADD4: skip 2
-	.SNTADD5: skip 2
-
-	.CopyOf_12: skip 1
-	.CopyOf_1A: skip 1
-	.CopyOf_1B: skip 1
-	.CopyOf_20: skip 1
-	.CopyOf_21: skip 1
-	.CopyOf_22: skip 1
-	.CopyOf_23: skip 1
-
-	.CopyOf_57: skip 1
-	.CopyOf_5B: skip 1
-	.CopyOf_6C: skip 1
-	.CopyOf_0372: skip 1
-
-	.CopyOf_A0: skip 1
-	.CopyOf_A1: skip 1
-	.CopyOf_A4: skip 1
-	.CopyOf_E2: skip 1
-
-	.CopyOf_7EF36C: skip 1
-	.CopyOf_7EF36D: skip 1
-	.CopyOf_7EF3CA: skip 1
-
-	; not copied, but just moved in rom
-	.Moved_0208: skip 1
-	.Moved_0209: skip 1
-	.Moved_020A: skip 1
-
-	.Moved_04A0: skip 2
-	.Moved_04B4: skip 1
-
-	; extra stuff
-	.BossCycles: skip 16 ; 16 to be safe
-
-	print ""
-	print "SA1 dp: $", pc
-	print "Saved: ", bytes, "/640 (acceptable savestate limit)"
-
-	.QuickSwapLR: skip 1
-
-.savethis_end
-
-	; ancilla watch
-	.LINEVAL:
-	.LINE1VAL: skip 16
-	.LINE2VAL: skip 16
-	.LINE3VAL: skip 16
-	.LINE4VAL: skip 16
-
-	print "SA1 mirroring: $", pc
-
-org $003680
-	.SA1CorruptionBuffer: skip $180
-
-	warnpc $003800
-
-endstruct
 
 ;===================================================================================================
 
@@ -460,23 +302,21 @@ CorruptionWatcher:
 ; LDA.w #i                      24    1074
 ; SEP                           22    1096
 ; LDA.w abs (x6)        (32)   192    1288
-; LDA.l long                    40    1328
-; STA.b dp (x8)                192    1520
-; LDA.b #i                      16    1536
-; TCD                           14    1550
-; RTL                           44    1594
-; 1580 master cycles slow
+; STA.b dp (x7)                168    1456
+; LDA.b #i                      16    1472
+; TCD                           14    1486
+; RTL                           44    1530
+; 1516 master cycles slow
 
 ; HUD triggers:
-; JSR                           46      46
+; JML                           32      32
 ; ignore cacheSA1stuff
-; LDA.b dp                      24      70
-; BEQ (assume taken)            22      92
-; LDA.b #i                      16     108
-; STA.w abs                     32     140
-; ignore INC.b $16
-; RTS (sometimes)               42     182
-; 1762 master cycles slow
+; LDA.b dp                      24      56
+; BEQ (assume taken)            22      78
+; LDA.b #i                      16      94
+; STA.w abs                     32     126
+; RTS (sometimes)               42     168
+; 1684 master cycles slow
 
 ; WasteTimeAsNeeded:
 ; JML                           32      32
@@ -485,7 +325,7 @@ CorruptionWatcher:
 ; ignore STZ
 ; JML                           32     132
 ; -22 for BRA that was used            110
-; 1872 master cycles slow
+; 1590 master cycles slow
 
 ; PrepareOAMForTransfer:
 ; LDY.b #i                      16      16
@@ -515,7 +355,7 @@ CorruptionWatcher:
 ; 6810 master cycles for rewrite
 ; rewrite is 2272 master cycles faster
 
-; all together: 400 master cycles fast
+; all together: 474 master cycles fast
 ;===================================================================================================
 WasteTimeAsNeeded:
 	LSR.w SA1IRAM.CachedThisFrame
@@ -527,24 +367,22 @@ WasteTimeAsNeeded:
 ++	; waste any time that needs to be wasted here
 
 	; skip entirely if these are on
-	LDA.w SA1IRAM.number_of_line_sentries
+	LDA.w SA1IRAM.highestline
 	BNE .skip
 
 	; timer triggers are 154 master cycles (JSL+LDA+STA.w+RTL) TODO compensate?
-
-
-	LDA.b #08
+	LDA.b #09
 
 	; 14 (DEC) + 22 (BNE) master cycles each
 --	DEC
 	BNE --
-	;   288 master cycles
+	;   324 master cycles
 	; -   6 for last BNE
 	; +  16 for LDA
 	; +  48 for linecount check
-	; = 346
+	; = 382
 
-	; 54 master cycles faster
+	; ~50 something master cycles faster
 	; leaves a bit of wiggle room for regular stuff
 
 .skip
@@ -585,157 +423,28 @@ CacheSA1Stuff:
 	LDA.w $006C : STA.b SA1IRAM.CopyOf_6C
 	LDA.w $00A4 : STA.b SA1IRAM.CopyOf_A4
 	LDA.w $0372 : STA.b SA1IRAM.CopyOf_0372
-	LDA.l $7EF3CA : STA.b SA1IRAM.CopyOf_7EF3CA
 
 	LDA.b #$00 : TCD
 
-	RTL
-
-;===================================================================================================
-
-Extra_SA1_Transfers:
-	SEP #$30
-
-	LDY.b #$06
-
-.next
-	LDA.w !config_linesentry1,Y
-	BEQ .skip
-
-	ASL
-	TAX
-
-	PHY
-
-	TYA
-	ASL
-	ASL
-	ASL
-	TAY
-
-	JSR (.subs,X)
-
-	SEP #$30
-	PLY
-
-.skip
-	DEY
-	DEY
-	BPL .next
-
-	RTL
-
-.subs
-	dw .nothing
-	dw .roomflag
-	dw .camerax
-	dw .cameray
-	dw .owtran
-	dw .owtran
-	dw .ancilla04
-	dw .ancilla59
-	dw .ancillaIX
-
-.owtran
-
-.nothing
-	RTS
-
-;---------------------------------------------------------------------------------------------------
-
-.roomflag
-	LDA.w $0401 : STA.w SA1IRAM.LINEVAL+0,Y
-	LDA.w $0403 : STA.w SA1IRAM.LINEVAL+1,Y
-	LDA.w $0408 : STA.w SA1IRAM.LINEVAL+2,Y
-
-	RTS
-
-;---------------------------------------------------------------------------------------------------
-
-.camerax
-	LDA.b $A6 : STA.w SA1IRAM.LINEVAL+0,Y
-
-	REP #$20
-	
-	LDA.b $E2 : STA.w SA1IRAM.LINEVAL+1,Y
-
-	LDA.w $0608 : STA.w SA1IRAM.LINEVAL+3,Y
-	LDA.w $060C : STA.w SA1IRAM.LINEVAL+5,Y
-	LDA.w $060A : STA.w SA1IRAM.LINEVAL+7,Y
-	LDA.w $060E : STA.w SA1IRAM.LINEVAL+9,Y
-
-	RTS
-
-;---------------------------------------------------------------------------------------------------
-
-.cameray
-	LDA.b $A7 : STA.w SA1IRAM.LINEVAL+0,Y
-
+if !RANDO
 	REP #$20
 
-	LDA.b $E8 : STA.w SA1IRAM.LINEVAL+1,Y
+	LDA.b $10 : STA.w SA1RAM.gamemode2
+	LDX.b $0FFF : STA.w SA1RAM.world2
 
-	LDA.w $0600 : STA.w SA1IRAM.LINEVAL+3,Y
-	LDA.w $0604 : STA.w SA1IRAM.LINEVAL+5,Y
-	LDA.w $0602 : STA.w SA1IRAM.LINEVAL+7,Y
-	LDA.w $0606 : STA.w SA1IRAM.LINEVAL+9,Y
+	LDX.b #$2E
 
-	RTS
+.next_equip
+	LDA.l $7EF340,X : STA.w SA1RAM.equipment2,X
 
-;---------------------------------------------------------------------------------------------------
+	DEX
+	DEX
+	BPL .next_equip
 
-.ancilla04
-	REP #$30
-	BRA .use04
+	SEP #$30
+endif
 
-.ancilla59
-	REP #$30
-	LDA.w #$0005
-	BRA .saveancilla
-
-.ancillaIX
-	LDA.w $03C4
-
-	REP #$31
-
-	AND.w #$00FF
-	DEC
-
-	CMP.w #$0080 ; if negative, show slots 0-4
-	BCS .use04
-
-	CMP.w #5
-	BCS .saveancilla
-
-.use04
-	LDA.w #$0000
-
-.saveancilla
-	STA.w SA1IRAM.LINEVAL+10,Y
-
-	TYA
-	LSR ; /8 for props
-	LSR
-	LSR
-	TAX
-	LDA.w !config_ancprop1,X
-
-	ASL
-	TAX
-	STA.w SA1IRAM.LINEVAL+8,Y
-
-	LDA.l ancillawatch_props,X
-	STA.w SA1IRAM.LINEVAL+12,Y
-	CLC
-	ADC.w SA1IRAM.LINEVAL+10,Y
-	STA.w SA1IRAM.LINEVAL+14,Y
-	TAX
-
-	LDA.b $00,X : STA.w SA1IRAM.LINEVAL+0,Y
-	LDA.b $02,X : STA.w SA1IRAM.LINEVAL+2,Y
-	LDA.b $04,X : STA.w SA1IRAM.LINEVAL+4,Y
-
-	RTS
+	RTL
 
 ;===================================================================================================
 
@@ -854,7 +563,23 @@ SA1Reset:
 	DEX
 	BPL --
 
---	BRA --
+	CLC
+
+.reset_rng
+	LDA.w #$BEBE
+	BCC .start
+
+.loop
+	STA.b SA1IRAM.randomish
+
+.start
+	ROL.b SA1IRAM.randomish
+	ROR
+	ADC.b SA1IRAM.randomish
+	BNE .loop
+
+	SEC
+	BRA .reset_rng
 
 ; SA1IRAM.TIMER_FLAG bitfield:
 ; 7 - timers have been set and are awaiting a hud update
@@ -934,10 +659,15 @@ GetMod60:
 
 ;---------------------------------------------------------------------------------------------------
 
+TimerAddAdjustments:
+	dw $0000 ; nothing
+	dw $1647 ; Pod/Mire wall
+	dw $0908 ; Desert wall
 
-; TODO 435 arrow hit in pod wall good, but 436 bad
+;===================================================================================================
+
 SA1NMI_SENTRIES:
-	SED
+	SEP #$38
 
 	; if $12 = 1, then we weren't done with game code
 	; that means we're in a lag frame
@@ -950,7 +680,11 @@ SA1NMI_SENTRIES:
 	STA.b SA1IRAM.ROOM_TIME_LAG
 
 	; ROOM TIMER
-	LDA.b SA1IRAM.TIMER_ADD_SSFF
+	LDX.b SA1IRAM.TIMER_ADD_INDEX
+
+	LDA.w TimerAddAdjustments,X
+	STA.b SA1IRAM.TIMER_ADD_SSFF
+
 	AND.w #$00FF
 	STA.b SA1IRAM.TIMER_ADD_SCRATCH
 
@@ -991,6 +725,7 @@ SA1NMI_SENTRIES:
 	STA.b SA1IRAM.SEG_TIME_M
 
 	STZ.b SA1IRAM.TIMER_ADD_SSFF
+	STZ.b SA1IRAM.TIMER_ADD_INDEX
 
 	; FLUSH
 	REP #$18
@@ -1024,6 +759,11 @@ SA1NMI_SENTRIES:
 	STA.b SA1IRAM.TIMER_FLAG
 
 .donothing
+	REP #$20
+
+	LDA.b SA1IRAM.CopyOf_20 : STA.w SA1RAM.coords2+0
+	LDA.b SA1IRAM.CopyOf_22 : STA.w SA1RAM.coords2+2
+
 	RTS
 
 ;---------------------------------------------------------------------------------------------------
@@ -1083,3 +823,5 @@ SA1IRQ:
 .irq_shortcuts
 	JSL DoShortCuts
 	RTS
+
+;===================================================================================================

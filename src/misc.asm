@@ -38,7 +38,7 @@ GetLitRoom:
 triforce_transition:
 	LDA.w !config_skip_triforce_toggle : BNE .skip_triforce
 
-	JSL $02A0BE ; Dungeon_SaveRoomData_justKeys
+	JSL $02A0BE
 	JML $02B797
 
 .skip_triforce
@@ -60,11 +60,10 @@ dropluck:
 .overwrite
 	JML afterdropluck
 
-
 ;===================================================================================================
 
 swordbeams:
-	LDY !disable_beams : BNE .nobeams
+	LDY.w SA1RAM.disable_beams : BNE .nobeams
 
 	JML $099D04
 
@@ -127,7 +126,6 @@ MantlePrep:
 	CMP.b #$02
 
 	LDA.w $0D10,X
-
 	BCS .move
 
 .stay

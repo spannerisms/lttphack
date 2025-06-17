@@ -32,15 +32,15 @@ PRESET_CONFIG_SUBMENU:
 
 	LDX.b #$21
 --	LDA.l $7EF340,X
-	STA.w !config_custom_load,X
+	STA.l CustomLoadout.items,X
 	DEX
 	BPL --
 
-	LDA.l $7EF36C : STA.w !config_custom_load_2+0
-	LDA.l $7EF36D : STA.w !config_custom_load_2+1
-	LDA.l $7EF36E : STA.w !config_custom_load_2+2
-	LDA.l $7EF37B : STA.w !config_custom_load_2+3
-	LDA.w $0303 : STA.w !config_custom_load_2+4
+	LDA.l $7EF36C : STA.l CustomLoadout.other+0
+	LDA.l $7EF36D : STA.l CustomLoadout.other+1
+	LDA.l $7EF36E : STA.l CustomLoadout.other+2
+	LDA.l $7EF37B : STA.l CustomLoadout.other+3
+	LDA.w $0303 : STA.l CustomLoadout.other+4
 
 	RTL
 

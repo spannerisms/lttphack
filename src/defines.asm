@@ -1,14 +1,42 @@
-!SRAM_VERSION = $0030
-!INIT_SIGNATURE = $25A4
+!SRAM_VERSION = $0031
+!INIT_SIGNATURE = $25A9
 
 function hexto555(h) = ((((h&$FF)/8)<<10)|(((h>>8&$FF)/8)<<5)|(((h>>16&$FF)/8)<<0))
+function RoomFlags(room) = $7EF000+(room*2)
+
+!white = $3C10
+!blue = $2C10
+!yellow = $3410
+!red = $3810
+!gray = $2010
+
+function char(n) = $2150+n
+
+!BROWN_PAL #= (0<<10)
+!RED_PAL #= (1<<10)
+!YELLOW_PAL #= (2<<10)
+!BLUE_PAL #= (3<<10)
+!GRAY_PAL #= (4<<10)
+!REDYELLOW #= (5<<10)
+!TEXT_PAL #= (6<<10)
+!GREEN_PAL #= (7<<10)
+
+!VFLIP #= (1<<15)
+!HFLIP #= (1<<14)
+
+!P3 = $2000
+!SYNCED = char($10)|!BLUE_PAL
+!DESYNC = char($11)|!RED_PAL
+!HAMMER = char($12)|!BROWN_PAL
+
 
 ;===================================================================================================
 ; Memory map:
 ; Bank 40:
 ;    $0000..$1FFF - vanilla SRAM
 ;    $2000..$20FF - meta data
-;    $2100..$5FFF - unused
+;    $2100..$2FFF - custom loadout
+;    $3000..$5FFF - unused
 ;    $6000..$7FFF - mirrored to page $60 for SNES
 ;    $8000..$FFFF - unused
 ; Bank 41: savestates
@@ -18,10 +46,184 @@ function hexto555(h) = ((((h&$FF)/8)<<10)|(((h>>8&$FF)/8)<<5)|(((h>>16&$FF)/8)<<
 ;    $8000..$BFFF - unused
 ;    $C000..$FFFF - Save States
 ;===================================================================================================
-org $400000
 
 SA1SRAM = $400000
 LiteStateData = $430000
+
+org $008000
+struct SA1IRAM $003000
+	.SHORTCUT_USED: skip 2
+	.corruption_watcher: skip 2
+
+	.randomish: skip 2
+
+	.SCRATCH: skip 16
+
+	.CONTROLLER_1:
+	.CopyOf_F2: skip 1
+	.CopyOf_F0: skip 1
+
+	.CONTROLLER_1_FILTERED:
+	.CopyOf_F6: skip 1
+	.CopyOf_F4: skip 1
+
+	.CONTROLLER_1_NEW:
+
+	.JOYPAD2_NEW: skip 2
+
+	.CachedThisFrame: skip 1
+	.cm_submodule: skip 2
+	.cm_cursor: skip 1 ; keep these together
+	.cm_current_menu: skip 4
+	.cm_current_selection: skip 4
+	.cm_current_draw: skip 4
+	.cm_draw_color: skip 2
+
+	; these can be shared because they're never used at the same time
+	.cm_writer:
+	.cm_draw_type_offset: skip 2
+	.cm_draw_filler: skip 2
+
+	.cm_leftright: skip 1 ; N=left V=right
+	.cm_updown: skip 1 ; N=up V=down
+	.cm_ax: skip 1 ; N=A V=X
+	.cm_y: skip 1 ; 
+	.cm_shoulder: skip 1 ; N=l V=r
+	skip 1 ; for safety
+
+	.cm_writer_args: skip 8
+
+	.preset_addr: skip 3 ; never share memory with this
+
+	.preset_prog: skip 3
+	.preset_prog_end: skip 2
+
+	.preset_pert: skip 3
+	.preset_pert_end: skip 2
+
+	.sentry_groups_pointer:
+	.preset_reader: skip 3
+
+	.sentry_cat_name_pointer: 
+	.preset_reader2: skip 3
+
+	.sentry_cat_list_pointer:
+	.preset_writer: skip 2
+
+	.sentry_selected_address:
+	.preset_type: skip 2
+	.preset_scratch: skip 4
+
+	.hud_props: skip 2
+	.hud_val: skip 2
+	.hud_val2: skip 2
+
+	reset bytes
+
+.savethis_start
+	.TIMER_FLAG: skip 2
+	.TIMER_ADD_INDEX: skip 2
+	.TIMER_ADD_SSFF: skip 2
+	.TIMER_ADD_SCRATCH: skip 2
+
+.timers_start
+	.ROOM_TIME_F: skip 2
+	.ROOM_TIME_S: skip 2
+	.ROOM_TIME_LAG: skip 2
+	.ROOM_TIME_IDLE: skip 2
+
+	.SEG_TIME_F: skip 2
+	.SEG_TIME_S: skip 2
+	.SEG_TIME_M: skip 2
+
+.timers_end
+	.ROOM_TIME_F_DISPLAY: skip 2
+	.ROOM_TIME_S_DISPLAY: skip 2
+	.ROOM_TIME_LAG_DISPLAY: skip 2
+	.ROOM_TIME_IDLE_DISPLAY: skip 2
+
+	.SEG_TIME_F_DISPLAY: skip 2
+	.SEG_TIME_S_DISPLAY: skip 2
+	.SEG_TIME_M_DISPLAY: skip 2
+
+	.SNTVAL1: skip 2
+	.SNTVAL2: skip 2
+	.SNTVAL3: skip 2
+	.SNTVAL4: skip 2
+	.SNTVAL5: skip 2
+
+	.SNTADD1: skip 2
+	.SNTADD2: skip 2
+	.SNTADD3: skip 2
+	.SNTADD4: skip 2
+	.SNTADD5: skip 2
+
+	.CopyOf_12: skip 1
+	.CopyOf_1A: skip 1
+	.CopyOf_1B: skip 1
+	.CopyOf_20: skip 1
+	.CopyOf_21: skip 1
+	.CopyOf_22: skip 1
+	.CopyOf_23: skip 1
+
+	.CopyOf_57: skip 1
+	.CopyOf_5B: skip 1
+	.CopyOf_6C: skip 1
+	.CopyOf_0372: skip 1
+
+	.CopyOf_A0: skip 1
+	.CopyOf_A1: skip 1
+	.CopyOf_A4: skip 1
+	.CopyOf_E2: skip 1
+
+	.CopyOf_7EF36C: skip 1
+	.CopyOf_7EF36D: skip 1
+
+	; extra stuff
+	.BossCycles: skip 16 ; 16 to be safe
+
+	; not copied, but just moved in rom
+	.Moved_0208: skip 1
+	.Moved_0209: skip 1
+	.Moved_020A: skip 1
+
+.savethis_end
+
+	print ""
+	print "SA1 dp: $", pc
+	print "Saved: ", bytes, "/640 (acceptable savestate limit)"
+
+
+
+org $003100
+
+	; ancilla watch
+	.LINEVAL:
+	.LINE1VAL: skip 16
+	.LINE2VAL: skip 16
+	.LINE3VAL: skip 16
+	.LINE4VAL: skip 16
+
+	.QuickSwapLR: skip 1
+
+	.litestate_act: skip 2
+	.litestate_last: skip 2
+	.litestate_off: skip 2
+
+	.HUDSIZE: skip 2
+	.highestline: skip 2
+	.number_of_timer_triggers: skip 2
+
+	print "SA1 mirroring: $", pc
+
+org $003600
+	.SA1CorruptionBuffer: skip $180
+
+	warnpc $003800
+
+endstruct
+
+org $400000
 
 struct SA1RAM $402000 ; DO NOT CHANGE THIS
 	.CPUVERSION: skip 2
@@ -39,18 +241,23 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 	org $407000 ; DO NOT CHANGE THIS
 	.SETTINGS: skip $400
 
-	.SNES_NMI_VECTOR: skip 4
-	.SNES_NMI_args: skip 8
-
 	.hex2dec_tmp: skip 2
 	.hex2dec_first_digit: skip 2
 	.hex2dec_second_digit: skip 2
 	.hex2dec_third_digit: skip 2
 
+	.dec_pref: skip 2
+	.dec_count: skip 2
+	.dec_out: skip 8
+
 	.old_music: skip 1
 	.old_music_bank: skip 1
 
 .clearable_sa1ram:
+	skip 2
+	.disable_beams: skip 2
+	.drop_rng: skip 2
+
 	.pokey_rng: skip 2
 	.agahnim_rng: skip 2
 	.helmasaur_rng: skip 2
@@ -62,7 +269,6 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 	.framerule: skip 2
 	.lanmola_rng: skip 2
 	.conveyor_rng: skip 2
-	.drop_rng: skip 2
 	.vitreous_rng: skip 2
 	.ganon_bats: skip 2
 
@@ -85,11 +291,22 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 
 	.highestline: skip 2
 
+	.sentry_submodule: skip 2
+	.sentry_type: skip 2
+	.sentry_category_size: skip 2
+	.sentry_id: skip 2
+	.sentry_index: skip 2
+	.sentry_category: skip 2
+	.sentry_category_index: skip 2
+	.sentry_item: skip 2
+
+
 .end_of_clearable_sa1ram:
 
 	.cm_input_timer: skip 2
 	.cm_last_input: skip 2
 
+	.extra_sa1_required: skip 2
 	.cm_item_bow: skip 1
 	.cm_equipment_maxhp: skip 1
 
@@ -99,9 +316,25 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 
 	.MessageHighScratch: skip 2
 
+	warnpc $407BFF
+
+	org $407C00 ; DO NOT CHANGE THIS
+
+	.coords2: skip 4
+	.gamemode2: skip 2
+	.world2: skip 2
+	.equipment2: skip $30
+
 
 	warnpc $407FFF
 endstruct
+
+
+struct CustomLoadout $402100
+	.items : skip $22
+	.other: skip $10
+endstruct
+
 
 macro MVN(src, dest) ; why asar
 	MVN <dest>, <src>
@@ -120,17 +353,6 @@ endmacro
 ; special stuff
 
 function color(h) = ((((h&$FF)/8)<<10)|(((h>>8&$FF)/8)<<5)|(((h>>16&$FF)/8)<<0))
-
-; ==== RAM usage ====
-;
-; 7C[0x08] (84)
-; 8E[0x02] (90)
-; B6[0x01]
-; 7A[0x01]
-; 7C[0x02]
-; 04CB[0x25] (04F0)
-
-!config_extra_sa1_required = $35
 
 !offset = $407000
 !offsetinc = 0
@@ -189,21 +411,16 @@ endmacro
 %def_sram("heart_display", 0)
 %def_sram("feature_music", !ON)
 
-%def_sram("sentry1", 1) ; room time
-%def_sram("sentry2", 2) ; lag time
-%def_sram("sentry3", 3) ; idle time
-%def_sram("sentry4", !OFF)
-%def_sram("sentry5", 5) ; coords
+%def_sram("sentry1", SENTRY_ROOMTIME)
+%def_sram("sentry2", SENTRY_LAGFRAMES)
+%def_sram("sentry3", SENTRY_IDLEFRAMES)
+%def_sram("sentry4", SENTRY_OFF)
+%def_sram("sentry5", SENTRY_COORDINATES)
 
 %def_sram("linesentry1", !OFF)
 %def_sram("linesentry2", !OFF)
 %def_sram("linesentry3", !OFF)
 %def_sram("linesentry4", !OFF)
-
-%def_sram("ancprop1", 0)
-%def_sram("ancprop2", 0)
-%def_sram("ancprop3", 0)
-%def_sram("ancprop4", 0)
 
 %def_sram("qw_toggle", !ON)
 %def_sram("hudlag_spinner", !ON)
@@ -215,7 +432,6 @@ endmacro
 
 %def_sram("rerandomize_toggle", !ON)
 %def_sram("skip_triforce_toggle", !OFF)
-%def_sram("unused_toggle", !OFF)
 
 %def_sram("hud_bg", 0)
 %def_sram("hud_header_fg", 1)
@@ -228,8 +444,6 @@ endmacro
 %def_sram("death_reload", !OFF)
 
 %def_sram("use_custom_load", !OFF)
-%def_sram_long("custom_load", $22) ; 7EF340-7EF361
-%def_sram_long("custom_load_2", 5)
 
 %def_sram("safeties_nmg_sanc_heart", !OFF)
 %def_sram("safeties_nmg_powder", !OFF)
@@ -262,25 +476,3 @@ if !last_config > $3FF
 endif
 
 ;===================================================================================================
-
-!disable_beams = $7A
-
-;===================================================================================================
-
-GetRandomInt = $0DBA71
-UseImplicitRegIndexedLocalJumpTable = $008781
-BirdTravel_LoadTargetAreaData = $02E99D
-BirdTravel_LoadTargetAreaData_AfterData = $02EA30
-Player_ResetState = $07F18C
-Sprite_ResetAll = $09C44E
-Sprite_DisableAll = $09C44E
-Sprite_LoadGfxProperties = $00FC41
-UpdateBarrierTileChr = $0296AD ; $117B2-$117C7
-Dungeon_AnimateTrapDoors = $01D38D
-Dungeon_LoadEntrance = $02D617
-
-DecompSwordGfx = $00D308
-Palette_Sword = $1BED03
-DecompShieldGfx = $00D348
-Palette_Shield = $1BED29
-Palette_Armor = $1BEDF9

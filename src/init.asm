@@ -1,5 +1,12 @@
 pushpc
 ; Code that is run once after the game has been powered on.
+
+org $008004
+	LDA.b #$FF
+	STA.w $2202
+	NOP
+
+
 org $00802F
 	JML init_hook
 	NOP
@@ -151,7 +158,7 @@ init_hook:
 
 .noforcereset
 	LDA.w !config_sram_initialized
-	CMP.w #$0030 : BCC .forcereset
+	CMP.w #$0031 : BCC .forcereset
 
 .sram_initialized
 	REP #$10
@@ -168,7 +175,9 @@ init_hook:
 	BCC --
 
 	SEP #$30
+
 	STZ.w $037F
+
 
 ;===================================================================================================
 ; everything is done now
@@ -186,6 +195,8 @@ init_hook:
 	STA.l SA1RAM.CPUVERSION
 	STA.l SA1RAM.PPU1VERSION
 	STA.l SA1RAM.PPU2VERSION
+
+	JSL ConfigMenuSize
 
 	SEP #$30
 

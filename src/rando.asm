@@ -5,7 +5,7 @@ org $00D50D : dw $0A3A-2 ; A3A
 
 ; Hijack item receipt
 org $098605
-PHX ; move to PHX since we're gonna use X too
+PHX ; move the PHX since we're gonna use X too
 JSL CheckItemReceipt
 
 org $05F08F+1 : db #$00 ; no heart pieces
@@ -77,7 +77,7 @@ org $05DD04 : dw $05DDE5
 ; no text for items
 org $08C5D5 : db $80 ; BRA
 org $08C5EB : db $80 ; BRA
-;
+
 ;; don't decompress attract graphics all the time
 ;org $0EEE58 : db $08
 ;
@@ -245,7 +245,46 @@ org $08C5EB : db $80 ; BRA
 ;warnpc $85E0FE
 
 
-
+;muffins notes:
+;Ok did a bunch of testing. Coords and equip work great. Can I request 1 more bit after module 🥹, for the world ($0FFF)? 
+;
+;New lag indicator spinner is awesome btw.
+;
+;As for text, I went through the list, I wasn't 100% sure on some of them, like bee, flopping fish, old man 09, shopkeepers, fairy's, but the rest I noted down.
+;
+;* Arrow game still has text in rando, none in PH (I think? - I need to check later/tomorrow)
+;* Zora good
+;
+;* Zelda is too high up in her cell, almost in the wall, but activates at the normal location
+;* Can't push the mantle with Zelda if starting from a preset where you don't have her (Ball 'n Chains and earlier)
+;* Zelda still talks during escape (HC Lobby, Mantle, Entering first water room, entering rat levers room)
+;
+;* Witch good
+;* The bottle vendor triggers as soon as he is on screen and you have >=100 rupees
+;* Heart pieces good
+;* Saha good
+;* Bombos and Ether text are still there, and after getting the item, Link does the sword spin fanfare like after getting a crystal and the game goes black
+;* Potion shop good
+;* Magic bat good - doesn't give an item, but does trigger 1/2 magic (I think this is expected?)
+;* Aga good
+;* Frog good
+;* Sick kid good
+;* Lock smith still has text
+;* Hobo good
+;* Racing lady good
+;* Catfish still has a text box
+;* Kiki good
+;* Blind maiden good
+;* Chest game good
+;* Dig game good
+;* Smiths still have a buch of text on rescue + hand in
+;* Stumpy still has text and never fades away
+;
+;I also noticed the following:
+;
+;* Changing sword via equipment menu corrupts the sword sprite
+;* Sword beams don't work?"
+;* Once I saw some hud corruption below the coords sentry, but it was once and I couldn't reproduce. They were like red triangles
 
 
 

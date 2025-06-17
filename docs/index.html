@@ -1,6 +1,6 @@
 ---
 layout: practicehack
-title: LTTPHack - A Practice ROM for ALttP
+title: ALTTP Practice Hack
 ---
 <section id="download">
 
@@ -87,17 +87,13 @@ title: LTTPHack - A Practice ROM for ALttP
 			<td>Return to main index</td>
 		</tr>
 		<tr>
-			<th rowspan="4"><span class="snesButton snesA">A</span></th>
+			<th rowspan="3"><span class="snesButton snesA">A</span></th>
 			<td>Submenu option</td>
 			<td>Open submenu</td>
 		</tr>
 		<tr>
 			<td>Toggle option</td>
 			<td>Toggle item</td>
-		</tr>
-		<tr>
-			<td>List option</td>
-			<td>Next selection</td>
 		</tr>
 		<tr>
 			<td>Command option</td>
@@ -189,6 +185,14 @@ title: LTTPHack - A Practice ROM for ALttP
 		<tr>
 			<th><span class="menuIcon menuBinding"></span></th>
 			<td>Sets a shortcut binding</td>
+		</tr>
+		<tr>
+			<th><span class="menuIcon menuSelectionMenu"></span></th>
+			<td>Opens a submenu for selection</td>
+		</tr>
+		<tr>
+			<th><span class="menuIcon menuMemoryInfo"></span></th>
+			<td>Displays information</td>
 		</tr>
 	</tbody>
 </table>
@@ -365,8 +369,8 @@ title: LTTPHack - A Practice ROM for ALttP
 	<dd>Max health in hearts.</dd>
 	<dt>Magic</dt>
 	<dd>Set magic points.</dd>
-	<dt>Fill rupees</dt>
-	<dd>Grants 999 rupees</dd>
+	<dt>Rupees</dt>
+	<dd>0–999</dd>
 	<dt>Fill everything</dt>
 	<dd>Grants full equipment with just below max health and magic.</dd>
 	<dt>Sword</dt>
@@ -561,7 +565,7 @@ title: LTTPHack - A Practice ROM for ALttP
 	<dt>Anc Index</dt>
 	<dd>Set ancilla search index ($03C4); $00–$7F</dd>
 	<dt>Armed EG</dt>
-	<dd>Yes/No.</dd>
+	<dd>Yes/No</dd>
 	<dt>EG strength</dt>
 	<dd class="optionList">
 		<ul>
@@ -740,103 +744,12 @@ title: LTTPHack - A Practice ROM for ALttP
 		</dl>
 	</dd>
 	<dt>Sentry [1–5]<sup class="badge sa1-badge">SA1</sup></dt>
-	<dd>5 sentry slots displayed on the HUD.
-		<dl class="subDefinition">
-			<dt>Room time</dt>
-			<dd>Time spent on the current screen, starting from the beginning of the last transition.</dd>
-			<dt>Lag</dt>
-			<dd>Count of lag frames on the current screen, starting from the beginning of the last transition.</dd>
-			<dt>Idle frames</dt>
-			<dd>Count of menu and text frames with no relevant input, starting from the beginning of the last transition.</dd>
-			<dt>Segment time</dt>
-			<dd>Time spent since the beginning of the last segment timer reset.</dd>
-			<dt>Coordinates</dt>
-			<dd>Absolute position of Link (X,Y)</dd>
-			<dt>Room (live)</dt>
-			<dd>Room time with continuous updates.</dd>
-			<dt>Lag (live)</dt>
-			<dd>Lag frames with continuous updates.</dd>
-			<dt>Subpixels</dt>
-			<dd>Current subpixel (Hexadecimal); address: $7E002A</dd>
-			<dt>Room ID</dt>
-			<dd>Current room ID, corrected room ID (based on coordinates), and sync. Sync not displayed on overworld; address: $7E00A0</dd>
-			<dt>Quadrant</dt>
-			<dd>Current quadrant, corrected quadrant (based on coordinates), and sync. Not displayed on overworld; address: $7E00A9</dd>
-			<dt>Screen ID</dt>
-			<dd>Current overworld screen ID, corrected screen ID (based on coordinates), and sync. Not displayed in underworld; address: $7E008A</dd>
-			<dt>Tile (UW)</dt>
-			<dd>Tile type Link is standing on (bottom right; only works in underworld); address: $7E0114</dd>	
-			<dt>Tile index</dt>
-			<dd>WRAM address in bank 7F of the tile Link is standing on.</dd>
-			<dt>Spooky</dt>
-			<dd>Ancilla height for slot 4; address: $7E02A2</dd>
-			<dt>Arc variable</dt>
-			<dd>Overlord value used by Armos Knights and Ganon for circles; address: $7E0B08</dd>
-			<dt>WEST SOMARIA</dt>
-			<dd>West somaria door timer; address: $7E0690</dd>
-			<dt>Ancilla index</dt>
-			<dd>Ancilla search index; address: $7E03C4</dd>
-			<dt>Pits</dt>
-			<dd>Current pit destination/damage flag. Not displayed on overworld; address: $7EC000</dd>
-			<dt>Hookslot</dt>
-			<dd>Hookshot slot index; address: $7E039D</dd>
-			<dt>Boss HP</dt>
-			<dd>Health of enemy in slot 0; address: $7E0E50</dd>
-			<dt>Hovering</dt>
-			<dd>Number of frames A has been held, up to 29; address: $7E0374</dd>
-		</dl>
-	</dd>
-
 	<dt>Line [1–4]<sup class="badge lag-badge">EX</sup></dt>
-	<dd>4 larger sentry lines of info displayed on the HUD.
-		<dl class="subDefinition">
-			<dt>Room flags</dt>
-			<dd>Boss heart, key, chest, and door flags for current room.</dd>
-			<dt>UW Camera X</dt>
-			<dd>Camera scroll and boundaries for X-axis.</dd>
-			<dt>UW Camera Y</dt>
-			<dd>Camera scroll and boundaries for Y-axis.</dd>
-			<dt>OW Trans X</dt>
-			<dd>Transition triggers and target screen IDs for horizontal overworld transitions.</dd>
-			<dt>OW Trans Y</dt>
-			<dd>Transition triggers and target screen IDs for vertical overworld transitions.</dd>
-			<dt>Ancilla 0-4</dt>
-			<dd>Custom ancilla property for slots 0–4 (property # corresponds to sentry #). This set of slots is indicated by a yellow triangle pointing down.</dd>
-			<dt>Ancilla 5-9</dt>
-			<dd>Custom ancilla property for slots 5–9. This set of slots is indicated by a green triangle pointing up.</dd>
-			<dt>Ancilla MSX</dt>
-			<dd>Custom ancilla property for the 5 slots preceding the current search index ($03C4). This set of slots is indicated by a blue magnifying glass.</dd>
-		</dl>
-	</dd>
-	<dt>Ancilla prop [1–4]</dt>
-	<dd>Custom property 1–4 for ancilla sets corresponding to line sentries 1–4
-		<dl class="subDefinition">
-			<dt>ID</dt>
-			<dd>Ancilla ID from $03C4,X (includes coloring for 00 and replacable particles).</dd>
-			<dt>X coord</dt>
-			<dd>Ancilla X-Coordinate; address: $7E0C04,X</dd>
-			<dt>Y coord</dt>
-			<dd>Ancilla Y-Coordinate; address: $7E0BFA,X</dd>
-			<dt>Altitude</dt>
-			<dd>Ancilla Z-Coordinate; address: $7E029E,X</dd>
-			<dt>Layer</dt>
-			<dd>Ancilla layer; address: $7E0C7C,X</dd>
-			<dt>Extension</dt>
-			<dd>Used both for hookshot length and item receipt ID, among other less interesting properties; address: $7E0C5E,X</dd>
-			<dt>Tile prop</dt>
-			<dd>Tile interaction; address: $7E03E4,X</dd>
-			<dt>EG check</dt>
-			<dd>Something; address: $7E03A4,X</dd>
-			<dt>Direction</dt>
-			<dd>Generally used for direction of ancilla; address: $7E0C72,X</dd>
-			<dt>Decay</dt>
-			<dd>Timer for wall arrows before disappearing; address: $7E03B1,X</dd>
-		</dl>
-	</dd>
+	<dd>5 sentry slots and 4 line sentries displayed on the HUD. See <a href="sentries.md">here for a list of all sentries</a>.</dd>
 	<dt>Hide lines<sup class="badge sa1-badge">SA1</sup></dt>
 	<dd>Removes the line sentries from the HUD without the need to disable them.</dd>
 	<dt>HUD spinner<sup class="badge sa1-badge">SA1</sup></dt>
-	<dd>Animated spinning icon that indicates there is potential for HUD-related lag present.</dd>
+	<dd>Animated spinning icon that indicates the SA1 is running. Can also be used to see when HUD lag is relevant.</dd>
 	<dt>State icons<sup class="badge sa1-badge">SA1</sup></dt>
 	<dd>Displays icons along the left side of the HUD for the following properties (top to bottom): superspeed, waterwalk, door state, stair drag.</dd>
 	<dt>Quick warp<sup class="badge sa1-badge">SA1</sup></dt>

@@ -1,3 +1,5 @@
+;===================================================================================================
+
 EmptyEntireMenu:
 	REP #$20
 	SEP #$10
@@ -19,15 +21,20 @@ EmptyEntireMenu:
 	INX
 	BPL .loop
 
-	LDX.b #$3E
+;===================================================================================================
+
+RedrawMenuTrim:
+	LDX.w .length
 	LDA.w #$3130
+
 .headera
 	STA.w SA1RAM.MENU+$0000,X
 	DEX
 	DEX
 	BPL .headera
 
-	LDX.b #$3E
+	LDX.w .length
+
 	LDA.w #$B130
 .headerb
 	STA.w SA1RAM.MENU+$0080,X
@@ -37,6 +44,12 @@ EmptyEntireMenu:
 
 	RTS
 
+.length
+	dw $003E
+
+
+;===================================================================================================
+
 EmptyCurrentMenu:
 	REP #$30
 
@@ -45,21 +58,18 @@ EmptyCurrentMenu:
 	; clean every row
 .nextclean
 	LDA.b [SA1IRAM.cm_current_menu],Y
-	BPL .doneclean ; if we hit a 0, we're done
+	BPL RedrawMenuTrim ; if we hit a 0, we're done
 
 	JSR EmptyCurrentRow
 	INY
 	INY
 	BRA .nextclean
 
-.doneclean
---	RTS
-
 ;===================================================================================================
 
 RedrawCurrentMenu:
 	JSR DrawCurrentMenu
-	JML NMI_RequestFullMenuUpdate
+	RTL
 
 ;===================================================================================================
 
@@ -69,7 +79,7 @@ DrawCurrentMenu:
 
 .nextdraw
 	LDA.b [SA1IRAM.cm_current_menu],Y
-	BPL --
+	BPL RedrawMenuTrim
 
 	JSR DrawCurrentRow
 	INY
@@ -78,13 +88,60 @@ DrawCurrentMenu:
 
 ;===================================================================================================
 
+SetTextPointer:
+	LDY.w #SetTextPointer>>8
+	STY.b SA1IRAM.cm_current_draw+1
+
+	STA.b SA1IRAM.cm_current_draw+0
+
+	LDY.w #$0000
+
+	RTS
+
+;===================================================================================================
+
+DrawRowText:
+	; write out item name
+.next_letter
+	LDA.b [SA1IRAM.cm_current_draw],Y
+	AND.w #$00FF
+	CMP.w #$00FF
+	BEQ .done_row_name
+
+	ORA.b SA1IRAM.cm_draw_color
+	STA.w SA1RAM.MENU,X
+
+	INY
+
+	INX
+	INX
+	BRA .next_letter
+
+.done_row_name
+	RTS
+
+;===================================================================================================
+
+DrawEmptyCharacter:
+	LDA.w #$002F
+
+DrawSingleCharacter:
+	ORA.b SA1IRAM.cm_draw_color
+	STA.w SA1RAM.MENU,X
+	INX
+	INX
+	RTS
+
+;===================================================================================================
+
 EmptyCurrentRow:
 	JSR CM_YRowToXOffset
 
 	STZ.b SA1IRAM.cm_draw_color
-	BRA .next_clean
 
-.from_here_to_end
+;===================================================================================================
+
+EmptyRestOfRow:
 	REP #$20
 
 .next_clean
@@ -98,10 +155,6 @@ EmptyCurrentRow:
 	BNE .next_clean
 
 	RTS
-
-#EmptyRestOfRow_long:
-	JSR .from_here_to_end
-	RTL
 
 ;===================================================================================================
 
@@ -220,14 +273,11 @@ DrawCurrentRow:
 
 	LDA.w ActionIcons,X ; get the icon, obviously
 	AND.w #$00FF
-	ORA.b SA1IRAM.cm_draw_color
 	PLX
-	STA.w SA1RAM.MENU,X
+	JSR DrawSingleCharacter
 
 	LDA.w #16 ; for determining the filler size
 	STA.b SA1IRAM.cm_draw_filler
-	INX
-	INX
 
 	; write out item name
 .next_letter
@@ -281,7 +331,7 @@ DrawCurrentRow:
 	RTS
 
 .return
-	JSR EmptyCurrentRow_from_here_to_end
+	JSR EmptyRestOfRow
 
 .done_all
 	REP #$30
@@ -737,64 +787,88 @@ CM_BITS_ASCENDING:
 
 ;===================================================================================================
 
-CMDRAW_NUMFIELD_LONG_2DIGITS: ; so bombs and arrows align better
-	DEX
-	DEX
-
-CMDRAW_NUMFIELD_LONG:
-CMDRAW_NUMFIELD_LONG_FUNC:
+CMDRAW_NUMFIELD16_LONG:
+CMDRAW_NUMFIELD16_LONG_FUNC:
 	JSR CMDRAW_SAVE_ADDRESS_LONG
+
+.continue_3
+	LDY.w #3
+
+.continue
+	PHY
+
+	REP #$20
+
+	LDA.b [SA1IRAM.cm_writer]
+	JSR CMDRAW_HEX16_TO_DEC
+
+	PLY
+	JMP CMDRAW_NUMBER_DEC
+
+;---------------------------------------------------------------------------------------------------
+
+CMDRAW_NUMFIELD_LONG_2DIGITS: ; so bombs and arrows align better
+	JSR CMDRAW_SAVE_ADDRESS_LONG
+	LDY.w #2
 	BRA .continue
+
+#CMDRAW_NUMFIELD_LONG:
+#CMDRAW_NUMFIELD_LONG_FUNC:
+	JSR CMDRAW_SAVE_ADDRESS_LONG
+
+	BRA .continue_3
 
 #CMDRAW_NUMFIELD:
 #CMDRAW_NUMFIELD_FUNC:
 	JSR CMDRAW_SAVE_ADDRESS_00
 
+.continue_3
+	LDY.w #3
+
 .continue
+	PHY
+
 	LDA.b [SA1IRAM.cm_writer]
-	JSR CMDRAW_HEX_TO_DEC
+	JSR CMDRAW_HEX8_TO_DEC
+
+	PLY
 
 CMDRAW_NUMBER_DEC:
 	REP #$20
 
-	; first check the 100s place
-	LDA.b SA1IRAM.cm_writer+3
-	AND.w #$00FF
-	BNE .hundo
+	; TODO figure out how to right align numbers because I screwed it up
+;	CPY.w SA1RAM.dec_count
+;	BEQ .count_fine
+;	BCC .count_fine
 
-	LDA.w #$002F
+	LDY.w SA1RAM.dec_count
 
-.hundo
+.count_fine
+	STY.b SA1IRAM.cm_writer
+
+	TYA
+	SBC.w #4
+	STA.b SA1IRAM.cm_writer
+
+	DEY
+
+.next_digit
+;	LDA.w #$002F
+;	INC.b SA1IRAM.cm_writer
+;	BMI .empty
+
+	LDA.w SA1RAM.dec_out,Y
+	AND.w #$000F
+
+.empty
 	ORA.b SA1IRAM.cm_draw_color
 
 	STA.w SA1RAM.MENU,X
 	INX
 	INX
 
-	LDA.b SA1IRAM.cm_writer+0 ; check for 10s
-	LSR
-
-	LDA.b SA1IRAM.cm_writer+2
-	AND.w #$00FF
-	BCS .tens
-
-	LDA.w #$002F
-
-.tens
-	ORA.b SA1IRAM.cm_draw_color
-
-	STA.w SA1RAM.MENU,X
-	INX
-	INX
-
-.ones
-	LDA.b SA1IRAM.cm_writer+1
-	AND.w #$00FF
-	ORA.b SA1IRAM.cm_draw_color
-
-	STA.w SA1RAM.MENU,X
-	INX
-	INX
+	DEY
+	BPL .next_digit
 
 	RTS
 
@@ -812,20 +886,14 @@ CMDRAW_INFO_1DIGIT:
 	JSR CMDRAW_SAVE_ADDRESS_LONG
 
 	LDA.b [SA1IRAM.cm_writer]
-	JSR CMDRAW_HEX_TO_DEC
+	JSR CMDRAW_HEX8_TO_DEC
 
 	REP #$20
-	LDA.w #$002F
-	ORA.b SA1IRAM.cm_draw_color
 
-	LDY.w #4
---	STA.w SA1RAM.MENU,X
-	INX
-	INX
-	DEY
-	BNE --
+	LDY.w #1
+	STA.w SA1RAM.dec_count
 
-	JMP CMDRAW_NUMBER_DEC_ones
+	JMP CMDRAW_NUMBER_DEC
 
 ;===================================================================================================
 
@@ -846,11 +914,66 @@ CMDRAW_NUMFIELD_LONG_FUNC_HEX:
 
 ;===================================================================================================
 
-CMDRAW_HEX_TO_DEC:
+CMDRAW_HEX8_TO_DEC:
+	REP #$20
+	AND.w #$00FF
+
+CMDRAW_HEX16_TO_DEC:
 	PHX
+
+	STZ.w SA1RAM.dec_out+3 ; clear 1k and 10k
+	CMP.w #1000
+	BCC .under_1k
+
+	TAY
+	STA.l $4204 ; dividend
+
+	SEP #$20
+
+	LDA.b #100
+	STA.l $4206 ; divide by 100
+
 	REP #$20
 
-	AND.w #$00FF
+	LDA.w #4
+	CPY.w #10000
+	ADC.w #0
+	TAY
+
+	LDA.l $4214 ; get quotient for hundreds and 10s
+	ASL
+	TAX
+	LDA.l hex_to_dec_fast_table,X
+
+	SEP #$20
+	LSR
+	LSR
+	LSR
+	LSR
+	STA.w SA1RAM.dec_out+3
+
+	XBA
+	AND.b #$0F
+	STA.w SA1RAM.dec_out+4
+
+	REP #$20
+	LDA.l $4216 ; remainder for the lower digits
+	BRA .get_lower_digits
+
+.under_1k
+	LDY.w #3
+
+	CMP.w #100
+	BCS .get_lower_digits
+
+	DEY
+
+	CMP.w #10
+	BCS .get_lower_digits
+
+	DEY
+
+.get_lower_digits
 	ASL
 	TAX
 
@@ -860,19 +983,19 @@ CMDRAW_HEX_TO_DEC:
 	AND.w #$0F0F ; now get the 100s and 1s
 
 	SEP #$20
-	ROL.b SA1IRAM.cm_writer+0 ; put carry in bit 0 for 10s place
-
-	STA.b SA1IRAM.cm_writer+1
+	STA.w SA1RAM.dec_out+0
 
 	LDA.l hex_to_dec_fast_table,X
 	LSR
 	LSR
 	LSR
 	LSR
-	STA.b SA1IRAM.cm_writer+2
+	STA.w SA1RAM.dec_out+1
 
 	XBA
-	STA.b SA1IRAM.cm_writer+3
+	STA.w SA1RAM.dec_out+2
+
+	STY.w SA1RAM.dec_count
 
 	PLX
 	RTS
@@ -889,7 +1012,7 @@ CMDRAW_NUMFIELD_DEC_FROM_FUNC:
 
 	SEP #$20
 
-	JSR CMDRAW_HEX_TO_DEC
+	JSR CMDRAW_HEX8_TO_DEC
 	JSR CMDRAW_NUMBER_DEC
 
 	REP #$30
@@ -1074,7 +1197,7 @@ CMDRAW_LITESTATE:
 
 	PHX
 
-	LDX.b SA1IRAM.litestate_off	
+	LDX.w SA1IRAM.litestate_off	
 	LDA.l LiteStateData+$10+LiteSRAMSize,X ; get $1B cache
 
 	PLX
@@ -1085,7 +1208,7 @@ CMDRAW_LITESTATE:
 	JSR CMDRAW_WORD
 	PHX
 
-	LDX.b SA1IRAM.litestate_off
+	LDX.w SA1IRAM.litestate_off
 	LDA.l LiteStateData+$10+$01+LiteSRAMSize+0,X
 	LDY.w #$03
 	BRA .draw_id
@@ -1095,7 +1218,7 @@ CMDRAW_LITESTATE:
 	JSR CMDRAW_WORD
 	PHX
 
-	LDX.b SA1IRAM.litestate_off
+	LDX.w SA1IRAM.litestate_off
 	LDA.l LiteStateData+$10+$01+LiteSRAMSize+4,X
 	LDY.w #$02
 
@@ -1117,3 +1240,23 @@ CMDRAW_LITESTATE:
 
 .invalid_text
 	db "Empty", $FF
+
+;===================================================================================================
+
+CMDRAW_SENTRY_PICKER:
+CMDRAW_LINE_SENTRY_PICKER:
+	REP #$21
+	TXA
+	SBC.w #16-1
+	TAX
+
+	JSR CMDRAW_SAVE_ADDRESS_00
+
+	REP #$20
+	LDA.b (SA1IRAM.cm_writer+0)
+
+	JSR CMDRAW_SENTRY_BY_ID
+
+	RTS
+
+;===================================================================================================
