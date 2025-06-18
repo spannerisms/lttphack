@@ -226,7 +226,7 @@ title: Change log - ALTTP Practice Hack
 
 ### [v14.0.0](https://github.com/spannerisms/lttphack/releases/tag/14.0.0) &mdash; 1 September 2021
 
-#### FULL SA-1 REFACTOR</h4>
+#### FULL SA-1 REFACTOR
 Version fourteen point zero point zero is finally here. This represents the biggest and most dramatic update since the inclusion of presets. From here on, the accessibility of the practice hack has been tightened a bit, now requiring decent SA-1 emulation. Fortunately, support is fairly widespread. Anyone without access to a supported system will be able to download v13.6.0 from this page; however, support for these non-SA-1 versions has been officially discontinued.
 
 The SA-1's on-board RAM allows every system to include large save files, so fully fledged savestates are now available to everyone, eliminating the need for a separate SDSNES version. And while we're at it, the vanilla HUD variants are being nixed too (the option still exists, but it is no longer a separate ROM).
