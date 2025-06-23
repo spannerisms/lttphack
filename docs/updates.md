@@ -5,6 +5,15 @@ title: Change log - ALTTP Practice Hack
 
 ## Latest update
 
+### [v14.4.1](https://github.com/spannerisms/lttphack/releases/tag/14.4.1) &mdash; 23 June 2025
+- Bug fixes:
+  - I'm sorry, Muffins.
+  - Fixed display error with ROM chip versions.
+
+----
+
+## Older updates
+
 ### [v14.4.0](https://github.com/spannerisms/lttphack/releases/tag/14.4.0) &mdash; 16 June 2025
 
 **This version has breaking changes with the save file. Older versions' saves will be deleted automatically. If you have problems loading the hack, try holding START+SELECT on boot.**
@@ -35,11 +44,9 @@ title: Change log - ALTTP Practice Hack
   - <span class="snesButton snesA">A</span> can no longer be used to advance lists in the menu. It's kind of unintuitive, less dynamic than the d-pad, and I might have future plans for special types of lists that will utilize this button.
   - Added some memory caching for FXPak visibility to $7C00 in BWRAM.
 
-----
 
-## Older updates
 
-----
+
 
 ### [v14.3.5](https://github.com/spannerisms/lttphack/releases/tag/14.3.5) &mdash; 19 October 2024
 
@@ -64,9 +71,6 @@ title: Change log - ALTTP Practice Hack
 
 
 
-
-----
-
 ### [v14.3.4](https://github.com/spannerisms/lttphack/releases/tag/14.3.4) &mdash; 1 March 2023
 
 - Presets:
@@ -80,7 +84,7 @@ title: Change log - ALTTP Practice Hack
   - Fixed overlay corruption misbehavior.
 
 
-----
+
 
 ### [v14.3.3](https://github.com/spannerisms/lttphack/releases/tag/14.3.3) &mdash; 2 March 2022
 
@@ -91,7 +95,7 @@ title: Change log - ALTTP Practice Hack
   - Fixed line sentry 4 ancilla prop.
 
 
-----
+
 
 ### [v14.3.2](https://github.com/spannerisms/lttphack/releases/tag/14.3.2) &mdash; 2 February 2022
 
@@ -109,7 +113,7 @@ title: Change log - ALTTP Practice Hack
 
 
 
-----
+
 
 ### [v14.3.1](https://github.com/spannerisms/lttphack/releases/tag/14.3.1) &mdash; 2 December 2021
 
@@ -118,7 +122,7 @@ title: Change log - ALTTP Practice Hack
 - Added arrow decay timer for Sirius.
 
 
-----
+
 
 ### [v14.3.0](https://github.com/spannerisms/lttphack/releases/tag/14.3.0) &mdash; 29 November 2021
 
@@ -137,7 +141,7 @@ title: Change log - ALTTP Practice Hack
 - Moved the throne room mantle to allow sewers access when rain state is over in randomizer version.
 
 
-----
+
 
 ### [v14.2.2](https://github.com/spannerisms/lttphack/releases/tag/14.2.2) &mdash; 26 September 2021
 
@@ -147,7 +151,7 @@ title: Change log - ALTTP Practice Hack
 
 
 
-----
+
 
 ### [v14.2.1](https://github.com/spannerisms/lttphack/releases/tag/14.2.1) &mdash; 25 September 2021
 
@@ -159,7 +163,7 @@ title: Change log - ALTTP Practice Hack
 
 
 
-----
+
 
 ### [v14.2.0](https://github.com/spannerisms/lttphack/releases/tag/14.2.0) &mdash; 22 September 2021
 
@@ -181,7 +185,7 @@ title: Change log - ALTTP Practice Hack
   - Added a color for BluntBunny since he asked nicely.
 
 
-----
+
 
 ### [v14.1.0](https://github.com/spannerisms/lttphack/releases/tag/14.1.0) &mdash; 12 September 2021
 
@@ -222,7 +226,7 @@ title: Change log - ALTTP Practice Hack
 
 
 
-----
+
 
 ### [v14.0.0](https://github.com/spannerisms/lttphack/releases/tag/14.0.0) &mdash; 1 September 2021
 
@@ -301,28 +305,28 @@ Anyone without access to a supported system will be unable to use this version o
   - Accidentally fixed the bug that prevented input display from updating during text.
 
 
-----
+
 
 ### [v13.6.0](https://github.com/spannerisms/lttphack/releases/tag/13.6.0) &mdash; 9 April 2021
 
 - Lui fixed music
 
 
-----
+
 
 ### [v13.5.0](https://github.com/spannerisms/lttphack/releases/tag/13.5.0) &mdash; 5 October 2020
 
 - Lui cannot be stopped
 
 
-----
+
 
 ### [v13.4.0](https://github.com/spannerisms/lttphack/releases/tag/13.4.0) &mdash; 4 October 2020
 
 - Lui added low% presets. Can no one stop this mad man?
 
 
-----
+
 
 ### [v13.3.0](https://github.com/spannerisms/lttphack/releases/tag/13.3.0) &mdash; 24 September 2020
 
@@ -331,7 +335,7 @@ Anyone without access to a supported system will be unable to use this version o
 - Added "fill everything" to equipment menu.
 
 
-----
+
 
 ### [v13.2.0](https://github.com/spannerisms/lttphack/releases/tag/13.2.0) &mdash; 15 September 2020
 
@@ -349,7 +353,7 @@ Anyone without access to a supported system will be unable to use this version o
   - Fixed mastersword LSD effect.
 
 
-----
+
 
 ### [v13.1.1](https://github.com/spannerisms/lttphack/releases/tag/13.1.1) &mdash; 23 April 2020
 
@@ -358,7 +362,7 @@ Anyone without access to a supported system will be unable to use this version o
 - Fixed invisible timers caused by MVN.
 
 
-----
+
 
 ### [v13.1.0](https://github.com/spannerisms/lttphack/releases/tag/13.1.0) &mdash; 8 Feb 2020
 
@@ -377,7 +381,7 @@ Anyone without access to a supported system will be unable to use this version o
 - Moved some code so that Vanilla HUD variants can enjoy cleaner menu characters.
 
 
-----
+
 
 ### [v13.0.1](https://github.com/spannerisms/lttphack/releases/tag/13.0.1) &mdash; 2 Feb 2020
 
@@ -389,7 +393,7 @@ Anyone without access to a supported system will be unable to use this version o
   - Fixed segment timer.
 
 
-----
+
 
 ### [v13](https://github.com/spannerisms/lttphack/releases/tag/13.0.0) &mdash; 22 Jan 2020
 
@@ -432,7 +436,7 @@ Anyone without access to a supported system will be unable to use this version o
 
 
 
-----
+
 
 ### [v12.1.0](https://github.com/spannerisms/lttphack/releases/tag/12.1.0) &mdash; 26 Oct 2019
 
@@ -445,7 +449,7 @@ Anyone without access to a supported system will be unable to use this version o
   - Fixed graphical/memory issue with the Mirror toggle.
 
 
-----
+
 
 ### [v12.0.0](https://github.com/spannerisms/lttphack/releases/tag/12.0.0) &mdash; 24 Oct 2019
 
@@ -478,7 +482,7 @@ Anyone without access to a supported system will be unable to use this version o
 
 
 
-----
+
 
 ### [v11.0.0](https://github.com/spannerisms/lttphack/releases/tag/11.0.0) &mdash; 12 Oct 2019
 
@@ -525,13 +529,13 @@ Anyone without access to a supported system will be unable to use this version o
 - General refactoring. Practice hack control should be smoother now.
 
 
-----
+
 
 ### v10
 <p class="warped"><span>This version was lost in a time </span><span class="morewarped">paradox.</span></p>
 
 
-----
+
 
 ### v9 &mdash; 8 February 2018
 
@@ -570,7 +574,7 @@ Anyone without access to a supported system will be unable to use this version o
 
 
 
-----
+
 
 ### v8 &mdash; 24 October 2016
 
@@ -579,7 +583,7 @@ Anyone without access to a supported system will be unable to use this version o
 - I don't even remember anymore. This is the same version that's been around for a while, I just arbitrarily decided to remove "beta2" from the version.
 
 
-----
+
 
 ### v7 &mdash; 15 December 2015
 
@@ -587,14 +591,14 @@ Anyone without access to a supported system will be unable to use this version o
 - Added a toggle for "always lit rooms".
 
 
-----
+
 
 ### v6 &mdash; 9 December 2015
 
 - Fixed a bug that made the game crash when resetting segment counter.
 
 
-----
+
 
 ### v5 &mdash; 8 December 2015
 
@@ -605,7 +609,7 @@ Anyone without access to a supported system will be unable to use this version o
   - Pause game and frame advance.
   - Displaying Link's coordinates.
 
-----
+
 
 ### v4 &mdash; 05 December 2015
 
@@ -613,7 +617,7 @@ Anyone without access to a supported system will be unable to use this version o
 - Added a "Full HP indicator".
 
 
-----
+
 
 ### v3 &mdash; 02 December 2015
 
@@ -624,7 +628,7 @@ Anyone without access to a supported system will be unable to use this version o
 - Better B. Thanks, Audity.
 
 
-----
+
 
 ### v2 &mdash; 30 November 2015
 
@@ -632,7 +636,7 @@ Anyone without access to a supported system will be unable to use this version o
 - Fixed issue where counters didn't run during maiden crystal sequence.
 - Added better transition detection for boss victory &rarr; overworld.
 
-----
+
 
 ### v1 &mdash; 29 November 2015
 

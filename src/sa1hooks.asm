@@ -430,7 +430,7 @@ if !RANDO
 	REP #$20
 
 	LDA.b $10 : STA.w SA1RAM.gamemode2
-	LDX.b $0FFF : STA.w SA1RAM.world2
+	LDA.w $0FFF : STA.w SA1RAM.world2
 
 	LDX.b #$2E
 

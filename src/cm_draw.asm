@@ -891,7 +891,7 @@ CMDRAW_INFO_1DIGIT:
 	REP #$20
 
 	LDY.w #1
-	STA.w SA1RAM.dec_count
+	STY.w SA1RAM.dec_count
 
 	JMP CMDRAW_NUMBER_DEC
 
