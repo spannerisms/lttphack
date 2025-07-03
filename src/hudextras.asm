@@ -462,11 +462,12 @@ endif
 
 ++	STA.w SA1RAM.HUD+$102
 
-	REP #$30
 
 ;===================================================================================================
 
 draw_hud_sentry:
+	REP #$30
+
 	LDY.w !config_sentry1 : LDA.w sentry_routines,Y : STA.w SA1RAM.EasyJMP
 	LDX.w #$002E : LDA.w SA1IRAM.SNTVAL1 : JSR HUDJumpCall
 

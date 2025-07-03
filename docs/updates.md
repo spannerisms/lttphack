@@ -5,14 +5,20 @@ title: Change log - ALTTP Practice Hack
 
 ## Latest update
 
+### [v14.4.2](https://github.com/spannerisms/lttphack/releases/tag/14.4.2) &mdash; 2 July 2025
+- Bug fixes:
+  - Vanilla hearts no longer crashes the SA-1.
+  - Fixed sword decomp.
+
+----
+
+## Older updates
+
 ### [v14.4.1](https://github.com/spannerisms/lttphack/releases/tag/14.4.1) &mdash; 23 June 2025
 - Bug fixes:
   - I'm sorry, Muffins.
   - Fixed display error with ROM chip versions.
 
-----
-
-## Older updates
 
 ### [v14.4.0](https://github.com/spannerisms/lttphack/releases/tag/14.4.0) &mdash; 16 June 2025
 

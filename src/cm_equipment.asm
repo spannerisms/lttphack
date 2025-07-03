@@ -67,7 +67,7 @@ EQUIPMENT_SUBMENU:
 
 ;===================================================================================================
 
-%choice_long_func_prgtext("Sword", $7EF359, 5, set_sword, draw_sword)
+%choice_long_func_filtered_prgtext("Sword", $7EF359, 5, set_sword, draw_sword)
 #draw_sword:
 	INC
 	CMP.b #$06

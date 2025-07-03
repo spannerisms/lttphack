@@ -609,7 +609,6 @@ macro choice_prgtext(name, addr, max, addrtext)
 #?here:
 endmacro
 
-; for text that can be programmatically decided
 %MenuAction("CHOICE_LONG_PRGTEXT", 8, $6C)
 macro choice_long_prgtext(name, addr, max, addrtext)
 	%add_self()
@@ -691,11 +690,23 @@ macro choice_func_prgtext(name, addr, max, func, addrtext)
 #?here:
 endmacro
 
-; for text that can be programmatically decided
 %MenuAction("CHOICE_LONG_FUNC_PRGTEXT", 11, $6C)
 macro choice_long_func_prgtext(name, addr,  max, func, addrtext)
 	%add_self()
 	db !CM_CHOICE_LONG_FUNC_PRGTEXT
+	dl <addr>
+	db <max>
+	dl select(equal(<addrtext>,this), ?here, <addrtext>)
+	dl <func>
+	db "<name>", $FF
+
+#?here:
+endmacro
+
+%MenuAction("CHOICE_LONG_FUNC_FILTERED_PRGTEXT", 11, $6C)
+macro choice_long_func_filtered_prgtext(name, addr,  max, func, addrtext)
+	%add_self()
+	db !CM_CHOICE_LONG_FUNC_FILTERED_PRGTEXT
 	dl <addr>
 	db <max>
 	dl select(equal(<addrtext>,this), ?here, <addrtext>)
