@@ -1,6 +1,14 @@
-set version="14.4.2"
+set version="14.4.3"
 
+mkdir target
 cd target
+
+IF NOT EXIST "alttp.sfc" (
+    echo 'Missing file "target/alttp.sfc"'
+    pause
+    cd ..
+    exit /b
+)
 
 copy alttp.sfc "lttphacksa1.sfc"
 copy alttp.sfc "lttphacksa1rando.sfc"
@@ -15,3 +23,4 @@ flips --create --bps alttp.sfc "lttphacksa1rando.sfc" "../docs/patcher/files/sa1
 :: del "lttphacksa1rando.sfc"
 
 pause
+cd ..
