@@ -2021,10 +2021,10 @@ HandleOverworldLoad:
 	BNE .darkworld
 
 	LDX.b #$6C ; add portal to sprite list
-	STA.w $0E2F
+	STX.w $0E2F
 
 	LDX.b #$08
-	STA.w $0DDF
+	STX.w $0DDF
 
 .darkworld
 	AND.b #$3F

@@ -650,7 +650,7 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($0394, "Hookslot", "HOOKSLOT")
+%sentry($039D, "Hookslot", "HOOKSLOT")
 	LDY.w #char(2)|!RED_PAL
 	JMP sentry_raw
 

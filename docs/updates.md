@@ -5,11 +5,12 @@ title: Change log - ALTTP Practice Hack
 
 ## Latest update
 
-### [v14.4.3](https://github.com/spannerisms/lttphack/releases/tag/14.4.3) &mdash; ???? 2025
+### [v14.4.3](https://github.com/spannerisms/lttphack/releases/tag/14.4.3) &mdash; 27 October 2025
 - Bug fixes:
   - Fixed weird HUD race condition with timers
   - Mushroom is no longer invisible or garbage
   - Website updates
+- FoxLisk's attempt at saving the day caused me 1500 hours of work
 
 ----
 
@@ -19,7 +20,6 @@ title: Change log - ALTTP Practice Hack
 - Bug fixes:
   - Vanilla hearts no longer crashes the SA-1.
   - Fixed sword decomp.
-
 
 ### [v14.4.1](https://github.com/spannerisms/lttphack/releases/tag/14.4.1) &mdash; 23 June 2025
 - Bug fixes:
