@@ -598,7 +598,11 @@ SA1NMI:
 	PHD
 	PHB
 
+	LDA.w #$0000
+	TCD
+
 	SEP #$30
+
 	LDA.b #$10
 	STA.l $00220B
 
