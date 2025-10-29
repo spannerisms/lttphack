@@ -8,6 +8,24 @@ footer {
 	margin-top: auto;
 }
 
+div.tocbox {
+	background: #EEEEFF;
+	border: 3px solid #A0A0FF;
+	text-align:center;
+	margin: auto 100px;
+	border-radius: 10px 10px 0 0;
+}
+
+div.tocbox > ul {
+	margin: 5px;
+}
+
+div.tocbox > ul > li {
+	display: inline-block;
+	margin: 0 1em;
+	font-weight: bold;
+}
+
 img {
 	max-width: 100%;
 }
@@ -471,24 +489,6 @@ span.snesButton.snesSelect {
 span.releaseDate {
 	font-variant: small-caps;
 	font-size: 70%;
-}
-
-sup.badge {
-	font-weight: bold;
-	font-family: consolas;
-	color: white;
-	border-radius: 6px;
-	padding: 0 6px;
-}
-
-sup.sa1-badge {
-	background-color: #0089FF;
-	border: 1px solid #562AB3;
-}
-
-sup.lag-badge {
-	background-color: #FF8900;
-	border: 1px solid #B32A56;
 }
 
 ul, dl {
