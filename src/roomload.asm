@@ -2011,37 +2011,51 @@ SetHUDItemGraphics:
 ;===================================================================================================
 
 HandleOverworldLoad:
-	REP #$20
-
-	STZ.w $0624
-	STZ.w $0626
-	STZ.w $0628
-	STZ.w $062A
-
 	SEP #$30
 
 	STZ.b $EE ; layer
 	STZ.b $1B ; outdoors
 
-	BIT.w $008A ; do mirror portal?
-	BVS .darkworld
+	LDA.w $008A ; do mirror portal?
+	BIT.b #$40
+	BNE .darkworld
 
-	LDA.b #$6C ; add portal to sprite list
-	STA.w $0E2F
+	LDX.b #$6C ; add portal to sprite list
+	STX.w $0E2F
 
-	LDA.b #$08
-	STA.w $0DDF
+	LDX.b #$08
+	STX.w $0DDF
 
 .darkworld
-	REP #$20
+	AND.b #$3F
 
+	REP #$30
+	BNE .no_mushroom
+
+	LDX.w #$7E
+
+.add_mushroom
+	LDA.l MushroomSprite,X
+	STA.l $7EBD40,X
+
+	DEX
+	DEX
+	BPL .add_mushroom
+
+
+.no_mushroom
 	LDA.w #$0009 : STA.b $10
 	LDA.w #$FFF8 : STA.b $EC
 
-	STZ.w $0696 : STZ.w $0698
+	STZ.w $0624
+	STZ.w $0626
+	STZ.w $0628
+	STZ.w $062A
+	STZ.w $0696
+	STZ.w $0698
 	STZ.w $2116
 
-	REP #$20
+
 	JSL $02EA30
 	SEP #$20
 
@@ -2080,15 +2094,13 @@ HandleOverworldLoad:
 
 	JSL $09C499
 
-	SEP #$30
+	SEP #$34
 
 	LDA.b #$FF
 	STA.l $7EF36F ; no keys
 	STA.w $040C ; no dungeon
 
 	; load overworld music
-	SEI
-
 	STA.w $2140
 	LDA.b #$01 : STA.w $4200
 	STZ.w $0136
@@ -2175,3 +2187,17 @@ OWToVRAM:
 	BCC .next_chunk
 
 	RTS
+
+;===================================================================================================
+
+MushroomSprite:
+	db $03, $00, $04, $03, $08, $07, $39, $07, $49, $37, $91, $6F, $80, $7F, $B8, $47
+	db $03, $03, $04, $07, $08, $0F, $39, $3F, $49, $7F, $91, $FF, $80, $FF, $B8, $FF
+	db $C0, $00, $20, $C0, $90, $E0, $D0, $E0, $EC, $F0, $EA, $F4, $C1, $FE, $05, $FE
+	db $C0, $C0, $20, $E0, $90, $F0, $D0, $F0, $EC, $FC, $EA, $FE, $C1, $FF, $05, $FF
+	db $5C, $23, $26, $19, $1F, $02, $3F, $1F, $3C, $1F, $1E, $0F, $0F, $03, $03, $00
+	db $5C, $7F, $26, $3F, $1F, $1F, $3F, $3F, $3F, $3F, $1F, $1F, $0F, $0F, $03, $03
+	db $1B, $FC, $06, $F8, $98, $60, $F0, $80, $58, $F0, $38, $F0, $F0, $E0, $E0, $00
+	db $1B, $FF, $06, $FE, $98, $F8, $F0, $F0, $F8, $F8, $F8, $F8, $F0, $F0, $E0, $E0
+
+;===================================================================================================
