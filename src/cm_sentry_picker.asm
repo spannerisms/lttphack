@@ -32,6 +32,19 @@ macro line_sentry(name, varname)
 	%defsentry("<name>", "LINE_SENTRY_<varname>", __SENTRY_CODE_LINE_SENTRY_<varname>_init)
 endmacro
 
+macro set_sentry_icon(gfxoffset, props)
+	pushpc
+		org sentry_icons+!SENTRY_ID        : dw <props>|$2020
+		org sentry_icongfx+!SENTRY_ID      : dw hud_sentryicons+(<gfxoffset>*$10)
+	pullpc
+endmacro
+
+macro set_sentry_raw()
+	pushpc
+		org sentry_routines+!SENTRY_ID      : dw sentry_raw
+	pullpc
+endmacro
+
 ;===================================================================================================
 
 macro sentry_group(name)

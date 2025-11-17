@@ -343,7 +343,8 @@ DMA_BWRAMSRAM:
 	dl $7F6918 : dw $0001
 	dl $7F7000 : dw $01C0
 	dl $7FDD80 : dw $1400
-	dl $7FF800 : dw $0800 ; $F409 + $800 for HUD + $70 for DMA = $FC79
+	dl $7FF800 : dw $0800 ; $F408 + $800 for HUD + $70 for DMA = $FC78
+	HUDBWRAMLOC = $41F408
 
 	dl 0
 
@@ -357,15 +358,18 @@ FinalizeSavestate:
 
 .loading
 	LDA.b #$18
+	CLV ; clear overflow for loading
 	BRA .continue
 
 .saving
 	LDA.b #$39
+	SEP #$40 ; set overflow for saving
 
 .continue
 	STA.w $4351
 
-	LDA.b #$80 : STA.w $2115
+	LDA.b #$80
+	STA.w $2115
 
 	LDX.w #$0000
 	STX.w $4352
@@ -375,12 +379,20 @@ FinalizeSavestate:
 
 	STX.w $4355
 	STX.w $2116
-	LDA.w $4351 : CMP.b #$39 : BNE ++
+	BVC .no_dummy_read
 
-	LDY.w $2139 ; necessary dummy read
+	; necessary dummy read
+	LDY.w $2139
 
-++	LDA.b #$20 : STA.w $420B
+.no_dummy_read
+	LDA.b #$20 : STA.w $420B
+	; after vram is loaded, need to quickly swap in the sentry icons that may or may not be different
+	BVS .no_sentry_icons
 
+	JSL AddSentryIcons
+	SEP #$30
+
+.no_sentry_icons
 	LDA.w SA1RAM.old_music_bank : CMP.w $0136 : BEQ .songBankNotChanged
 
 	SEP #$34 ; I flag too

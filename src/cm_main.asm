@@ -135,7 +135,7 @@ CM_Exiting:
 	CPY.w SA1IRAM.highestline
 	BCS .no_hide
 
-	JSR ClearLineSentryLines
+	JSL ClearLineSentryLine
 
 	INY
 	INY
@@ -143,7 +143,7 @@ CM_Exiting:
 
 .no_hide
 	JSL LoadCustomHUDGFX
-	JSL reinit_sentry_addresses
+	JSL InitializeSentries
 	JSL ConfigMenuSize
 
 	SEP #$30
@@ -159,7 +159,7 @@ CM_Exiting:
 
 ;===================================================================================================
 
-ClearLineSentryLines:
+ClearLineSentryLine:
 	TYA
 	ASL
 	ASL
@@ -168,12 +168,45 @@ ClearLineSentryLines:
 	ADC.w #$60E5
 	STA.w $2116
 
-	LDA.w #$007F
+	LDA.w #$207F
 	LDX.w #26
---	STA.w $2118
+
+.clear_vram
+	STA.w $2118
 	DEX
-	BNE --
-	RTS
+	BNE .clear_vram
+
+	; check 
+	TYA
+	ASL
+	ASL
+	ASL
+	ASL
+	ASL
+	TAX
+
+	LDA.l $42C1CA,X
+	CMP.w #$28F3
+	BEQ .do_not_clear_savestate
+	CMP.w #$28C8
+	BEQ .do_not_clear_savestate
+
+	PHY
+
+	LDA.w #$207F
+	LDY.w #26
+
+.clear_savestate
+	STA.l $42C1CA,X
+	INX
+	INX
+	DEY
+	BNE .clear_savestate
+
+	PLY
+
+.do_not_clear_savestate
+	RTL
 
 ;===================================================================================================
 

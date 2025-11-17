@@ -13,6 +13,7 @@ title: Sentry list - ALTTP Practice Hack
   - **Lag frames (live)** - Lag frames with continuous updates.
   - **Idle frames** - Count of menu and text frames with no relevant input, starting from the beginning of the last transition.
   - **Segment time** - Time spent since the beginning of the last segment timer reset.
+  - **Text timer** - Time remaining until text can be advanced.
 - Link
   - **Coordinates** - Absolute position of Link (X,Y).
   - **Velocity** - Link's displacement along each axis from the previous frame of movement.
@@ -46,7 +47,9 @@ title: Sentry list - ALTTP Practice Hack
 - Overworld
   - **OW transition X** - Transition triggers and target screen IDs for horizontal overworld transitions.
   - **OW transition Y** - Transition triggers and target screen IDs for vertical overworld transitions.
-- Ancilla [front/back/indexed] slots *(differentiated with [AncF/AncB/AncX] respectively)*
+- Major glitches
+  - **Hookslot props** - Hookslot plus the properties of X, Y, Direction, Extension for hookslot index.
+- Ancilla [front/back/indexed] slots *(differentiated with [AncF/AncB/AncX] respectively; &)*
   - **ID** - Ancilla ID; address: $7E03C4,X (includes coloring for 00 and replacable particles).
   - **X coordinate** - Ancilla X-Coordinate; address: $7E0C04,X
   - **Y coordinate** - Ancilla Y-Coordinate; address: $7E0BFA,X
@@ -57,3 +60,4 @@ title: Sentry list - ALTTP Practice Hack
   - **EG check** - Something; address: $7E03A4,X
   - **Direction** - Generally used for direction of ancilla; address: $7E0C72,X
   - **Decay** - Timer for lodged arrows before disappearing; address: $7E03B1,X
+

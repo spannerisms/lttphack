@@ -1,5 +1,5 @@
-!SRAM_VERSION = $0031
-!INIT_SIGNATURE = $25A9
+!SRAM_VERSION = $0032
+!INIT_SIGNATURE = $25B9
 
 function hexto555(h) = ((((h&$FF)/8)<<10)|(((h>>8&$FF)/8)<<5)|(((h>>16&$FF)/8)<<0))
 function RoomFlags(room) = $7EF000+(room*2)
@@ -49,6 +49,10 @@ function char(n) = $2150+n
 
 SA1SRAM = $400000
 LiteStateData = $430000
+
+HUDProxy = $3000
+function HUDProxyOffset(x) = $3000+x
+
 
 org $008000
 struct SA1IRAM $003000
@@ -146,6 +150,8 @@ struct SA1IRAM $003000
 	.SEG_TIME_S_DISPLAY: skip 2
 	.SEG_TIME_M_DISPLAY: skip 2
 
+	.SENTRYTEMP: skip 2
+
 	.SNTVAL1: skip 2
 	.SNTVAL2: skip 2
 	.SNTVAL3: skip 2
@@ -189,20 +195,37 @@ struct SA1IRAM $003000
 
 .savethis_end
 
+	.SENTRYICON1: skip 2
+	.SENTRYICON2: skip 2
+	.SENTRYICON3: skip 2
+	.SENTRYICON4: skip 2
+	.SENTRYICON5: skip 2
+
 	print ""
 	print "SA1 dp: $", pc
 	print "Saved: ", bytes, "/640 (acceptable savestate limit)"
 
-
+warnpc $003100
 
 org $003100
 
 	; ancilla watch
-	.LINEVAL:
+	.LINEVAL: ; +14 = icon
 	.LINE1VAL: skip 16
 	.LINE2VAL: skip 16
 	.LINE3VAL: skip 16
 	.LINE4VAL: skip 16
+
+	.SENTRYVECTOR1: skip 2
+	.SENTRYVECTOR2: skip 2
+	.SENTRYVECTOR3: skip 2
+	.SENTRYVECTOR4: skip 2
+	.SENTRYVECTOR5: skip 2
+
+	.LINEVECTOR1: skip 2
+	.LINEVECTOR2: skip 2
+	.LINEVECTOR3: skip 2
+	.LINEVECTOR4: skip 2
 
 	.QuickSwapLR: skip 1
 
@@ -212,7 +235,6 @@ org $003100
 
 	.HUDSIZE: skip 2
 	.highestline: skip 2
-	.number_of_timer_triggers: skip 2
 
 	print "SA1 mirroring: $", pc
 

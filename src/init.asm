@@ -187,7 +187,7 @@ init_hook:
 	JSL $0EF572
 	JSL DoWRAM4BPP
 
-	JSL reinit_sentry_addresses
+	JSL InitializeSentries
 
 	REP #$30
 

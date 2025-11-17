@@ -5,16 +5,24 @@ title: Change log - ALTTP Practice Hack
 
 ## Latest update
 
+### [v14.5.0](https://github.com/spannerisms/lttphack/releases/tag/14.5.0) &mdash; 17 November 2025
+- Sentries:
+  - Improved icons backend and more icons
+  - Text timer sentry
+  - Ancilla line sentry for the ancilla in the hookslot
+- Bug fixes:
+  - Fixed persistent lines when they're changed across savestates (I hope).
+
+----
+
+## Older updates
+
 ### [v14.4.3](https://github.com/spannerisms/lttphack/releases/tag/14.4.3) &mdash; 27 October 2025
 - Bug fixes:
   - Fixed weird HUD race condition with timers
   - Mushroom is no longer invisible or garbage
   - Website updates
 - FoxLisk's attempt at saving the day caused me 1500 hours of work
-
-----
-
-## Older updates
 
 ### [v14.4.2](https://github.com/spannerisms/lttphack/releases/tag/14.4.2) &mdash; 2 July 2025
 - Bug fixes:

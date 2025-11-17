@@ -5,14 +5,20 @@ sentry_name_pointers:
 	fillword $0000 : fill 256*2
 
 sentry_routines:
-	fillword sentry_nothing : fill 512*2
+	fillword sentry_nothing : fill 256*2
 
 sentry_inits:
-	fillword no_sentry_init : fill 512*2
+	fillword no_sentry_init : fill 256*2
+
+sentry_icons:
+	fillword $207F : fill 256*2
+
+sentry_icongfx:
+	fillword hud_sentryicons : fill 256*2
 
 ;===================================================================================================
 
-reinit_sentry_addresses:
+InitializeSentries:
 	REP #$30
 
 	PHB
@@ -23,16 +29,100 @@ reinit_sentry_addresses:
 
 .next
 	LDY.w !config_sentry1,X
+
 	LDA.w sentry_inits,Y
 	STA.w SA1IRAM.SNTADD1,X
+
+	LDA.w sentry_routines,Y
+	STA.w SA1IRAM.SENTRYVECTOR1,X
+
+	TXA
+	LSR
+	ORA.w sentry_icons,Y
+	STA.w SA1IRAM.SENTRYICON1,X
+
 	DEX
 	DEX
 	BPL .next
+
+	LDY.w #$0006
+
+.next_line
+	LDX.w !config_linesentry1,Y
+
+	LDA.w sentry_routines,X
+	STA.w SA1IRAM.LINEVECTOR1,Y
+
+	TYA
+	LSR
+	ADC.w #$0004
+	ORA.w sentry_icons,X
+	PHA
+
+	TXA
+	ASL
+	ASL
+	ASL
+	TAX
+
+	PLA
+	STA.w SA1IRAM.LINEVAL+14,X
+
+	DEY
+	DEY
+	BPL .next_line
 
 	SEP #$30
 	PLB
 	RTL
 
+
+;===================================================================================================
+
+AddSentryIcons:
+	PHD
+
+	REP #$30
+
+	LDX.w !config_linesentry4 : LDA.l sentry_icongfx,X : PHA
+	LDX.w !config_linesentry3 : LDA.l sentry_icongfx,X : PHA
+	LDX.w !config_linesentry2 : LDA.l sentry_icongfx,X : PHA
+	LDX.w !config_linesentry1 : LDA.l sentry_icongfx,X : PHA
+
+	LDX.w !config_sentry5 : LDA.l sentry_icongfx,X : PHA
+	LDX.w !config_sentry4 : LDA.l sentry_icongfx,X : PHA
+	LDX.w !config_sentry3 : LDA.l sentry_icongfx,X : PHA
+	LDX.w !config_sentry2 : LDA.l sentry_icongfx,X : PHA
+	LDX.w !config_sentry1 : LDA.l sentry_icongfx,X : PHA
+
+	LDA.w #$4300
+	TCD
+
+	SEP #$10
+
+	LDX.b #$80 : STX.w $2115
+	LDA.w #$E200>>1 : STA.w $2116
+	LDA.w #$1801 : STA.b $4350
+	LDX.b #hud_sentryicons>>16 : STX.b $4354
+
+	LDX.b #$10
+	LDY.b #$20
+
+	; normal sentries
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+
+	; line sentries
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+	PLA : STA.b $4352 : TXA : STA.b $4355 : STY.w $420B
+
+	PLD
+	RTL
 
 ;===================================================================================================
 
@@ -59,6 +149,7 @@ Extra_SA1_Transfers:
 	dw SENTRY_LAGLIVE
 	dw SENTRY_IDLEFRAMES
 	dw SENTRY_SEGTIME
+	dw SENTRY_TEXTTIME
 %end_sentry_group()
 
 %sentry_group("Link")
@@ -108,6 +199,10 @@ Extra_SA1_Transfers:
 %line_sentry_group("Overworld")
 	dw LINE_SENTRY_OWTRANSX
 	dw LINE_SENTRY_OWTRANSY
+%end_sentry_group()
+
+%line_sentry_group("Major glitches")
+	dw LINE_SENTRY_HOOKSLOTTER
 %end_sentry_group()
 
 %line_sentry_group("Ancilla front slots")
@@ -167,19 +262,15 @@ sentry_nothing:
 ;===================================================================================================
 
 NoDisplaySentry:
-	LDA.w #$608B : STA.w SA1RAM.HUD+12,X
-	STA.w SA1RAM.HUD+14,X
+	LDA.w #$608B : STA.b HUDProxy+12,X
+	STA.b HUDProxy+14,X
 	RTS
 
 ;===================================================================================================
 
 sentry_raw:
-	PHA
+	STY.b HUDProxy+10,X
 
-	TYA
-	STA.w SA1RAM.HUD+10,X
-
-	PLA
 	AND.w #$00FF
 
 	JMP DrawHex_white_2
@@ -279,6 +370,18 @@ sentry_raw:
 
 ;===================================================================================================
 
+%sentry($7E1CE9, "Text timer", "TEXTTIME")
+%set_sentry_icon($06, !GREEN_PAL)
+	STY.b HUDProxy+10,X
+
+	AND.w #$00FF
+	JSR PrepHexToDecDraw
+
+	LDY.w #!white
+	JMP Draw_short_two
+
+;===================================================================================================
+
 %sentry_no_init("Coordinates", "COORDINATES")
 	LDA.b SA1IRAM.CopyOf_20
 	JSR DrawHex_yellow_4
@@ -289,7 +392,7 @@ sentry_raw:
 ;===================================================================================================
 
 %sentry($0030, "Velocity", "VELOCITY")
-	PHA
+	STA.b SA1IRAM.SENTRYTEMP
 
 	LDY.w #$355C
 
@@ -308,19 +411,16 @@ sentry_raw:
 	LDY.w #$355B
 
 .positive_y
-	PHY
+	STY.b HUDProxy+10,X
 
 	JSR DrawHex_yellow_2
 
-	PLA
-	STA.w SA1RAM.HUD+14,X
 	DEX
 	DEX
 
 ;---------------------------------------------------------------------------------------------------
 
-	PLA
-	XBA
+	LDA.b SA1IRAM.SENTRYTEMP+1
 
 	LDY.w #$3D5A
 
@@ -339,36 +439,26 @@ sentry_raw:
 	LDY.w #$3D59
 
 .positive_x
-	PHY
+	STY.b HUDProxy+10,X
 
-	JSR DrawHex_white_2
-
-	PLA
-	STA.w SA1RAM.HUD+14,X
-
-	RTS
+	JMP DrawHex_white_2
 
 ;===================================================================================================
 
 %sentry($002A, "Subpixel velocity", "SUBPIXELS")
-	PHA
+	STA.b SA1IRAM.SENTRYTEMP
 	AND.w #$00FF
 	JSR DrawHex_yellow_2
 
-	PLA
-	XBA
+	LDA.b SA1IRAM.SENTRYTEMP+1
 	AND.w #$00FF
 	JMP DrawHex_white_2
 
 ;===================================================================================================
 
 %sentry($0079, "Spin attack timer", "SPINTIME")
-	TAY
-
-	LDA.w #char(23)|!BLUE_PAL
-	STA.w SA1RAM.HUD+10,X
-
-	TYA
+%set_sentry_icon($03, !BLUE_PAL)
+	STY.b HUDProxy+10,X
 
 	LDY.w #!gray
 	AND.w #$00FF
@@ -385,17 +475,19 @@ sentry_raw:
 ;===================================================================================================
 
 %sentry($0E50, "Boss HP", "BOSSHP")
-	LDY.w #$2CA1
-	JMP sentry_raw
+%set_sentry_icon($07, !RED_PAL)
+%set_sentry_raw()
 
 ;===================================================================================================
 
 %sentry($0B08, "Arc variable", "ARCVAR")
+%set_sentry_icon($09, !YELLOW_PAL)
 	JMP DrawHex_white_4
 
 ;===================================================================================================
 
 %sentry($0F70, "Slot 0 altitude", "ENEMY0ALT")
+%set_sentry_icon($0A, !YELLOW_PAL)
 	JMP DrawHex_white_2
 
 ;===================================================================================================
@@ -418,39 +510,40 @@ sentry_raw:
 	BNE .desync
 
 .sync
-	PEA.w !SYNCED
+	LDA.w #!SYNCED
 	LDY.w #!gray
 	BRA .draw
 
 .desync
-	PEA.w !DESYNC
+	LDA.w #!DESYNC
 	LDY.w #!red
 	BRA .draw
 
 .overworld
-	PEA.w char($11)|!GRAY_PAL
+	LDY.w #char($11)|!GRAY_PAL
 
 	LDA.w #$608B
-	STA.w SA1RAM.HUD+14,X
-	STA.w SA1RAM.HUD+12,X
-	STA.w SA1RAM.HUD+10,X
+	STA.b HUDProxy+14,X
+	STA.b HUDProxy+12,X
+	STA.b HUDProxy+10,X
 
 	TXA
 	SEC
-	SBC.w #$0006
+	SBC.w #$0008
 	TAX
+	STA.b HUDProxy+16,X
 	BRA ++
 
 .draw
+	STA.b HUDProxy+8,X
+
 	LDA.b SA1IRAM.SCRATCH+14
 	JSR DrawHex_3digit_prepped
 
-++	PLA
-	STA.w SA1RAM.HUD+14,X
 	DEX
 	DEX
 
-	LDA.b SA1IRAM.CopyOf_A0
+++	LDA.b SA1IRAM.CopyOf_A0
 	JMP DrawHex_white_3
 
 ;===================================================================================================
@@ -495,7 +588,7 @@ sentry_raw:
 .doQuadrant
 	STY.b SA1IRAM.SCRATCH+14
 
-	STA.w SA1RAM.HUD+10,X
+	STA.b HUDProxy+10,X
 
 .calc_correct_quadrant
 	LDA.w #$0100 ; checking the same bit on both coordinates
@@ -535,33 +628,29 @@ sentry_raw:
 
 .desync
 	ORA.w #!TEXT_PAL
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 
 	LDA.w #!DESYNC
 	BRA .drawSync
 
 .sync
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 	LDA.w #!SYNCED
 
 .drawSync
-	STA.w SA1RAM.HUD+12,X
+	STA.b HUDProxy+12,X
 	RTS
 
 ;===================================================================================================
 
 %sentry($0114, "Tile under foot", "LINKTILE")
-	AND.w #$00FF
-	TAY
+%set_sentry_icon($08, !BROWN_PAL)
+	STY.b HUDProxy+10,X
 
-	LDA.w #char(24)|!GREEN_PAL
-	STA.w SA1RAM.HUD+10,X
+	LDY.b SA1IRAM.CopyOf_1B-1
+	CPY.w #$0100
+	BCC .no
 
-	LDA.b SA1IRAM.CopyOf_1B
-	AND.w #$00FF
-	BEQ .no
-
-	TYA
 	JMP DrawHex_white_2
 
 .no
@@ -574,7 +663,6 @@ sentry_raw:
 	CPY.w #$0100 ; see if 1B is 00
 	BCC .no
 
-	AND.w #$00FF
 	JSR DrawHex_white_2
 
 	TXY
@@ -587,37 +675,38 @@ sentry_raw:
 
 .warphole
 	LDA.w #char($16)|!GRAY_PAL
-	BRA .drawflag
+	STA.b HUDProxy+14,X
+	RTS
 
 .no
 	JMP NoDisplaySentry
 
 .pitdamage
 	LDA.w #char($16)|!YELLOW_PAL
-
-.drawflag
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 	RTS
 
 ;===================================================================================================
 
 %sentry($02A2, "Spooky action", "SPOOKY")
-	LDY.w #char(3)|!RED_PAL
-	JMP sentry_raw
+%set_sentry_icon($01, !RED_PAL)
+%set_sentry_raw()
 
 ;===================================================================================================
 
 %sentry($0374, "Hovering", "HOVERING")
+%set_sentry_icon($05, !RED_PAL)
+	STY.b HUDProxy+10,X
+
 	AND.w #$00FF
 
 	CMP.w #$0000
 	BEQ ++
 
 	; carry guaranteed to be set since CMP #0
-	PHA
+	STA.b SA1IRAM.SENTRYTEMP
 	LDA.w #$001E
-	SBC 1,S
-	PLY
+	SBC.b SA1IRAM.SENTRYTEMP
 
 	PHX
 	JSR hex_to_dec_fast
@@ -639,34 +728,32 @@ sentry_raw:
 ;===================================================================================================
 
 %sentry($0690, "WEST SOMARIA", "WESTSOM")
-	LDY.w #char(23)|!RED_PAL
-	JMP sentry_raw
+%set_sentry_icon($04, !RED_PAL)
+%set_sentry_raw()
 
 ;===================================================================================================
 
 %sentry($03C4, "Ancilla search index", "ANCINDEX")
-	LDY.w #char(4)|!BLUE_PAL
-	JMP sentry_raw
+%set_sentry_icon($02, !BLUE_PAL)
+%set_sentry_raw()
 
 ;===================================================================================================
 
 %sentry($039D, "Hookslot", "HOOKSLOT")
-	LDY.w #char(2)|!RED_PAL
-	JMP sentry_raw
+%set_sentry_icon($00, !RED_PAL)
+%set_sentry_raw()
 
 ;===================================================================================================
 
 %sentry($00EC, "Plaid tile index", "PLAIDTILE")
+%set_sentry_icon($0B, !REDYELLOW)
+	STY.b HUDProxy+6,X
+
+	LDY.b SA1IRAM.CopyOf_1B
+	CPY.w #$0100
+	BCC .no
+
 	TAY
-
-	LDA.b SA1IRAM.CopyOf_1B
-	AND.w #$00FF
-	BEQ .no
-
-	LDA.w #char(24)|!BLUE_PAL
-	STA.w SA1RAM.HUD+6,X
-
-	TYA
 	AND.b SA1IRAM.CopyOf_20
 	AND.w #$FFF8
 	ASL
@@ -688,6 +775,9 @@ sentry_raw:
 	JMP DrawHex_white_4
 
 .no
+	LDA.b #$207F
+	STA.b HUDProxy+6,X
+
 	JMP NoDisplaySentry
 
 ;===================================================================================================
@@ -705,7 +795,7 @@ sentry_raw:
 	XBA 
 	STA.b SA1IRAM.SCRATCH+10
 
-	LDA.w #char($19)|!RED_PAL : STA.w SA1RAM.HUD,X ; flag symbol
+	LDA.w #char($19)|!RED_PAL : STA.b HUDProxy,X ; flag symbol
 
 	LDY.w #0
 
@@ -721,7 +811,7 @@ sentry_raw:
 	ORA.w #!GRAY_PAL
 
 .on
-	STA.w SA1RAM.HUD,X
+	STA.b HUDProxy,X
 	INY
 	INY
 	CPY.w #32
@@ -759,8 +849,8 @@ sentry_raw:
 ;===================================================================================================
 
 %line_sentry("Underworld camera X", UWCAMX)
+%set_sentry_icon($0F, !GRAY_PAL)
 	LDA.w #char(9)
-	PEA.w !white
 	JMP LineSentryUWCameras
 
 .init
@@ -777,13 +867,15 @@ sentry_raw:
 	LDA.w $060A : STA.w SA1IRAM.LINEVAL+7,Y
 	LDA.w $060E : STA.w SA1IRAM.LINEVAL+9,Y
 
+	LDA.w #!white : STA.w SA1IRAM.LINEVAL+11,Y
+
 	RTS
 
 ;===================================================================================================
 
 %line_sentry("Underworld camera Y", UWCAMY)
+%set_sentry_icon($0F, !GRAY_PAL)
 	LDA.w #char(11)
-	PEA.w !yellow
 	JMP LineSentryUWCameras
 
 .init
@@ -800,6 +892,8 @@ sentry_raw:
 	LDA.w $0602 : STA.w SA1IRAM.LINEVAL+7,Y
 	LDA.w $0606 : STA.w SA1IRAM.LINEVAL+9,Y
 
+	LDA.w #!yellow : STA.w SA1IRAM.LINEVAL+11,Y
+
 	RTS
 
 ;===================================================================================================
@@ -807,12 +901,12 @@ sentry_raw:
 LineSentryUWCameras:
 	STA.b SA1IRAM.SCRATCH+14 ; save the icon
 
-	PLA
+	LDA.w SA1IRAM.LINEVAL+11,Y
 	STA.b SA1IRAM.hud_props
 	STA.b SA1IRAM.SCRATCH+12
 
-	LDA.w #char($13)|!GRAY_PAL ; camera icon
-	STA.w SA1RAM.HUD,X
+	LDA.w SA1IRAM.LINEVAL+14,Y ; camera icon
+	STA.b HUDProxy,X
 	INX
 	INX
 
@@ -888,7 +982,7 @@ LineSentryUWCameras:
 	LDA.w #!DESYNC
 
 .drawsync
-	STA.w SA1RAM.HUD,X
+	STA.b HUDProxy,X
 	RTS
 
 .draw1
@@ -896,7 +990,7 @@ LineSentryUWCameras:
 	INY
 	LDA.b SA1IRAM.hud_props
 	ORA.b SA1IRAM.SCRATCH+14
-	STA.w SA1RAM.HUD,X
+	STA.b HUDProxy,X
 	INX
 	INX
 
@@ -995,7 +1089,7 @@ LineSentryOWCameras:
 	JSR DrawHexForward_4digit_color_set
 
 	LDA.b SA1IRAM.SCRATCH+8
-	STA.w SA1RAM.HUD,X
+	STA.b HUDProxy,X
 	INX
 	INX
 
@@ -1117,19 +1211,137 @@ HUDAncillaLineEG:
 	RTS
 
 ;===================================================================================================
+
+%line_sentry("Hookslot props", HOOKSLOTTER)
+%set_sentry_icon($0F, !GRAY_PAL)
+	LDA.w #char(2)|!RED_PAL
+	STA.b HUDProxy,X
+	INX
+	INX
+
+	LDA.w #!white
+	STA.b SA1IRAM.hud_props
+
+	LDA.w SA1IRAM.LINEVAL+0,Y
+	JSR DrawHexForward_2digit_color_set
+
+	INX
+	INX
+
+	; X coord
+	LDA.w #$3C0E
+	STA.b HUDProxy,X
+	INX
+	INX
+
+	LDA.w SA1IRAM.LINEVAL+1,Y
+	JSR DrawHexForward_2digit_color_set
+
+	; Y coord
+	LDA.w #$3C0F
+	STA.b HUDProxy,X
+	INX
+	INX
+
+	LDA.w SA1IRAM.LINEVAL+2,Y
+	JSR DrawHexForward_2digit_color_set
+
+	; Direction
+	INX
+	INX
+	LDA.w SA1IRAM.LINEVAL+3,Y
+	; save the direction
+	AND.w #$00FF
+	STA.b SA1IRAM.SCRATCH+10
+	JSR DrawHexForward_2digit_color_set
+
+	PHX
+
+	LDA.w #$2D00
+	SEP #$20
+
+	LDX.b SA1IRAM.SCRATCH+10 ; get direction
+
+	; get y speed
+	LDA.l $07AB5D,X
+	BEQ .y_is_zero
+	BPL .y_is_positive
+
+.y_is_negative
+	LDA.b #$78
+	BRA .save_y
+
+.y_is_zero
+	LDA.b #$70
+	BRA .save_y
+
+.y_is_positive
+	LDA.b #$74
+
+.save_y
+	STA.b SA1IRAM.SCRATCH+10
+
+	; get x speed
+	LDA.l $07AB61,X
+	BEQ .x_is_zero
+	BPL .x_is_positive
+
+.x_is_negative
+	LDA.b #$02
+	BRA .save_x
+
+.x_is_zero
+	LDA.b #$00
+	BRA .save_x
+
+.x_is_positive
+	LDA.b #$01
+
+.save_x
+	ORA.b SA1IRAM.SCRATCH+10
+
+	REP #$31
+	PLX
+	STA.b HUDProxy,X
+
+	TXA
+	ADC.w #$0004
+	TAX
+	; Extension
+
+	LDA.w SA1IRAM.LINEVAL+4,Y
+	JMP DrawHexForward_2digit_color_set
+
+.init
+	SEP #$30
+
+	LDA.w $039D : STA.w SA1IRAM.LINEVAL+0,Y ; HOOKSLOT
+
+	TAX
+	LDA.w $0C04,X : STA.w SA1IRAM.LINEVAL+1,Y ; X coord
+	LDA.w $0BFA,X : STA.w SA1IRAM.LINEVAL+2,Y ; Y coord
+	LDA.w $0C72,X : STA.w SA1IRAM.LINEVAL+3,Y ; Direction
+	LDA.w $0C5E,X : STA.w SA1IRAM.LINEVAL+4,Y ; Extension
+
+	REP #$30
+
+	RTS
+
+;===================================================================================================
 ;===================================================================================================
 ;===================================================================================================
 ;===================================================================================================
 ;===================================================================================================
 
-macro ancilla_line_group(addr, icon, propname, varname, drawroutine)
+macro ancilla_line_group(addr, icon, iconprop, propname, varname, drawroutine)
 
 %line_sentry("AncF <propname>", "ANCF_<varname>")
-	LDA.w #<icon>
-	STA.w SA1RAM.HUD+0,X
+%set_sentry_icon(<icon>, <iconprop>)
+	LDA.w SA1IRAM.LINEVAL+14,Y
+	STA.b HUDProxy+0,X
 
 	LDA.w #$A82F
-	STA.w SA1RAM.HUD+2,X
+	STA.b HUDProxy+2,X
 
 	INX : INX : INX : INX
 	JMP <drawroutine>
@@ -1140,11 +1352,12 @@ macro ancilla_line_group(addr, icon, propname, varname, drawroutine)
 	JMP CollectAncilla
 
 %line_sentry("AncB <propname>", "ANCB_<varname>")
-	LDA.w #<icon>
-	STA.w SA1RAM.HUD+0,X
+%set_sentry_icon(<icon>, <iconprop>)
+	LDA.w SA1IRAM.LINEVAL+14,Y
+	STA.b HUDProxy+0,X
 
 	LDA.w #$3C2F
-	STA.w SA1RAM.HUD+2,X
+	STA.b HUDProxy+2,X
 
 	INX : INX : INX : INX
 	JMP <drawroutine>
@@ -1155,11 +1368,12 @@ macro ancilla_line_group(addr, icon, propname, varname, drawroutine)
 	JMP CollectAncilla
 
 %line_sentry("AncX <propname>", "ANCX_<varname>")
-	LDA.w #<icon>
-	STA.w SA1RAM.HUD+0,X
+%set_sentry_icon(<icon>, <iconprop>)
+	LDA.w SA1IRAM.LINEVAL+14,Y
+	STA.b HUDProxy+0,X
 
 	LDA.w #$2D54
-	STA.w SA1RAM.HUD+2,X
+	STA.b HUDProxy+2,X
 
 	INX : INX : INX : INX
 	JMP <drawroutine>
@@ -1171,22 +1385,21 @@ macro ancilla_line_group(addr, icon, propname, varname, drawroutine)
 
 endmacro
 
-%ancilla_line_group($0C4A, $2551, "ID", "ID", HUDAncillaLineID)
-%ancilla_line_group($0C04, $242D, "X coordinate", "XCOORD", HUDAncillaLineBasic)
-%ancilla_line_group($0BFA, $242E, "Y coordinate", "YCOORD", HUDAncillaLineBasicYellow)
-%ancilla_line_group($029E, $2553, "Altitude", "ZCOORD", HUDAncillaLineBasic)
-%ancilla_line_group($0C7C, $256B, "Layer", "LAYER", HUDAncillaLineBasic)
-%ancilla_line_group($0C5E, $2552, "Extension", "EXTEND", HUDAncillaLineBasic)
-%ancilla_line_group($03E4, $2D68, "Tile type", "TILE", HUDAncillaLineBasic)
-%ancilla_line_group($03A4, $2966, "EG check", "EG", HUDAncillaLineEG)
-%ancilla_line_group($0C72, $3D64, "Direction", "DIR", HUDAncillaLineBasic)
-%ancilla_line_group($03B1, $2967, "Decay", "DECAY", HUDAncillaLineBasic)
+%ancilla_line_group($0C4A, $10, !RED_PAL, "ID", "ID", HUDAncillaLineID)
+%ancilla_line_group($0C04, $11, !RED_PAL, "X coordinate", "XCOORD", HUDAncillaLineBasic)
+%ancilla_line_group($0BFA, $12, !RED_PAL, "Y coordinate", "YCOORD", HUDAncillaLineBasicYellow)
+%ancilla_line_group($029E, $13, !RED_PAL, "Altitude", "ZCOORD", HUDAncillaLineBasic)
+%ancilla_line_group($0C7C, $14, !BLUE_PAL, "Layer", "LAYER", HUDAncillaLineBasic)
+%ancilla_line_group($0C5E, $15, !RED_PAL, "Extension", "EXTEND", HUDAncillaLineBasic)
+%ancilla_line_group($03E4, $08, !BROWN_PAL, "Tile type", "TILE", HUDAncillaLineBasic)
+%ancilla_line_group($03A4, $16, !YELLOW_PAL, "EG check", "EG", HUDAncillaLineEG)
+%ancilla_line_group($0C72, $17, !BLUE_PAL, "Direction", "DIR", HUDAncillaLineBasic)
+%ancilla_line_group($03B1, $18, !REDYELLOW, "Decay", "DECAY", HUDAncillaLineBasic)
 
 ;===================================================================================================
 
 CollectAncillaX:
 	LDA.w $03C4
-
 	AND.w #$00FF
 	SBC.w #$0005-1
 	CMP.w #$0080-5 ; default to slots 0-4 if bad value

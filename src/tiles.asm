@@ -33,20 +33,22 @@ LoadCustomHUDGFX:
 	STY.w $420B
 
 	; Input display
-	LDA.w !config_input_display : AND.w #$0002 : BEQ .done
+	LDA.w !config_input_display : AND.w #$0002 : BEQ .controller
 
 	LDA.w #$F700>>1 : STA.w $2116
-	LDA.w #$1801 : STA.w $4300
 	LDA.w #hud_inputchars : STA.w $4302
-	LDX.b #hud_inputchars>>16 : STX.w $4304
 	LDA.w #12*8*2 : STA.w $4305 ; writing 12 2BPP tiles
 
 	STY.w $420B
 
-.done
+.controller
+	JSL AddSentryIcons
+
 	SEP #$30
 
 	RTL
+
+;===================================================================================================
 
 hud_table:
 	incbin resources/hud_gfx.2bpp
@@ -59,3 +61,8 @@ cm_gfx:
 
 hud_inputchars:
 	incbin resources/inputchars.2bpp
+
+hud_sentryicons:
+	incbin resources/sentry_icons.2bpp
+
+;===================================================================================================

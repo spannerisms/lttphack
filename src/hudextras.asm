@@ -129,7 +129,7 @@ Draw:
 	XBA
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD+10,X
+	STA.b HUDProxy+10,X
 	BRA .digit10_always
 
 .short_two
@@ -148,13 +148,13 @@ Draw:
 	LSR
 	LSR
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD+12,X
+	STA.b HUDProxy+12,X
 
 .digit1
 	LDA.b (SA1IRAM.SCRATCH+10)
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 
 .done
 	RTS
@@ -468,20 +468,20 @@ endif
 draw_hud_sentry:
 	REP #$30
 
-	LDY.w !config_sentry1 : LDA.w sentry_routines,Y : STA.w SA1RAM.EasyJMP
-	LDX.w #$002E : LDA.w SA1IRAM.SNTVAL1 : JSR HUDJumpCall
+	LDA.b SA1IRAM.SNTVAL1 : LDX.w #HUDProxyOffset($002E) : LDY.b SA1IRAM.SENTRYICON1
+	PEA.w .return_1-1 : JMP.w (SA1IRAM.SENTRYVECTOR1) : .return_1
 
-	LDY.w !config_sentry2 : LDA.w sentry_routines,Y : STA.w SA1RAM.EasyJMP
-	LDX.w #$006E : LDA.w SA1IRAM.SNTVAL2 : JSR HUDJumpCall
+	LDA.b SA1IRAM.SNTVAL2 : LDX.w #HUDProxyOffset($006E) : LDY.b SA1IRAM.SENTRYICON2
+	PEA.w .return_2-1 : JMP.w (SA1IRAM.SENTRYVECTOR2) : .return_2
 
-	LDY.w !config_sentry3 : LDA.w sentry_routines,Y : STA.w SA1RAM.EasyJMP
-	LDX.w #$00AE : LDA.w SA1IRAM.SNTVAL3 : JSR HUDJumpCall
+	LDA.b SA1IRAM.SNTVAL3 : LDX.w #HUDProxyOffset($00AE) : LDY.b SA1IRAM.SENTRYICON3
+	PEA.w .return_3-1 : JMP.w (SA1IRAM.SENTRYVECTOR3) : .return_3
 
-	LDY.w !config_sentry4 : LDA.w sentry_routines,Y : STA.w SA1RAM.EasyJMP
-	LDX.w #$00EE : LDA.w SA1IRAM.SNTVAL4 : JSR HUDJumpCall
+	LDA.b SA1IRAM.SNTVAL4 : LDX.w #HUDProxyOffset($00EE) : LDY.b SA1IRAM.SENTRYICON4
+	PEA.w .return_4-1 : JMP.w (SA1IRAM.SENTRYVECTOR4) : .return_4
 
-	LDY.w !config_sentry5 : LDA.w sentry_routines,Y : STA.w SA1RAM.EasyJMP
-	LDX.w #$012E : LDA.w SA1IRAM.SNTVAL5 : JSR HUDJumpCall
+	LDA.b SA1IRAM.SNTVAL5 : LDX.w #HUDProxyOffset($012E) : LDY.b SA1IRAM.SENTRYICON5
+	PEA.w .return_5-1 : JMP.w (SA1IRAM.SENTRYVECTOR5) : .return_5
 
 ;===================================================================================================
 
@@ -489,17 +489,17 @@ draw_hud_linesentrys:
 	LDA.w !config_hide_lines
 	BNE .no_line_sentries
 
-	LDY.w #16*0 : LDX.w !config_linesentry1
-	LDA.w sentry_routines,X : LDX.w #$014A : JSR HUDJumpCallA
+	LDY.w #16*0 : LDX.w #HUDProxyOffset($014A)
+	PEA.w .return_1-1 : JMP.w (SA1IRAM.LINEVECTOR1) : .return_1
 
-	LDY.w #16*1 : LDX.w !config_linesentry2
-	LDA.w sentry_routines,X : LDX.w #$018A : JSR HUDJumpCallA
+	LDY.w #16*1 : LDX.w #HUDProxyOffset($018A)
+	PEA.w .return_2-1 : JMP.w (SA1IRAM.LINEVECTOR2) : .return_2
 
-	LDY.w #16*2 : LDX.w !config_linesentry3
-	LDA.w sentry_routines,X : LDX.w #$01CA : JSR HUDJumpCallA
+	LDY.w #16*2 : LDX.w #HUDProxyOffset($01CA)
+	PEA.w .return_3-1 : JMP.w (SA1IRAM.LINEVECTOR3) : .return_3
 
-	LDY.w #16*3 : LDX.w !config_linesentry4
-	LDA.w sentry_routines,X : LDX.w #$020A : JSR HUDJumpCallA
+	LDY.w #16*3 : LDX.w #HUDProxyOffset($020A)
+	PEA.w .return_4-1 : JMP.w (SA1IRAM.LINEVECTOR4) : .return_4
 
 .no_line_sentries
 
@@ -888,7 +888,7 @@ DrawHex:
 .4digit_start
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 	LDA.b SA1IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
@@ -898,7 +898,7 @@ DrawHex:
 .3digit_start
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 	LDA.b SA1IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
@@ -908,7 +908,7 @@ DrawHex:
 .2digit_start
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 	LDA.b SA1IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
@@ -916,7 +916,7 @@ DrawHex:
 .1digit
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD+14,X
+	STA.b HUDProxy+14,X
 	DEX : DEX
 
 	RTS
@@ -1015,7 +1015,7 @@ DrawHexForward:
 .4digit_start
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD-2,X
+	STA.w HUDProxy-2,X
 	LDA.b SA1IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
@@ -1027,7 +1027,7 @@ DrawHexForward:
 .3digit_start
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD-2,X
+	STA.w HUDProxy-2,X
 	LDA.b SA1IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
@@ -1038,7 +1038,7 @@ DrawHexForward:
 .2digit_start
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD-2,X
+	STA.w HUDProxy-2,X
 	LDA.b SA1IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
@@ -1047,7 +1047,7 @@ DrawHexForward:
 .1digit_start
 	AND.w #$000F
 	ORA.b SA1IRAM.hud_props
-	STA.w SA1RAM.HUD-2,X
+	STA.w HUDProxy-2,X
 
 	LDX.b SA1IRAM.hud_val2
 
