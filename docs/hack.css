@@ -2,12 +2,6 @@ div.content {
 	background-color: #C8C8C8;
 }
 
-footer {
-	position: fixed;
-	bottom: 0;
-	margin-top: auto;
-}
-
 div.tocbox {
 	background: #EEEEFF;
 	border: 3px solid #A0A0FF;
