@@ -30,7 +30,7 @@ title: Sentry list - ALTTP Practice Hack
   - **Pit behavior** - Current pit destination/damage flag. Not displayed on overworld.
 - Minor glitches
   - **Spooky action** - Altitude of ancilla in slot 4.
-  - **Hovering** - Number of frames A has been held, up to 29; address.
+  - **Hovering** - Number of frames A has been held, up to 29.
 - Major glitches
   - **WEST SOMARIA** - West somaria door timer.
   - **Ancilla search index** - Ancilla overload search index.
@@ -49,7 +49,7 @@ title: Sentry list - ALTTP Practice Hack
   - **OW transition Y** - Transition triggers and target screen IDs for vertical overworld transitions.
 - Major glitches
   - **Hookslot props** - Hookslot plus the properties of X, Y, Direction, Extension for hookslot index.
-- Ancilla [front/back/indexed] slots *(differentiated with [AncF/AncB/AncX] respectively; &)*
+- Ancilla [front/back/indexed] slots *(differentiated with [AncF/AncB/AncX] respectively)*
   - **ID** - Ancilla ID; address: $7E03C4,X (includes coloring for 00 and replacable particles).
   - **X coordinate** - Ancilla X-Coordinate; address: $7E0C04,X
   - **Y coordinate** - Ancilla Y-Coordinate; address: $7E0BFA,X
