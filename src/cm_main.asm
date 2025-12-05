@@ -6,16 +6,16 @@
 ;===================================================================================================
 
 cm_mainmenu:
-%menu_header("LTTPHACK !VERSION", 13)
+%menu_header("ALTTP Practice Hack !VERSION")
 	%submenu_variable("Presets", PRESET_SUBMENU)
-	%submenu("Y Items", ITEMS_SUBMENU)
+	%submenu("Y items", ITEMS_SUBMENU)
 	%submenu("Equipment", EQUIPMENT_SUBMENU)
 	%submenu("Game state", GAMESTATE_SUBMENU)
 	%submenu("Link state", LINKSTATE_SUBMENU)
 	%submenu("Gameplay", GAMEPLAY_SUBMENU)
 	%submenu("RNG control", RNG_SUBMENU)
 	%submenu("HUD extras", HUDEXTRAS_SUBMENU)
-	%submenu("Lite states (BETA)", LITESTATES_SUBMENU)
+	%submenu("Lite states", LITESTATES_SUBMENU)
 	%submenu("Room master", ROOMLOAD_SUBMENU)
 	%submenu("Shortcuts", SHORTCUTS_SUBMENU)
 	%submenu("Preset config", PRESET_CONFIG_SUBMENU)
@@ -90,6 +90,18 @@ CM_Main:
 	dw CM_SetLiteState      ; 0A
 	dw CM_DeleteLiteState   ; 0C
 	dw CM_SetSentry         ; 0E
+
+;===================================================================================================
+
+SelectionColors:
+	dw !SELECTED      ; CM_Init
+	dw !SELECTED      ; CM_DrawMenu
+	dw !SELECTED      ; CM_Active
+	dw !SELECTED      ; CM_Return
+	dw !SHORTCUTTING  ; CM_ShortcutConfig
+	dw !SHORTCUTTING  ; CM_SetLiteState
+	dw !SHORTCUTTING  ; CM_DeleteLiteState
+	dw !SELECTED      ; CM_SetSentry
 
 ;===================================================================================================
 
@@ -213,7 +225,7 @@ ClearLineSentryLine:
 CM_ShortcutConfig:
 	REP #$30
 	LDY.w #$0001
-	JSR CMDO_SAVE_ADDRESS_00
+	JSR CMDO_SAVE_ADDRESS
 
 	REP #$20
 	LDA.b SA1IRAM.CONTROLLER_1
@@ -225,7 +237,7 @@ CM_ShortcutConfig:
 	CMP.w #$0061
 	BCC CM_UpdateHeldOption
 
-	JSL CM_MenuSFX_shortcut_done
+	JSL MenuSFX_shortcut_done
 
 #CM_AbortHeldOption:
 	LDA.w #$0004
@@ -240,6 +252,7 @@ CM_ShortcutConfig:
 
 CM_UpdateHeldOption:
 	SEP #$30
+
 	LDY.b SA1IRAM.cm_cursor
 	JMP DrawCurrentRow_ShiftY
 
@@ -263,7 +276,7 @@ CM_SetLiteState:
 .save_litestate
 	LDA.w SA1IRAM.litestate_act
 	JSL SaveLiteState
-	JSL CM_MenuSFX_shortcut_done
+	JSL MenuSFX_shortcut_done
 
 	BRA CM_AbortHeldOption
 
@@ -287,7 +300,7 @@ CM_DeleteLiteState:
 .delete_litestate
 	LDA.w SA1IRAM.litestate_act
 	JSL DeleteLiteState
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 
 	BRA CM_AbortHeldOption
 
@@ -307,7 +320,7 @@ CM_PrepPPU:
 	LDX.w #$7000 : STX.w $2116
 	LDX.w #cm_gfx>>0 : STX.w $4352
 	LDA.b #cm_gfx>>16 : STA.w $4354
-	LDX.w #$1800 : STX.w $4355
+	LDX.w #$2000 : STX.w $4355
 	LDX.w #$1801 : STX.w $4350
 	LDA.b #$20 : STA.w $420B
 
@@ -320,11 +333,13 @@ CM_CacheWRAM:
 	SEP #$30
 
 	; Bow
-	LDA.l $7EF340 : BEQ ++
+	LDA.l $7EF340 : BEQ .no_bow
 	CMP.b #$03
 	LDA.b #$01
 	ADC.b #$00
-++	STA.w SA1RAM.cm_item_bow
+
+.no_bow
+	STA.w SA1RAM.cm_item_bow
 
 	; MaxHP
 	LDA.l $7EF36C
@@ -353,26 +368,31 @@ GetHighestActiveLine:
 	LDY.w !config_hide_lines
 	BNE .hide
 
-	LDY.w !config_linesentry4 : BEQ ++
+	LDY.w !config_linesentry4 : BEQ .no_line_4
 	LDY.w #8
 	RTS
 
-++	LDY.w !config_linesentry3 : BEQ ++
+.no_line_4
+	LDY.w !config_linesentry3 : BEQ .no_line_3
 	LDY.w #6
 	RTS
 
-++	LDY.w !config_linesentry2 : BEQ ++
+.no_line_3
+	LDY.w !config_linesentry2 : BEQ .no_line_2
 	LDY.w #4
 	RTS
 
-++	LDY.w !config_linesentry1 : BEQ ++
+.no_line_2
+	LDY.w !config_linesentry1 : BEQ .exit
 
 	LDY.w #2
 	RTS
 
 .hide
 	LDY.w #0
-++	RTS
+
+.exit
+	RTS
 
 
 ;===================================================================================================
@@ -391,7 +411,7 @@ CM_Init:
 ;===================================================================================================
 ; Menu sounds; here for standardization, even though they're simple routines
 ;===================================================================================================
-CM_MenuSFX:
+MenuSFX:
 .beep
 	PEA.w $0C00
 	BRA .continue
@@ -470,7 +490,7 @@ CM_MenuSFX:
 ;===================================================================================================
 
 CM_BackToTipTop:
-	JSL CM_MenuSFX_submenuback
+	JSL MenuSFX_submenuback
 	JSR EmptyCurrentMenu
 	JSR CM_ResetStackAndMenu
 	JMP DrawCurrentMenu
@@ -513,16 +533,29 @@ CM_Active:
 	BRA CM_AdjustForWrap
 
 .actionable_action
-	LDY.b #1 ; for when the routine uses it
 	LDA.b [SA1IRAM.cm_current_selection]
-	ASL
+
+	REP #$30
+
+	AND.w #$00FF
 	TAX
 
-	JSR (ActionDoRoutines,X)
+	ASL
+	TAY
+
+	LDA.w ActionLengths,X
+	AND.w #$00FF
+	STA.b SA1IRAM.cm_action_length
+
+	PEA.w CM_UpdateHeldOption-1
+
+	TYX
+	LDA.l ActionDoRoutines,X
+	STA.b SA1IRAM.SCRATCH
 
 	SEP #$30
-	LDY.b SA1IRAM.cm_cursor
-	JMP DrawCurrentRow_ShiftY
+	LDY.b #1 ; for when the routine uses it
+	JMP.w (SA1IRAM.SCRATCH)
 
 ;===================================================================================================
 
@@ -553,7 +586,7 @@ CM_AdjustForWrap:
 	JSR EmptyCurrentMenu
 	JSR CM_PullMenuFromStack
 	JSR DrawCurrentMenu
-	JSL CM_MenuSFX_submenuback
+	JSL MenuSFX_submenuback
 	RTS
 
 .find_max
@@ -580,25 +613,17 @@ CM_AdjustForWrap:
 	PLY
 
 .moved_cursor
-	JSL CM_MenuSFX_boop
+	JSL MenuSFX_boop
 
 ;===================================================================================================
 
 CM_ReDrawCursorPosition:
-	PHY
 	JSR DrawCurrentRow_ShiftY
 
-	SEP #$10
 	LDY.b SA1IRAM.cm_cursor
-	PHY
-
 	JSR DrawCurrentRow_ShiftY
-	JSR CM_UpdateCurrentSelection
 
-	PLY
-	PLX
-
-	RTS
+	JMP CM_UpdateCurrentSelection
 
 ;===================================================================================================
 ; Puts presses into the 6th and 7th bits for easy testing
@@ -801,3 +826,5 @@ CM_PullMenuFromStack:
 
 	CLC
 	JMP CM_ResetStackAndMenu
+
+;===================================================================================================

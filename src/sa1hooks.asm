@@ -49,197 +49,6 @@ incsrc sa1sram.asm
 pullpc
 
 ;===================================================================================================
-
-SNES_CORRUPTION_IRQ:
-	SEP #$30 ; we don't need to preserve A, so it's fine
-	LDA.b #$80 : STA.l $2202 ; acknowledge IRQ
-
-	JSL RecoverFromCorruption
-
-	PLP ; recover processor from the interrupt
-
-	PLA ; remove address of interrupted location
-	PHP ; push this so next pull is bigger
-	PLA ; remove bank of interrupted location
-	PLA ; remove routine that makes holes
-
-	JML $01B897 ; return to exit of the loop
-
-;===================================================================================================
-
-UWOverlayWrapper:
-	SEP #$20
-
-	LDA.b #$80 : STA.w $2201 ; enable IRQ from here
-	LDA.b #$82 : STA.w $2200
-
-	JSL $01B83E ; Underworld_ApplyRoomOverlay
-
-DisableCorruptionWatcher:
-	SEP #$20
-
-	STZ.w $2201
-
-	REP #$30
-
-	LDA.w #$FFFF : STA.w SA1IRAM.corruption_watcher
-
-	SEP #$30
-
-	LDA.w !config_somaria_pits : BEQ ++
-
-	STZ.b $12
-
-	; wait for NMI once for the main vram transfers
---	LDA.b $12 : BEQ --
-
-	JSL Shortcut_ShowPits
-
-	SEP #$30
-
-++	RTL
-
-;===================================================================================================
-
-RecoverFromCorruption:
-	REP #$30
-
-	LDX.w SA1IRAM.corruption_watcher
-	LDY.b $BA
-
-.next
-	LDA.b [$B7],Y
-	CMP.w #$FFFF
-	BEQ .end
-
-	STA.b $00
-
-	SEP #$20
-
-	AND.b #$FC
-	STA.b $08
-
-	INY
-	INY
-
-	XBA
-	LSR
-	LSR
-	LSR
-	ROR.b $08
-	STA.b $09
-
-	INY
-	STY.b $BA
-
-	REP #$20
-
-	PHX
-
-	LDA.w #$0004
-	STA.b $0A
-
-.next_super
-	LDX.b $08
-
-	JSR .check_one_pit
-	JSR .check_one_pit
-	JSR .check_one_pit
-	JSR .check_one_pit
-
-	LDA.b $08
-	ADC.w #$0080
-	STA.b $08
-
-	DEC.b $0A
-	BNE .next_super
-
-	PLA
-	ADC.w #$0030
-	CMP.w #$4200-$1100
-	BCS .really_bad
-
-	TAX
-	BRA .next
-
-.end
-	RTL
-
-.really_bad
-	JML CorruptionCrash
-
-.check_one_pit
-	PHX
-
-	TXA
-	LSR
-	PHA
-
-	LDA.l $7E2000,X
-	AND.w #$03FE
-
-	PLX
-
-	; high byte will already be 00 for floors
-	CMP.w #$00EE
-	BEQ .floor
-
-	CMP.w #$00FE
-	BEQ .floor
-
-	LDA.w #$2000 ; put value in high byte, so it's XBA'd
-	; which makes the whole thing easier
-
-.floor
-	SEP #$20
-	XBA
-	STA.l $7F2000,X
-
-	REP #$21
-
-	PLX
-	INX
-	INX
-
-	RTS
-
-;===================================================================================================
-
-; watch for this to be a bad value
-; if it's FFFF, then NMI occured and things are fine
-CorruptionWatcher:
-	SEP #$20
-	LDA.b #$40 : STA.w $2209 ; irq vector
-
-	REP #$30
-	STZ.b SA1IRAM.corruption_watcher
-
-	LDA.w #SNES_CORRUPTION_IRQ_BOUNCE
-	STA.w $220E ; snes IRQ vector
-
-.watch
-	LDA.b SA1IRAM.corruption_watcher
-	CMP.w #$FFFF
-	BEQ .done
-
-	CMP.w #$1080
-	BCC .watch
-
-	SEP #$20
-	LDA.b #$C0 : STA.w $2209 ; trigger irq
-
-	REP #$20
-	LDA.w #$FFFF
-
---	CMP.b SA1IRAM.corruption_watcher
-	BNE --
-
-.done
-	SEP #$20
-	LDA.b #$00 : STA.w $2209 ; disable IRQ from snes
-	RTS
-
-;===================================================================================================
 ; CacheSA1Stuff is critical to balancing lag
 ; so if it isn't called from the HUD, we need to call it here
 ; otherwise, we're a lot less laggy than vanilla
@@ -783,21 +592,21 @@ SA1IRQ:
 	PHD
 	PHB
 
+	LDA.w #$3000 : TCD
+
 	SEP #$30
 
 	LDA.b #$80
-	STA.l $00220B
+	STA.l $220B
 
-	PHK
-	PLB
-
-	LDA.w $2301 ; get IRQ type
+	LDA.l $2301 ; get IRQ type
 	AND.b #$03
 	ASL
 	TAX
 
-	JSR (.irq_type,X)
+	JMP (.irq_type,X)
 
+.exit
 	REP #$30
 	PLB
 	PLD
@@ -806,26 +615,218 @@ SA1IRQ:
 	PLA
 	RTI
 
-.irq_nothing
-	RTS
-
 .irq_type
-	dw .irq_nothing
+	dw .exit
 	dw .irq_shortcuts
 	dw CorruptionWatcher
 	dw .irq_hud
 
-	dw .irq_nothing
-	dw .irq_nothing
-	dw .irq_nothing
-	dw .irq_nothing
+	dw .exit
+	dw .exit
+	dw .exit
+	dw .exit
 
 .irq_hud
-	JSL draw_hud_extras
-	RTS
+	JML draw_hud_extras
 
 .irq_shortcuts
-	JSL DoShortCuts
+	JML DoShortCuts
+
+;===================================================================================================
+
+; watch for this to be a bad value
+; if it's FFFF, then NMI occured and things are fine
+CorruptionWatcher:
+	PHK
+	PLB
+
+	SEP #$20
+	LDA.b #$40 : STA.w $2209 ; irq vector
+
+	REP #$30
+
+	STZ.b SA1IRAM.corruption_watcher
+
+	LDA.w #SNES_CORRUPTION_IRQ_BOUNCE
+	STA.w $220E ; snes IRQ vector
+
+.watch
+	LDA.b SA1IRAM.corruption_watcher
+	CMP.w #$FFFF
+	BEQ .done
+
+	CMP.w #$1080
+	BCC .watch
+
+	SEP #$20
+	LDA.b #$C0 : STA.w $2209 ; trigger irq
+
+	REP #$20
+	LDA.w #$FFFF
+
+--	CMP.b SA1IRAM.corruption_watcher
+	BNE --
+
+.done
+	SEP #$20
+
+	LDA.b #$00 : STA.w $2209 ; disable IRQ from snes
+
+	JMP SA1IRQ_exit
+
+;===================================================================================================
+
+SNES_CORRUPTION_IRQ:
+	SEP #$30 ; we don't need to preserve A, so it's fine
+	LDA.b #$80 : STA.l $2202 ; acknowledge IRQ
+
+	JSL RecoverFromCorruption
+
+	PLP ; recover processor from the interrupt
+
+	PLA ; remove address of interrupted location
+	PHP ; push this so next pull is bigger
+	PLA ; remove bank of interrupted location
+	PLA ; remove routine that makes holes
+
+	JML $01B897 ; return to exit of the loop
+
+;===================================================================================================
+
+UWOverlayWrapper:
+	SEP #$20
+
+	LDA.b #$80 : STA.w $2201 ; enable IRQ from here
+	LDA.b #$82 : STA.w $2200
+
+	JSL $01B83E ; Underworld_ApplyRoomOverlay
+
+DisableCorruptionWatcher:
+	SEP #$20
+
+	STZ.w $2201
+
+	REP #$30
+
+	LDA.w #$FFFF : STA.w SA1IRAM.corruption_watcher
+
+	SEP #$30
+
+	LDA.w !config_somaria_pits : BEQ ++
+
+	STZ.b $12
+
+	; wait for NMI once for the main vram transfers
+--	LDA.b $12 : BEQ --
+
+	JSL Shortcut_ShowPits
+
+	SEP #$30
+
+++	RTL
+
+;===================================================================================================
+
+RecoverFromCorruption:
+	REP #$30
+
+	LDX.w SA1IRAM.corruption_watcher
+	LDY.b $BA
+
+.next
+	LDA.b [$B7],Y
+	CMP.w #$FFFF
+	BEQ .end
+
+	STA.b $00
+
+	SEP #$20
+
+	AND.b #$FC
+	STA.b $08
+
+	INY
+	INY
+
+	XBA
+	LSR
+	LSR
+	LSR
+	ROR.b $08
+	STA.b $09
+
+	INY
+	STY.b $BA
+
+	REP #$20
+
+	PHX
+
+	LDA.w #$0004
+	STA.b $0A
+
+.next_super
+	LDX.b $08
+
+	JSR .check_one_pit
+	JSR .check_one_pit
+	JSR .check_one_pit
+	JSR .check_one_pit
+
+	LDA.b $08
+	ADC.w #$0080
+	STA.b $08
+
+	DEC.b $0A
+	BNE .next_super
+
+	PLA
+	ADC.w #$0030
+	CMP.w #$4200-$1100
+	BCS .really_bad
+
+	TAX
+	BRA .next
+
+.end
+	RTL
+
+.really_bad
+	JML CorruptionCrash
+
+.check_one_pit
+	PHX
+
+	TXA
+	LSR
+	PHA
+
+	LDA.l $7E2000,X
+	AND.w #$03FE
+
+	PLX
+
+	; high byte will already be 00 for floors
+	CMP.w #$00EE
+	BEQ .floor
+
+	CMP.w #$00FE
+	BEQ .floor
+
+	LDA.w #$2000 ; put value in high byte, so it's XBA'd
+	; which makes the whole thing easier
+
+.floor
+	SEP #$20
+	XBA
+	STA.l $7F2000,X
+
+	REP #$21
+
+	PLX
+	INX
+	INX
+
 	RTS
 
 ;===================================================================================================

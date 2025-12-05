@@ -28,12 +28,13 @@ LoadArbitraryRoom:
 
 	LDA.b #$00 : STA.b $13
 
-	LDA.b $1B : BEQ ++
+	LDA.b $1B : BEQ .no_data_flush
 
 	JSL $02A0BE
 	JSL $02B87B
 
-++	REP #$20
+.no_data_flush
+	REP #$20
 
 	LDA.w SA1RAM.loadroomid : JSR SetLoadedRoomID
 
@@ -48,7 +49,7 @@ LoadArbitraryRoom:
 
 	LDA.w SA1RAM.loadroomworldset : BEQ .default_world
 	CMP.b #$02 : BEQ .light_world
-	BCC .set_floor
+	BCC .do_floor
 
 .dark_world
 	LDA.b #$40 : BRA .set_world
@@ -63,15 +64,18 @@ LoadArbitraryRoom:
 .set_world
 	STA.l $7EF3CA
 
-.set_floor
-	TYA : AND.b #$0F : BEQ +
-	BIT.b #$08 : BEQ ++
+.do_floor
+	TYA : AND.b #$0F : BEQ .set_floor
+	BIT.b #$08 : BEQ .negative_floor
 
 	ORA.b #$F0
-	BRA +
+	BRA .set_floor
 
-++	DEC ; 0 = floor 1, but it's easier to do it this way (also can use 0 to mean nothing)
-+	STA.b $A4
+.negative_floor
+	DEC ; 0 = floor 1, but it's easier to do it this way (also can use 0 to mean nothing)
+
+.set_floor
+	STA.b $A4
 
 	LDA.w $040C : PHA
 
@@ -100,25 +104,16 @@ LoadArbitraryRoom:
 .explicit_pegs
 	STA.w SA1RAM.loadroompegstate
 
-	LDA.w SA1RAM.loadroomequip : BEQ .equipment_done
-	CMP.b #$01 : BEQ .loadout
-
-	JSL Shortcut_FillEverything
-	BRA .equipment_done
-
-.loadout
-	JSR LoadCustomLoadOut
-
-.equipment_done
 	JSL SetHUDItemGraphics
 
 	SEP #$30
 
-	LDA.l $7EF3C5 : BNE ++
+	LDA.l $7EF3C5 : BNE .leave_gamestate
 
 	INC : STA.l $7EF3C5
 
-++	JSL PresetLoadArea_UW
+.leave_gamestate
+	JSL PresetLoadArea_UW
 
 	SEP #$30
 
@@ -193,7 +188,7 @@ LoadArbitraryRoom:
 
 	JMP .adjust_coords
 
-	; use entrance if room of entrance matches
+	; use entrance properties if room of entrance matches
 .no_doors
 	LDA.w #$0000 : TCD
 
@@ -281,10 +276,11 @@ LoadArbitraryRoom:
 	LDA.w SA1IRAM.preset_scratch+3
 	LDX.b #.lower_layer_doors_end-.lower_layer_doors-1
 
---	CMP.w .lower_layer_doors,X
+.lower_layer_search
+	CMP.w .lower_layer_doors,X
 	BEQ .lower_layer
 	DEX
-	BPL --
+	BPL .lower_layer_search
 
 	BRA .upper_layer
 
@@ -340,13 +336,14 @@ LoadArbitraryRoom:
 	JSR SetCameraToCoordinates
 	JSL CacheRoomEntryPropertiesLong
 
-	LDA.w SA1RAM.loadroomkill : BEQ ++
+	LDA.w SA1RAM.loadroomkill : BEQ .no_massacre
 
 	REP #$30
 
 	LDA.w #$FFFF : JSL KillSpritesInRoom
 
-++	JSL ApplyAfterLoading
+.no_massacre
+	JSL ApplyAfterLoading
 
 	JMP TriggerTimerAndReset
 
@@ -363,7 +360,7 @@ LoadArbitraryRoom:
 
 .lower_layer_doors
 	db $02, $04, $06, $0C, $10, $40, $44, $46, $48, $4A
-..end
+.lower_layer_doors_end
 
 .bound_setters
 	dw .layout00
@@ -754,6 +751,8 @@ ResetBeforeLoading:
 
 	LDA.w #$0DF3 : STA.w $02CD
 
+	JSL CacheCurrentEquipment
+
 	SEP #$30
 
 	JSL $07F18C
@@ -872,6 +871,7 @@ ApplyAfterLoading:
 	; palettes
 
 	; check translucency
+	; TODO is this doing anything at all?
 	LDA.w $0ABD : BEQ ++
 
 	JSL $02FD04
@@ -902,13 +902,14 @@ ApplyAfterLoading:
 	LDA.w $0122 : STA.w $2110
 	LDA.w $0123 : STA.w $2110
 
-	LDA.l $7EF3CC : PHP ; remember if no follower
+	LDA.l $7EF3CC
 	CMP.b #$0D : BNE .superbomb
 
 	LDA.b #$FE : STA.w $04B4
 
 .superbomb
-	PLP : BEQ .no_follower
+	LDA.l $7EF3CC
+	BEQ .no_follower
 
 	JSL $00D463
 
@@ -1223,9 +1224,9 @@ FindOptimalDoorType:
 	STZ.b SA1IRAM.preset_writer ; clear best door index
 	STY.b SA1IRAM.preset_reader2 ; clear best door score
 
-	INY ; Y = 0
-
 .next
+	INY
+
 	LDA.b [SA1IRAM.preset_scratch],Y
 	CMP.w #$FFFF : BEQ .done
 
@@ -1235,10 +1236,11 @@ FindOptimalDoorType:
 	XBA
 	LDX.w #.end-.best_doors-1
 
---	CMP.w .best_doors,X
+.score_eval
+	CMP.w .best_doors,X
 	BEQ .compare_score
 	DEX
-	BPL --
+	BPL .score_eval
 
 	DEX ; one more dex to say we found a door with score FFFE
 
@@ -1252,7 +1254,6 @@ FindOptimalDoorType:
 
 .to_next
 	REP #$20
-	INY
 	INY
 	BRA .next
 
@@ -1272,11 +1273,13 @@ FindOptimalDoorType:
 
 	LDY.w #$0000
 
---	REP #$20
+.exit_search
+	REP #$20
 	LDA.b [SA1IRAM.preset_scratch],Y
-	CMP.w #$FFFF : BEQ .done_exit_find
-
+	CMP.w #$FFFF
 	SEP #$20
+	BEQ .done_exit_find
+
 	XBA
 	CMP.b #$12
 	BEQ .skip_exit_find
@@ -1288,19 +1291,13 @@ FindOptimalDoorType:
 .skip_exit_find
 	INY
 	INY
-	BRA --
+	BRA .exit_search
 
 .match
-	PLA
-
 	STX.b SA1IRAM.preset_reader2
 	STY.b SA1IRAM.preset_writer
 
-	PLY
-	BRA .to_next
-
 .done_exit_find
-	SEP #$20
 	PLA
 
 	PLY
@@ -1351,8 +1348,9 @@ HandleOpenShutters:
 	PLB
 	PLB
 
---	LDA.w $19A0,Y
-	BEQ ++
+.next
+	LDA.w $19A0,Y
+	BEQ .skip
 
 	PHY
 
@@ -1360,10 +1358,11 @@ HandleOpenShutters:
 
 	PLY
 
-++	INY
+.skip
+	INY
 	INY
 	CPY.w #$0020
-	BCC --
+	BCC .next
 
 	; now apply layer swap and dungeon swap attributes
 	JSL LoadSingleDoorTileAttribute
@@ -1777,18 +1776,6 @@ HandleOpenShutters:
 
 ;===================================================================================================
 
-HandlePegState:
-	STA.l $7EC172
-	BEQ ++
-
-	JSL $01C22A
-	JSL $0296AD
-	JSL RefreshPegs
-
-++	RTL
-
-;===================================================================================================
-
 KillSpritesInRoom:
 	PHA
 
@@ -1799,214 +1786,29 @@ KillSpritesInRoom:
 
 	LDX.w #$000F
 
---	ASL
-	BCC ++
+.next
+	ASL
+	BCC .skip
 
 	SEP #$20
 	STZ.w $0DD0,X
 	REP #$20
 
-++	DEX
-	BPL --
-
-	RTL
-
-;===================================================================================================
-
-LoadCustomLoadOut:
-	SEP #$20
-	REP #$10
-
-	LDX.w #$0021
-
---	LDA.l CustomLoadout.items,X
-	STA.l $7EF340,X
-
+.skip
 	DEX
-	BPL --
+	BPL .next
 
-	LDA.l CustomLoadout.other+0 : STA.l $7EF36C
-	LDA.l CustomLoadout.other+1 : STA.l $7EF36D
-	LDA.l CustomLoadout.other+2 : STA.l $7EF36E
-	LDA.l CustomLoadout.other+3 : STA.l $7EF37B
-	LDA.l CustomLoadout.other+4 : STA.l $7E0303
-
-	JSL SetFlippersFlag
-	JSL SetBootsFlag
-
-	RTS
+--	RTL
 
 ;===================================================================================================
 
-SetHUDItemGraphics:
-	PHD
-
-	PHB
-	PHK
-	PLB
-
-	PEA.w $3000
-	PLD
-
-	SEP #$30
-	LDA.b #$7E : STA.b SA1IRAM.preset_reader+2
-
-	LDY.w $0303
-	LDA.w .item_to_menu,Y
-	STA.w $0202
-
-	TAX
-	LDA.l $7EF340-1,X
-	BEQ ++
-
-	CPY.b #$00
-++	REP #$30
-	BEQ .missing_item
-
-.have_item
-	TYA
-	ASL : ASL
-	TAY
-
-	LDX.w .item_HUD-4,Y ; bank0D offset
-	STX.b SA1IRAM.preset_reader2
-
-	LDA.w .item_HUD-2,Y ; bank7E SRAM val
-	STA.b SA1IRAM.preset_reader+0
-
-	LDA.b [SA1IRAM.preset_reader]
-	AND.w #$00FF
-	BEQ .missing_item
-
-	CPY.w #$0001*4 : BEQ .bombs_adjust
-	CPY.w #$000B*4 : BNE .normal_item
-
-.bottle_adjust
-	TAX
-	LDA.l $7EF35C-1,X
-	AND.w #$00FF
-
-.normal_item
-	ASL
-	ASL
-	ASL
-	ADC.b SA1IRAM.preset_reader2
-	TAX
-	BRA .draw_item
-
-.missing_item
-	SEP #$30
-
-	TYA
-	LSR
-	LSR
-	STA.b SA1IRAM.preset_reader2
-
-	TAX
-
---	DEX
-	BPL ++
-
-	LDX.b #$13
-
-++	CPX.b SA1IRAM.preset_reader2
-	BEQ .no_item_at_all
-
-	LDA.l $7EF340,X
+HandlePegState:
+	STA.l $7EC172
 	BEQ --
 
-	; find index
-	TXA : INC
-	LDY.b #$14
-
---	CMP.w .item_to_menu,Y
-	BEQ ++
-
-	DEY
-	BPL --
-
-	BRA .no_item_at_all
-
-++	LDA.w .item_to_menu,Y
-	STA.w $0202
-	STY.w $0303
-
-	REP #$30
-	BRA .have_item
-
-.bombs_adjust
-	CMP.w #$0001
-	BCC .missing_item
-
-	LDA.w #$0001
-	BRA .normal_item
-
-.no_item_at_all
-	STZ.w $0202
-	STZ.w $0303
-
-	REP #$30
-
-.no_item
-	LDX.w #$FEE7 ; address happens to have $207F x4
-
-.draw_item
-	LDA.l $0D0000,X : STA.w SA1RAM.HUD+$04A
-	LDA.l $0D0002,X : STA.w SA1RAM.HUD+$04C
-	LDA.l $0D0004,X : STA.w SA1RAM.HUD+$08A
-	LDA.l $0D0006,X : STA.w SA1RAM.HUD+$08C
-
-	PLB
-	PLD
-	RTL
-
-;---------------------------------------------------------------------------------------------------
-	; $0303 -> $0202
-.item_to_menu
-	db $00 ; $00 - Nothing
-	db $04 ; $01 - Bombs
-	db $02 ; $02 - Boomerang
-	db $01 ; $03 - Bow
-	db $0C ; $04 - Hammer
-	db $06 ; $05 - Fire Rod
-	db $07 ; $06 - Ice Rod
-	db $0E ; $07 - Bug catching net
-	db $0D ; $08 - Flute
-	db $0B ; $09 - Lamp
-	db $05 ; $0A - Magic Powder
-	db $10 ; $0B - Bottle
-	db $0F ; $0C - Book of Mudora
-	db $12 ; $0D - Cane of Byrna
-	db $03 ; $0E - Hookshot
-	db $08 ; $0F - Bombos Medallion
-	db $09 ; $10 - Ether Medallion
-	db $0A ; $11 - Quake Medallion
-	db $11 ; $12 - Cane of Somaria
-	db $13 ; $13 - Cape
-	db $14 ; $14 - Magic Mirror
-
-	; dw bank0D address, SRAM address
-.item_HUD
-	dw $0DF699, $7EF343 ; $01 - Bombs
-	dw $0DF671, $7EF341 ; $02 - Boomerang
-	dw $0DF649, $7EF340 ; $03 - Bow
-	dw $0DF721, $7EF34B ; $04 - Hammer
-	dw $0DF6C1, $7EF345 ; $05 - Fire Rod
-	dw $0DF6D1, $7EF346 ; $06 - Ice Rod
-	dw $0DF751, $7EF34D ; $07 - Bug catching net
-	dw $0DF731, $7EF34C ; $08 - Flute
-	dw $0DF711, $7EF34A ; $09 - Lamp
-	dw $0DF6A9, $7EF344 ; $0A - Magic Powder
-	dw $0DF771, $7EF34F ; $0B - Bottle
-	dw $0DF761, $7EF34E ; $0C - Book of Mudora
-	dw $0DF7C9, $7EF351 ; $0D - Cane of Byrna
-	dw $0DF689, $7EF342 ; $0E - Hookshot
-	dw $0DF6E1, $7EF347 ; $0F - Bombos Medallion
-	dw $0DF6F1, $7EF348 ; $10 - Ether Medallion
-	dw $0DF701, $7EF349 ; $11 - Quake Medallion
-	dw $0DF7B9, $7EF350 ; $12 - Cane of Somaria
-	dw $0DF7D9, $7EF352 ; $13 - Cape
-	dw $0DF7E9, $7EF353 ; $14 - Magic Mirror
+	JSL $01C22A
+	JSL $0296AD
+	JML RefreshPegs
 
 ;===================================================================================================
 
@@ -2016,7 +1818,9 @@ HandleOverworldLoad:
 	STZ.b $EE ; layer
 	STZ.b $1B ; outdoors
 
-	LDA.w $008A ; do mirror portal?
+	LDA.b $8A ; do mirror portal?
+	STA.w $040A
+	STZ.w $040B
 	BIT.b #$40
 	BNE .darkworld
 
@@ -2042,9 +1846,7 @@ HandleOverworldLoad:
 	DEX
 	BPL .add_mushroom
 
-
 .no_mushroom
-	LDA.w #$0009 : STA.b $10
 	LDA.w #$FFF8 : STA.b $EC
 
 	STZ.w $0624
@@ -2106,6 +1908,19 @@ HandleOverworldLoad:
 	STZ.w $0136
 
 	JSL $008913
+
+	LDA.b #$09
+	BIT.b $8A
+	BPL .not_sp
+
+	LDA.b #$0B
+
+.not_sp
+	STA.b $10
+	STZ.b $11
+
+	STZ.b $B0
+	STZ.w $0200
 
 ;===================================================================================================
 

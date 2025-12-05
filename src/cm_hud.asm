@@ -1,12 +1,14 @@
 HUDEXTRAS_SUBMENU:
-	%menu_header("HUD EXTRAS", 16)
+	%menu_header("HUD EXTRAS")
 
 ;===================================================================================================
+
 %choice_here("Health display", !config_heart_display, 2)
 	%list_item("Numerical")
-	%list_item("Vanilla")
+	%add_list_item(CMTEXT_VANILLA)
 
 ;===================================================================================================
+
 %choice_here("Input display", !config_input_display, 4)
 	%list_item("Off")
 	%list_item("Graphical")
@@ -38,4 +40,6 @@ HUDEXTRAS_SUBMENU:
 
 %toggle_onoff("Quick warp icon", !config_qw_toggle)
 
-%toggle_onoff("Boss cycles", !config_toggle_boss_cycles)
+%toggle_onoff("Boss cycles", !config_boss_cycles)
+
+;===================================================================================================

@@ -2,8 +2,7 @@ pushpc
 
 org $02B793 : JML triforce_transition
 
-org $06F99E : JML dropluck
-afterdropluck:
+org $06F9B8 : JSL OverrideDropLuck
 
 org $1CF640 : JSL swordbeams
 
@@ -26,7 +25,7 @@ pullpc
 ;===================================================================================================
 
 GetLitRoom:
-	LDA.w !config_lit_rooms_toggle : BNE ++
+	LDA.w SA1RAM.light_rooms : BNE ++
 	LDA.l $02A0DC,X
 	RTL
 
@@ -36,7 +35,7 @@ GetLitRoom:
 ;===================================================================================================
 
 triforce_transition:
-	LDA.w !config_skip_triforce_toggle : BNE .skip_triforce
+	LDA.w !config_skip_triforce : BNE .skip_triforce
 
 	JSL $02A0BE
 	JML $02B797
@@ -46,19 +45,14 @@ triforce_transition:
 
 ;===================================================================================================
 
-dropluck:
-	PHA ; overwrote PHA : LDY addr, so LEAVE UNBALANCED
+OverrideDropLuck:
+	LDA.w SA1RAM.drop_rng : BNE .overwrite
 
-	; use this value when it isn't 0 or "random"
-	; use vanilla value when this is 0 so that it can be used
-	; by people who want to test fairy stuff I guess
-	LDY.w SA1RAM.drop_rng : BNE .overwrite
-
-.vanilla
-	LDY.w $0CF9
+	JML $0DBA71
 
 .overwrite
-	JML afterdropluck
+	DEC
+	RTL
 
 ;===================================================================================================
 
@@ -91,8 +85,9 @@ set_moving_wall_speed:
 ;===================================================================================================
 
 probe_draw:
-	LDA.w !config_probe_toggle : BNE .draw
+	LDA.w SA1RAM.visible_probes : BNE .draw
 
+	; not duplicated to save a cycle when vanilla
 .vanilla
 	LDA.b $01 : ORA.b $03
 	JML after_probe_draw
@@ -110,6 +105,7 @@ probe_draw:
 	INY
 	LDA.b $05 : AND.b #$30
 	ORA.b #$0E : STA.b ($90),Y
+
 .skip
 	LDA.b $01 : ORA.b $03
 	JML after_probe_draw
@@ -131,15 +127,16 @@ MantlePrep:
 .stay
 	ADC.b #$08
 	STA.w $0D10,X
---	RTL
+	RTL
 
 .move
 	ADC.b #$22
 	STA.w $0D10,X
-	BCC --
+	BCC .exit
 
 	INC.w $0D30,X
 
+.exit
 	RTL
 
 ;===================================================================================================

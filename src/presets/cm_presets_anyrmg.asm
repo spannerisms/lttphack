@@ -6,7 +6,7 @@ presetheader_anyrmg:
 	dw presetpersistent_anyrmg ; location of persistent data
 
 ;===================================================================================================
-%menu_header("Any% RMG", 5)
+%menu_header("Any% RMG")
 	%submenu("Eastern Palace", presetmenu_anyrmg_eastern)
 	%submenu("Escape", presetmenu_anyrmg_escape)
 	%submenu("Tempered Sword", presetmenu_anyrmg_tempered)
@@ -19,7 +19,7 @@ presetheader_anyrmg:
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_anyrmg_eastern:
-%menu_header("Eastern Palace", 17)
+%menu_header("Eastern Palace")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Link's Bed", "anyrmg", "eastern", "bed")
@@ -61,8 +61,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0803, $0709 ; Scroll X,Y
 dw $0530 ; Tilemap position
-;dw $0004 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -91,8 +89,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $08B6, $098B ; Scroll X,Y
 dw $1846 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFF ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -106,8 +102,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $0C9B, $0A6D ; Scroll X,Y
 dw $0002 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -121,8 +115,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0F57, $098D ; Scroll X,Y
 dw $185C ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0006 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -284,7 +276,7 @@ dw $07FF ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_anyrmg_escape:
-%menu_header("Escape", 16)
+%menu_header("Escape")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Eastern", "anyrmg", "escape", "outside_eastern")
@@ -296,8 +288,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0F5B, $066D ; Scroll X,Y
 dw $005A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -353,8 +343,6 @@ db $04 ; Link direction
 ;-----------------------------
 dw $0685, $0582 ; Scroll X,Y
 dw $0880 ; Tilemap position
-;dw $FFFB ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -383,8 +371,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $0723, $038D ; Scroll X,Y
 dw $1816 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFC ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -398,8 +384,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0753, $038D ; Scroll X,Y
 dw $181C ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFC ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -473,8 +457,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $08D3, $058B ; Scroll X,Y
 dw $088A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -565,7 +547,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_anyrmg_tempered:
-%menu_header("Tempered Sword", 6)
+%menu_header("Tempered Sword")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Old Man Cave", "anyrmg", "tempered", "old_man_cave")
@@ -592,8 +574,6 @@ db $04 ; Link direction
 ;-----------------------------
 dw $0906, $038D ; Scroll X,Y
 dw $1854 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0009 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -637,8 +617,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $090C, $0172 ; Scroll X,Y
 dw $0754 ; Tilemap position
-;dw $FFFB ; Scroll mod Y
-;dw $0003 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -652,8 +630,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $028D, $0A94 ; Scroll X,Y
 dw $0180 ; Tilemap position
-;dw $0009 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -663,7 +639,7 @@ dw $0180 ; Tilemap position
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_anyrmg_gtower:
-%menu_header("Ganon's Tower", 20)
+%menu_header("Ganon's Tower")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Old Man Cave", "anyrmg", "gtower", "old_man_cave")
@@ -690,8 +666,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0900, $038D ; Scroll X,Y
 dw $1854 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $000F ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -723,11 +697,7 @@ db $00 ; Room layout / Floor
 db $42 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
-%write_7F()
-%write8($7F23DC, $00) ; Bastard door
-%write8($7F23E3, $00)
-%write8($7F249C, $00)
-%write8($7F24A3, $00)
+%write_bastard_door(%0001)
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -956,11 +926,7 @@ dw $0000 ; Dead sprites
 %write8($7E04F1, $A0)
 %write8($7E04F2, $7A)
 %write8($7E04F3, $64)
-%write_7F()
-%write8($7F23DC, $00) ; Bastard door
-%write8($7F23E3, $00)
-%write8($7F249C, $00)
-%write8($7F24A3, $00)
+%write_bastard_door(%0010)
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -999,7 +965,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_anyrmg_ganon:
-%menu_header("Ganon", 1)
+%menu_header("Ganon")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Pyramid", "anyrmg", "ganon", "pyramid")
@@ -1011,8 +977,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $07F7, $066D ; Scroll X,Y
 dw $002E ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF8 ; Scroll mod X
 ;-----------------------------
 %write_end()
 

@@ -1,11 +1,12 @@
 ---
 layout: practicehack
-title: ALTTP Practice Hack
-navfooter: yes
+title: "ALTTP Practice Hack"
+ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to practice, understand, or explore the original game and its mechanics beyond the casual level."
 ---
 
 <section id="about">
-<p>The Zelda 3 Practice Hack is the principal tool for anyone wanting to practice, understand, or explore the original game and its mechanics beyond the casual level.</p>
+
+<p>{{ page.ogdesc }}</p>
 
 <p>Feature requests, bug reports, and general discussion can be had in the <a target="_blank" href="https://discord.gg/W69UcDpup8">#practice-hack</a> channel of the ALTTP Discord server.</p>
 
@@ -14,16 +15,19 @@ navfooter: yes
 <section id="download">
 
 <h2>Download</h2>
+
 <div id="patcher-app" >
 	<patcher id="prachack" manifest-path="patcher/manifest.json" />
 </div>
 
 <h3>Latest (SA-1)</h3>
+
 <p>This version should be used by any system that can properly emulate the SA-1 with 256kb of BWRAM.</p>
 
 <h4 class="listheader">Compatible systems:</h4>
+
 <ul>
-	<li>SD2SNES</li>
+	<li>SD2SNES / FXPak</li>
 	<li>Mesen-S</li>
 	<li>higan/bsnes v115+</li>
 	<li>bsnes+</li>
@@ -33,6 +37,7 @@ navfooter: yes
 </ul>
 
 <h3>Randomizer (SA-1)</h3>
+
 <p>This version is slightly modified from the main version to include several randomizer features:</p>
 <ul>
 	<li>Major items are replaced with E (toggleable)</li>
@@ -46,13 +51,15 @@ navfooter: yes
 </ul>
 
 <h3>v13.6.0 (Old)</h3>
+
 <p>This is a snapshot of the pre-SA-1 practice hack. It will no longer be updated and only serves as a fallback for incompatible systems.</p>
 
 <h4 class="listheader">List of shame</h4>
+
 <ul>
 	<li>Everdrive</li>
 	<li>SuperNT jailbreak</li>
-	<li>BizHawk's bsnes core (v85)</li>
+	<li>BizHawk's old bsnes core (v85)</li>
 	<li>SNES Classic (This entire console is utter garbage)</li>
 </ul>
 
@@ -61,6 +68,7 @@ navfooter: yes
 <section id="usage">
 
 <h2>Using the hack</h2>
+
 <p>The practice hack comes loaded with a full suite of HUD changes, shortcuts, and functions to facilitate RTA practice and glitch hunting. The most commonly used features include:</p>
 <ul>
 	<li>Presets to load a specific section of the run with the appropriate equipment.</li>
@@ -72,9 +80,11 @@ navfooter: yes
 <p>Configuration settings will persist across practice hack versions if newly downloaded hacks are given the same file name as previous versions on whatever system you use.</p>
 
 <h3>Practice Hack Menu</h3>
+
 <p>The practice hack menu can be accessed by having the <span class="snesButton snesR">R</span> and <span class="snesButton snesStart">Start</span> buttons held down together on the same frame. This menu and other shortcuts can be activated during most gameplay modes, but will be prohibited during some modules (such as the file select menu). When disallowed, shortcut bindings will play a beep and resume normal action.</p>
 
 <h4>Menu controls</h4>
+
 <table class="nostripes ctrltable iconstable">
 	<tbody>
 		<tr class="header">
@@ -98,13 +108,9 @@ navfooter: yes
 			<td>Return to main index</td>
 		</tr>
 		<tr>
-			<th rowspan="3"><span class="snesButton snesA">A</span></th>
+			<th rowspan="2"><span class="snesButton snesA">A</span></th>
 			<td>Submenu option</td>
 			<td>Open submenu</td>
-		</tr>
-		<tr>
-			<td>Toggle option</td>
-			<td>Toggle item</td>
 		</tr>
 		<tr>
 			<td>Command option</td>
@@ -163,6 +169,7 @@ navfooter: yes
 </table>
 
 <h4>Menu legend</h4>
+
 <table class="ctrltable">
 	<tbody>
 		<tr>
@@ -213,36 +220,47 @@ navfooter: yes
 <section id="HELPME">
 
 <h2>Common concerns</h2>
+
 <h3>How accurate is lag compared to the vanilla game?</h3>
+
 <p>As of version 14, very; about 2% of a scanline off. Here's a quick rundown of how it works:</p>
 
 <h4>SA-1</h4>
+
 <p>The SA-1 is a coprocessor that can be used alongside the main SNES CPU. It can run code faster, but, more importantly, it can run at the same time as the SNES CPU without slowing it down. This allows the practice hack to handle certain features with minimal lag change from vanilla. Due to the limitations on memory access, not every feature can be handled lag-free on the SA-1.</p>
 
 <h4>Implementation</h4>
+
 <p>There are specific routines that get run at the beginning and end of every frame to manage the OAM buffer. These routine aren't coded very efficiently. The practice hack heavily optimizes these routines to allow more CPU time for all of its extra features. Early in the frame, the SNES CPU sends a request to the SA-1 for it to process controller input for shortcuts. If a shortcut is found, a vector pointing to its routine in ROM will be saved in memory. The next frame, the SNES will check for this vector, and respond accordingly.</p>
 <p>For the game HUD, most of its code has been modified to write to memory that is visible to both CPUs. Once the HUD's buffer has been modified by the SNES, it copies a handful of variables into memory that is visible to both the SNES and the SA-1. This is where most of the time saved with OAM optimization is accounted for. After these variables are copied, the SNES sends another interrupt request to the SA-1 to indicate that the coprocessor can do its own changes to the tilemap before it gets drawn to the screen. Some features (such as the hearts) are still written to their original WRAM buffer. This way, they can contribute their normal CPU load without ruining the HUD.</p>
 
 <h3>My system isn't supported! Update the older hacks!</h3>
+
 <p>No.</p>
 <p>The change to SA-1 included a complete overhaul of the backend code. Adding new features to both versions would require maintaining two completely separate codebases and writing almost every feature twice. I simply cannot allow my ability to improve this project be inhibited by inferior applications or devices that do not properly emulate expansion chips. You may think it's not fair that I'm ignoring your system, but what's actually not fair is holding everyone else back from a better practice hack.</p>
 
-<h3 id="IKnowAboutItAlready">Known issues <a href="#IKnowAboutItAlready" class="headerLink">(link)</a></h3>
+<h2>Troubleshooting</h2>
+
+<ul>
+	<li>Most game crashes should be caught be a special interrupt handler and result in a blue screen of death. If you believe the crash was caused by a bug specific to the practice hack, please report it in the practice hack channel of the ALTTP Discord.</li>
+	<li>If the SA-1 crashes, it will begin printing ⚠ characters on the HUD under the resource counters.
+	<li>Holding <span class="snesButton snesStart">Start</span> and <span class="snesButton snesSelect">Select</span> during power on will reset all configurations to their defaults. When you do this, you will hear Link screaming as he falls to his death.</li>
+	<li>If something in the menu goes out of range, you will be warned with "BAD VAL". Press X to clear it.</li>
+</ul>
+
+<h3 id="IKnowAboutItAlready">Known issues</h3>
+
 <ul>
 	<li>Lag from mosaics can be inaccurate, depending on what you've already done in your current play session. I'm still investigating the best way to approach this problem.</li>
 <!---<li>If you make a savestate with line sentries then change your sentries and load the original state, the lines will persist. This is a really awkward problem to solve, because just clearing all the lines will mess with the text box. So just don't do this please. If you have a stuck line, set line 4 to something, close the menu, then disable line 4 again.</li>--->
 </ul>
 
-<h2>Trouble shooting</h2>
-<ul>
-	<li>Holding <span class="snesButton snesStart">Start</span> and <span class="snesButton snesSelect">Select</span> during power on will reset all configurations to their defaults. When you do this, you will hear Link screaming as he falls to his death.</li>
-	<li>If something in the menu goes out of range, you will be warned with "BAD VAL". Press X to clear it.</li>
-</ul>
-
 <h2>Caveats</h2>
+
 <p>It's impossible to modify anything this much without sacrificing some behavior. This section details known caveats that should be taken into consideration by the user.</p>
 
 <h3>Overlay corruption and the SA-1</h3>
+
 <p>The memory layout of the SA-1 puts important hardware registers and on-board memory in an area potentially affected by overlay corruption. To prevent corruption to the SA-1, the star tile holes routine will be intercepted if it is about to write too far. This will have some effect on the timing of longer corruptions.</p>
 <p>When cut short, the practice hack will continue reading without writing to see how far the writes would have gone. If they reach too far (<code>$4200</code>), then a blue screen of death will be displayed to explain the intentional lock.</p>
 <p>In addition to the writing, this type of corruption may also read too far. This does not have the potential to corrupt the SA-1, but it does throw the behavior out of sync from vanilla. Normally, corruption that reaches this far is dependent on open bus behavior; however, the SA-1 places registers and memory in this region, effecting a less deterministic sea of values. To coax corruptions into resolving, a large block of memory from <code>$3680</code> to <code>$37FF</code> has been filled with the required terminator value. This solution necessarily means that far-reaching corruption may end much sooner than it normally would, making timings unreliable.</p>
@@ -250,8 +268,11 @@ navfooter: yes
 </section>
 
 <section id="features">
+
 <h2>Features list</h2>
+
 <h3 id="menuMain">Main menu</h3>
+
 <dl class="subDefinition">
 	<dt><a href="#menuPresets">Presets</a></dt>
 	<dd>Built in states for various categories</dd>
@@ -282,11 +303,13 @@ navfooter: yes
 </dl>
 
 <h3 id="menuPresets">Presets</h3>
-<p>Collections of presets that can be loaded to practice various parts of various runs. The category listed can be changed in the <a href="#menuPresetConfiguration">preset config</a> menu.</p>
+
+<p>Scene presets that can be loaded to practice various parts of various runs. The category listed can be changed in the <a href="#menuPresetConfiguration">preset config</a> menu.</p>
 
 <p>If a category you want to practice does not have presets, you can help by making them. Instructions for doing so are outlined <strong><a href="presetbuilding">here</a></strong>.</p>
 
 <h3 id="menuItems">Items</h3>
+
 <dl class="inlineDefinition dinkyList">
 	<dt>Bow</dt>
 	<dd class="optionList">
@@ -307,7 +330,7 @@ navfooter: yes
 	<dt>Hookshot</dt>
 	<dd>Yes/No</dd>
 	<dt>Bombs</dt>
-	<dd>0–30</dd>
+	<dd>0&mdash;{10&mdash;30}</dd>
 	<dt>Powder</dt>
 	<dd class="optionList">
 		<ol>
@@ -345,7 +368,7 @@ navfooter: yes
 	<dd>Yes/No</dd>
 	<dt>Bottles</dt>
 	<dd class="optionList">
-		For each bottle (1–4):
+		For each bottle (1&mdash;4):
 		<ol>
 			<li>No</li>
 			<li>Unobtainable shroooom</li>
@@ -369,6 +392,7 @@ navfooter: yes
 </dl>
 
 <h3 id="menuEquipment">Equipment</h3>
+
 <dl class="inlineDefinition dinkyList">
 	<dt>Health</dt>
 	<dd>Current health. Fractional hearts are indicated with a bar.</dd>
@@ -377,7 +401,7 @@ navfooter: yes
 	<dt>Magic</dt>
 	<dd>Set magic points.</dd>
 	<dt>Rupees</dt>
-	<dd>0–999</dd>
+	<dd>0&mdash;999</dd>
 	<dt>Fill everything</dt>
 	<dd>Grants full equipment with just below max health and magic.</dd>
 	<dt>Sword</dt>
@@ -424,13 +448,17 @@ navfooter: yes
 	<dt>Half magic</dt>
 	<dd>Yes/No</dd>
 	<dt>Heart pieces</dt>
-	<dd>0–3</dt>
+	<dd>0&mdash;3</dt>
 	<dt>Bombs</dt>
-	<dd>0–30</dd>
+	<dd>0&mdash;{10&mdash;30}</dd>
 	<dt>Arrows</dt>
-	<dd>0–50</dd>
+	<dd>0&mdash;{30&mdash;50}</dd>
+	<dt>Bomb capacity</dt>
+	<dd>10&mdash;30</dd>
+	<dt>Arrow capacity</dt>
+	<dd>30&mdash;50</dd>
 	<dt>Keys</dt>
-	<dd>0–9</dt>
+	<dd>0&mdash;9</dt>
 	<dt>Big keys</dt>
 	<dd>Toggle big keys for each dungeon.</dd>
 	<dt>Small keys</dt>
@@ -438,6 +466,7 @@ navfooter: yes
 </dl>
 
 <h3 id="menuGameState">Game state</h3>
+
 <dl>
 	<dt>Skip text</dt>
 	<dd>Skips the current text box.</dd>
@@ -459,7 +488,8 @@ navfooter: yes
 		<strong class="lag"><b>NOTE:</b> This only affects the data pertaining to that specific room, but not data pertaining to the dungeon as a whole. For example, even though key collection is reset, the key count for that dungeon is left unaltered.</strong>
 	</dd>
 	<dt>Toggle bosses defeated</dt>
-	<dd>Modifies the boss defeated room flag for the specific boss's room.</dd>
+	<dd>Modifies the boss defeated room flag for the specific boss's room.
+		<br />The Agahnim 1 flag will also toggle the lumberjacks overlay and can enable the castle gate overlay, and the Agahnim 2 flag will also toggle the pyramid hole overlay.</dd>
 	<dt>Pendants and crystals</dt>
 	<dd>Toggle collection status of each dungeon prize.</dd>
 	<dt>Game flags</dt>
@@ -470,13 +500,7 @@ navfooter: yes
 			<dt>Sanc priest</dt>
 			<dd>Talking to the priest after mastersword</dd>
 			<dt>Escaped</dt>
-			<dd>Returning Zelda to sanctuary</dd>
-			<dt>Uncle left</dt>
-			<dd>Uncle leaving the house</dd>
-			<dt>Aginah</dt>
-			<dd>Aginah discussing book</dd>
-			<dt>Fortune cycle</dt>
-			<dd>Fortune teller hint selector</dd>
+			<dd>Returning Zelda to Sanctuary (also toggles castle gate overlay)</dd>
 			<dt>Hobo bottle</dt>
 			<dd>Got bottle from hobo</dd>
 			<dt>Vendor bottle</dt>
@@ -492,7 +516,22 @@ navfooter: yes
 		</dl>
 	</dd>
 	<dt>Drops</dt>
-	<dd>Submenu for controlling drop luck, rupee pulls, and prize packs.</dd>
+	<dd>Submenu for controlling drop luck, rupee pulls, and prize packs.
+		<dl class="subDefinition">
+			<dt>Drop luck</dt>
+			<dd>Pond of Happiness luck: Normal (50%), Great (100%), Trouble (0%)
+				<br/>Note that this option is distinct from the RNG control option and will take precedence.
+			</dd>
+			<dt>Lucky kills</dt>
+			<dd>Number of kills done under drop luck.</dd>
+			<dt>Rupee pull kills</dt>
+			<dd>Number of kills counted since last rupee pull</dd>
+			<dt>Rupee pull hits</dt>
+			<dd>Number of hits taken since last rupee pull</dd>
+			<dt>Prize pack [1-7]</dt>
+			<dd>Current position in the given prize pack</dd>
+		</dl>
+	</dd>
 	<dt>Follower</dt>
 	<dd class="optionList">
 		<ol>
@@ -528,32 +567,10 @@ navfooter: yes
 			<dd>Agahnim has been defeated.</dd>
 		</dl>
 	</dd>
-	<dt>Map indicator</dt>
-	<dd>World map marker:
-		<dl class="subDefinition">
-			<dt>Castle</dt>
-			<dd>Zelda rescue mission</dd>
-			<dt>Kakariko</dt>
-			<dd>Go speak to villagers to learn about the Elders</dd>
-			<dt>Sahasrahla</dt>
-			<dd>Go speak to Sahasrahla to learn about the Master Sword</dd>
-			<dt>Pendants</dt>
-			<dd>Light World dungeons</dd>
-			<dt>MS</dt>
-			<dd>Go collect the master sword</dd>
-			<dt>ATower</dt>
-			<dd>Go fight Agahnim</dd>
-			<dt>Darkness</dt>
-			<dd>First Dark World dungeon</dd>
-			<dt>Crystals</dt>
-			<dd>Remaining Dark World dungeons</dd>
-			<dt>GTower</dt>
-			<dd>Go fight Ganon</dd>
-		</dl>
-	</dd>
 </dl>
 
 <h3 id="menuLinkState">Link state</h3>
+
 <dl>
 	<dt>Waterwalk</dt>
 	<dd>Control the falling-in-pit address
@@ -571,7 +588,7 @@ navfooter: yes
 	<dt>Statue drag</dt>
 	<dd>Toggles the fake statue address.</dd>
 	<dt>Ancilla index</dt>
-	<dd>Set ancilla search index ($03C4); $00–$7F</dd>
+	<dd>Set ancilla search index ($03C4); $00&mdash;$7F</dd>
 	<dt>Spooky</dt>
 	<dd>Set ancilla slot 4 altitude</dd>
 	<dt>Armed EG</dt>
@@ -593,8 +610,11 @@ navfooter: yes
 	</dd>
 	<dt>Finish mirrordoor</dt>
 	<dd>Sets the mirror door wait timer to finish after 11 frames. For safety reasons, this will only run when the Triforce door submodule is in effect. If successful, you should hear a <i>VOOMP</i>; otherwise, you will hear a <i>beep</i>.</dd>
+	<dt>Create portal</dt>
+	<dd>If Link is the Light World and not a special area, this will create a mirror portal at his feet. Link will also be given iframes to avoid an instant warp. When disallowed, you will hear a <i>beep</i>.</dd>
 </dl>
 <h3 id="menuGameplay">Gameplay</h3>
+
 <dl>
 	<dt>Skip Triforce</dt>
 	<dd>Transitioning north from Ganon's Room will behave like a normal screen transition, allowing consistent and reliable room times for the fight.</dd>
@@ -623,18 +643,18 @@ navfooter: yes
 </dl>
 
 <h3 id="menuRNGControl">RNG Control</h3>
+
 <dl>
 	<dt>Prize packs</dt>
-	<dd>Modifies drop percentages. This option only affects prize packs, not other guaranteed drops such as the stun drop or keys. It will, however, affect the 100% prize packs.
+	<dd>Modifies drop percentages. This option only affects prize packs from a normal random roll, not other guaranteed drops such as the stun drop or keys. Drop luck from the Pond of Happiness will override this setting.
 		<dl class="subDefinition">
 			<dt>Vanilla</dt>
-			<dd>Drops behave normally. 50% for most prize packs; fairy luck works.</dd>
+			<dd>Drops behave normally. 50% for most prize packs.</dd>
 			<dt>Always</dt>
 			<dd>All enemies drop their prize packs when possible.</dd>
 			<dt>Never</dt>
-			<dd>No enemy drops prize packs, ever.</dd>
+			<dd>No enemy drops prize packs, except the 100% chance pack 4.</dd>
 		</dl>
-		<strong class="lag"><b>NOTE:</b> toggling this option will reset existing fairy luck.</strong>
 	</dd>
 	<dt>Frame rule</dt>
 	<dd>Forces the frame counter to a specific value on preset or savestate load.</dd>
@@ -731,6 +751,7 @@ navfooter: yes
 </div>
 
 <h3 id="menuHUD">HUD extras</h3>
+
 <dl>
 	<dt>Health display</dt>
 	<dd>How to show Link's current and max health:
@@ -749,13 +770,13 @@ navfooter: yes
 			<dt>Graphical</dt>
 			<dd>Rectangle buttons arranged like a controller.</dd>
 			<dt>Classic</dt>
-			<dd>Original character display.</dd>
+			<dd>Original character display used by older hacks.</dd>
 			<dt>Classic Gray</dt>
 			<dd>Classic with unpressed buttons in gray.</dd>
 		</dl>
 	</dd>
-	<dt>Sentry [1–5]</dt>
-	<dt>Line [1–4]</dt>
+	<dt>Sentry [1&mdash;5]</dt>
+	<dt>Line [1&mdash;4]</dt>
 	<dd>5 sentry slots and 4 line sentries displayed on the HUD. See <a href="sentries">here for a list of all sentries</a>.
 		<strong class="lag"><b>NOTE:</b> Line sentries require slightly more work for the CPU than can be accounted for and thus may effect lag frames where they would otherwise not occur.</strong>
 		<strong class="lag"><b>NOTE:</b> Lines 3 and 4 will cover part of the text box when it is in the higher position. The select menu, however, will cover lines.</strong>
@@ -773,6 +794,7 @@ navfooter: yes
 </dl>
 
 <h3 id="menuLiteStates">Lite states</h3>
+
 <p>16 custom presets that can be saved, loaded, and erased.</p>
 <ul>
 	<li>To load a lite state, press <span class="snesButton snesA">A</span>.</li>
@@ -782,6 +804,7 @@ navfooter: yes
 
 
 <h3 id="menuRoomMaster">Room master</h3>
+
 <dl>
 	<dt>Set room</dt>
 	<dd>Change the current room loaded and viewed.</dd>
@@ -790,8 +813,6 @@ navfooter: yes
 	<dt>Configure loading</dt>
 	<dd>Configure settings that control what state rooms are loaded in.
 		<dl class="subDefinition">
-			<dt>Equipment</dt>
-			<dd>Select between current equipment, the custom preset loadout, or full equipment.</dd>
 			<dt>Open shutters</dt>
 			<dd>Opens all shutter doors in the loaded room.</dd>
 			<dt>Kill sprites</dt>
@@ -802,7 +823,6 @@ navfooter: yes
 			<dd>Choose the world ID, let it take on the expected value of the room, or leave it as is.</dd>
 			<dt>Dungeon ID</dt>
 			<dd>Choose the dungeon ID, let it take on the expected value of the room, or leave it as is.</dd>
-			
 		</dl>
 	</dd>
 	<dt>Door 0, …</dt>
@@ -810,6 +830,7 @@ navfooter: yes
 </dl>
 
 <h3 id="menuShortcuts">Shortcuts</h3>
+
 <dl>
 	<dt>LTTPHack menu</dt>
 	<dd><span class="snesButton snesR">R</span>+<span class="snesButton snesStart">Start</span> - Opens the practice hack menu. <strong class="lag"><b>NOTE:</b> this shortcut cannot be changed.</strong></dd>
@@ -838,6 +859,7 @@ navfooter: yes
 </dl>
 
 <h3 id="menuPresetConfiguration">Preset config</h3>
+
 <dl>
 	<dt>Preset category</dt>
 	<dd>Changes the run category listed in the <a href="#menuPresets">presets submenu</a>.</dd>
@@ -848,13 +870,25 @@ navfooter: yes
 	<dt>Random bats</dt>
 	<dd>Randomize the variable that Ganon uses to spawn bats after loading a preset.</dd>
 	<dt>Use preset load</dt>
-	<dd>When enabled, the current saved loadout will overwrite items and equipment when presets are loaded.</dd>
-	<dt>Save loadout</dt>
-	<dd>Saves your current equipment to a custom loadout for use with presets.</dd>
+	<dd>Choose what inventory to use when loading a preset or lite state.
+		<dl class="subDefinition">
+			<dt>From preset</dt>
+			<dd>Uses the loadout defined in the preset.</dd>
+			<dt>Current</dt>
+			<dd>Uses your current equipment.</dd>
+			<dt>Custom [1&mdash;5]</dt>
+			<dd>Uses the custom loadout selected.</dd>
+		</dl>
+	</dd>
+	<dt>Manage loadout</dt>
+	<dd>View and manage saved loadouts. Press A to save current equipment to selected slot; press Y to load.</dd>
 </dl>
 
 <h3 id="menuConfiguration">Configuration</h3>
+
 <dl>
+	<dt>System and ROM</dt>
+	<dd>Submenu with diagnostic information</dd>
 	<dt>Rerandomize</dt>
 	<dd>When using built-in savestates and presets, this will run the RNG function to create a new value on each load. It will also randomize the frame counter.</dd>
 	<dt>Music</dt>
@@ -864,29 +898,29 @@ navfooter: yes
 	<dt>HUD font</dt>
 	<dd>Change the font used by HUD extras. This will not change the font for the vanilla HUD or for the HP display. <i>Hover over options for larger preview.</i>
 		<ul class="fontList">
-			<li><span class="fontName">LTTP</span><span class="fontPreview font1"></span></li>
-			<li><span class="fontName">Klonoa</span><span class="fontPreview font2"></span></li>
-			<li><span class="fontName">TI-83</span><span class="fontPreview font3"></span></li>
-			<li><span class="fontName">Shin-chan</span><span class="fontPreview font4"></span></li>
-			<li><span class="fontName">SMT <i>(Shin Megami Tensei)</i></span><span class="fontPreview font5"></span></li>
-			<li><span class="fontName">Mario World</span><span class="fontPreview font6"></span></li>
-			<li><span class="fontName">DKC <i>(Donkey Kong Country)</i></span><span class="fontPreview font7"></span></li>
-			<li><span class="fontName">ZAMN <i>(Zombies Ate My Neighbors)</i></span><span class="fontPreview font8"></span></li>
-			<li><span class="fontName">Emerald <i>(Pokémon Emerald)</i></span><span class="fontPreview font9"></span></li>
-			<li><span class="fontName">Earthbound</span><span class="fontPreview font10"></span></li>
-			<li><span class="fontName">FF6 <i>(Final Fantasy VI)</i></span><span class="fontPreview font11"></span></li>
-			<li><span class="fontName">Lufia 2</span><span class="fontPreview font12"></span></li>
-			<li><span class="fontName">Goonies 2</span><span class="fontPreview font13"></span></li>
-			<li><span class="fontName">Pac-Man <i>(Pac-Man Arrangement)</i></span><span class="fontPreview font14"></span></li>
-			<li><span class="fontName">DOOM <i>(GBA version)</i></span><span class="fontPreview font15"></span></li>
-			<li><span class="fontName">Undertale</span><span class="fontPreview font16"></span></li>
-			<li><span class="fontName">Pocky <i>(and Rocky 2)</i></span><span class="fontPreview font17"></span></li>
-			<li><span class="fontName">Skyroads</span><span class="fontPreview font18"></span></li>
-			<li><span class="fontName">Yoshi's <i>(Island)</i></span><span class="fontPreview font19"></span></li>
-			<li><span class="fontName">S. Metroid <i>(Super Metroid)</i></span><span class="fontPreview font20"></span></li>
-			<li><span class="fontName">Tazmania</span><span class="fontPreview font21"></span></li>
-			<li><span class="fontName">Black Bass (Super Black Bass 3)</span><span class="fontPreview font22"></span></li>
-			<li><span class="fontName">Loopz</span><span class="fontPreview font23"></span></li>
+			<li><span class="fontName">LTTP</span><span class="fontPreview" style="background-position: 0px 0px"></span></li>
+			<li><span class="fontName">Klonoa</span><span class="fontPreview" style="background-position: 0px -16px"></span></li>
+			<li><span class="fontName">TI-83</span><span class="fontPreview" style="background-position: 0px -32px"></span></li>
+			<li><span class="fontName">Shin-chan</span><span class="fontPreview" style="background-position: 0px -48px"></span></li>
+			<li><span class="fontName">SMT <i>(Shin Megami Tensei)</i></span><span class="fontPreview" style="background-position: 0px -64px"></span></li>
+			<li><span class="fontName">Mario World</span><span class="fontPreview" style="background-position: 0px -80px"></span></li>
+			<li><span class="fontName">DKC <i>(Donkey Kong Country)</i></span><span class="fontPreview" style="background-position: 0px -96px"></span></li>
+			<li><span class="fontName">ZAMN <i>(Zombies Ate My Neighbors)</i></span><span class="fontPreview" style="background-position: 0px -112px"></span></li>
+			<li><span class="fontName">Emerald <i>(Pokémon Emerald)</i></span><span class="fontPreview" style="background-position: 0px -128px"></span></li>
+			<li><span class="fontName">Earthbound</span><span class="fontPreview" style="background-position: 0px -144px"></span></li>
+			<li><span class="fontName">FF6 <i>(Final Fantasy VI)</i></span><span class="fontPreview" style="background-position: 0px -160px"></span></li>
+			<li><span class="fontName">Lufia 2</span><span class="fontPreview" style="background-position: 0px -176px"></span></li>
+			<li><span class="fontName">Goonies 2</span><span class="fontPreview" style="background-position: 0px -192px"></span></li>
+			<li><span class="fontName">Pac-Man <i>(Pac-Man Arrangement)</i></span><span class="fontPreview" style="background-position: 0px -208px"></span></li>
+			<li><span class="fontName">DOOM <i>(GBA version)</i></span><span class="fontPreview" style="background-position: 0px -224px"></span></li>
+			<li><span class="fontName">Undertale</span><span class="fontPreview" style="background-position: 0px -240px"></span></li>
+			<li><span class="fontName">Pocky <i>(and Rocky 2)</i></span><span class="fontPreview" style="background-position: 0px -256px"></span></li>
+			<li><span class="fontName">Skyroads</span><span class="fontPreview" style="background-position: 0px -272px"></span></li>
+			<li><span class="fontName">Yoshi's <i>(Island)</i></span><span class="fontPreview" style="background-position: 0px -288px"></span></li>
+			<li><span class="fontName">S. Metroid <i>(Super Metroid)</i></span><span class="fontPreview" style="background-position: 0px -304px"></span></li>
+			<li><span class="fontName">NES Open</span><span class="fontPreview" style="background-position: 0px -320px"></span></li>
+			<li><span class="fontName">Black Bass (Super Black Bass 3)</span><span class="fontPreview" style="background-position: 0px -336px"></span></li>
+			<li><span class="fontName">Loopz</span><span class="fontPreview" style="background-position: 0px -352px"></span></li>
 		</ul>
 	</dd>
 	<dt>Color config</dt>
@@ -924,7 +958,7 @@ navfooter: yes
 <footer>
 	<div class="footerList">
 		<ul>
-			<li><a href="#top">About</a></li>
+			<li><a href="#about">About</a></li>
 			<li><a href="#download">Download</a></li>
 			<li><a href="#usage">Usage</a></li>
 			<li><a href="#HELPME">Concerns</a></li>
@@ -932,7 +966,6 @@ navfooter: yes
 		</ul>
 	</div>
 </footer>
-
 
 <!-- Scripts for the JS patcher -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.6.11/core.min.js"></script>
@@ -944,5 +977,3 @@ navfooter: yes
 <script type="text/babel" data-presets="env" src="patcher/js/patcher.js"></script>
 <script type="text/babel" data-presets="env, typescript" src="patcher/js/bps.ts"></script>
 <!-- // Scripts for the JS patcher -->
-
-

@@ -1,62 +1,70 @@
-!config_count = 6
-
-if !RANDO
-	!config_count #= !config_count+2
-endif
-
 CONFIG_SUBMENU:
-%menu_header("CONFIGURATION", !config_count)
+%menu_header("CONFIGURATION")
 
 ;===================================================================================================
+
 %submenu("System and ROM", SYSTEM_SUBMENU)
 
 ;===================================================================================================
-%toggle_onoff("Rerandomize", !config_rerandomize_toggle)
+
+%toggle_onoff("Rerandomize", !config_rerandomize)
 
 ;===================================================================================================
+
 if !RANDO
 	%toggle_onoff("FastROM", !config_fastrom)
 	%toggle_onoff("Vanilla items", !config_vanillaitems)
 endif
 
 ;===================================================================================================
-%toggle_func_customtext_here("Music", !config_feature_music, CONFIGMUSIC)
-	%list_item("Enabled")
-	%list_item("Muted")
 
-#CONFIGMUSIC:
+%toggle_func_customtext("Music", !config_feature_music, .func, .text)
+
+.text
+%toggletext("Muted", "Enabled")
+
+.func
 	LDA.w !config_feature_music
 
 	REP #$20
-	BNE ..unmute
+	BNE .unmute
 
-..mute
+.mute
 	LDA.w #MutedInstruments
-	BRA ..transfer
+	BRA .transfer
 
-..unmute
+.unmute
 	LDA.w #UnmutedInstruments
 
-..transfer
+.transfer
 	JSR transfer_adsr
 
 	LDA.w $0133 : STA.w $012C
+	STZ.w $0133
 
 	RTL
 
-#mute_music:
+;===================================================================================================
+
+mute_music:
 	REP #$20
+
 	LDA.w #MutedInstruments
 	JSR transfer_adsr
+
 	RTL
 
-#transfer_adsr:
+;===================================================================================================
+
+transfer_adsr:
 	STA.w $0000
+
 	LDA.w #$0000
 	PHD
 	TCD
 
 	SEP #$30
+
 	LDA.b #$FF : STA.w $2140
 	STZ.w $4200
 
@@ -69,11 +77,13 @@ endif
 	RTS
 
 ;===================================================================================================
-%toggle_customtext_here("Menu open", !config_cm_save_place)
-	%list_item("Main menu")
-	%list_item("Save place")
+
+%toggle_customtext("Menu open", !config_cm_save_place, this)
+
+%toggletext("Save place", "Main menu")
 
 ;===================================================================================================
+
 %choice_here("HUD font", !config_hud_font, 23)
 	%list_item("LTTP")
 	%list_item("Klonoa")
@@ -95,30 +105,39 @@ endif
 	%list_item("Skyroads")
 	%list_item("Yoshi's")
 	%list_item("S. Metroid")
-	%list_item("Tazmania")
+	%list_item("NES Open")
 	%list_item("Black Bass")
 	%list_item("Loopz")
 
 ;===================================================================================================
-%submenu("Color config", COLOR_CONFIG_SUBMENU)
 
-;===================================================================================================
 !color_count = 22
 !color_id = -1
 
 COLORS_YAY:
 	fillword $0000 : fill !color_count*2
 
-macro fixed_color(val, name)
+;===================================================================================================
+
+%submenu("Color config", COLOR_CONFIG_SUBMENU)
+
+
+;===================================================================================================
+
+macro AddMenuColor(val, name)
 	!color_id #= !color_id+1
 	%list_item("<name>")
 	pushpc
-		org COLORS_YAY+!color_id*2 : dw color(<val>)
+		org COLORS_YAY+!color_id*2 : dw hexto555(<val>)
 	pullpc
 endmacro
 
+;===================================================================================================
+
 COLOR_CONFIG_SUBMENU:
-%menu_header("COLOR CONFIG", 7)
+
+%menu_header("COLOR CONFIG")
+
 %choice_func("Menu BG", !config_hud_bg, !color_count, set_color, color_list)
 
 %choice_func("Header FG", !config_hud_header_fg, !color_count, set_color, color_list)
@@ -129,7 +148,8 @@ COLOR_CONFIG_SUBMENU:
 %choice_func("Selection BG", !config_hud_sel_bg, !color_count, set_color, color_list)
 
 %choice_func("Inactive FG", !config_hud_dis_fg, !color_count, set_color, color_list)
-;%choice_func("Inactive BG", !config_hud_dis_bg, !color_count, set_color, color_list)
+
+;===================================================================================================
 
 set_color:
 	BIT.b SA1IRAM.cm_ax
@@ -153,42 +173,45 @@ set_color:
 	db  0 ; Header HL: black
 	db 10 ; Header BG: lui
 
-	db  9 ; Selection FG: me
-	db  8 ; Selection BG: mine
+	db  8 ; Selection FG: me
+	db  9 ; Selection BG: mine
 
 	db  3 ; Inactive FG: gray
 
+;===================================================================================================
+
 color_list:
 %list_header(!color_count)
-	%fixed_color($000000, "Black")
-	%fixed_color($F8F8F8, "White")
-	%fixed_color($C06000, "Brown")
-	%fixed_color($A8A8A8, "Gray")
+	%AddMenuColor($000000, "Black")
+	%AddMenuColor($F8F8F8, "White")
+	%AddMenuColor($C06000, "Brown")
+	%AddMenuColor($A8A8A8, "Gray")
 
-	%fixed_color($C00000, "Red")
-	%fixed_color($E0A800, "Yellow")
-	%fixed_color($20C028, "Green")
-	%fixed_color($4870D0, "Blue")
+	%AddMenuColor($C00000, "Red")        : %ReusableText(CMTEXT_RED)
+	%AddMenuColor($E0A800, "Yellow")     : %ReusableText(CMTEXT_YELLOW)
+	%AddMenuColor($20C028, "Green")      : %ReusableText(CMTEXT_GREEN)
+	%AddMenuColor($4870D0, "Blue")       : %ReusableText(CMTEXT_BLUE)
 
-	%fixed_color($C8C8F8, "Periwinkle")
-	%fixed_color($000090, "Dark Blue")
-	%fixed_color($06A969, "Lui green")
-	%fixed_color($20A8F8, "Glan blue") ; fantasy
+	%AddMenuColor($C8C8F8, "Periwinkle")
+	%AddMenuColor($000090, "Dark Blue")
+	%AddMenuColor($06A969, "Lui green")
+	%AddMenuColor($20A8F8, "Glan blue") ; fantasy
 
-	%fixed_color($F8B000, "Orange")
-	%fixed_color($782878, "Purple")
-	%fixed_color($605800, "Garbage")
-	%fixed_color($8090A0, "Blilver")
+	%AddMenuColor($F8B000, "Orange")
+	%AddMenuColor($782878, "Purple")
+	%AddMenuColor($605800, "Garbage")
+	%AddMenuColor($8090A0, "Blilver")
 
-	%fixed_color($F858A8, "Pink")
-	%fixed_color($F76D61, "Peach42")
-	%fixed_color($2AA8D9, "Siriusly?")
-	%fixed_color($B8D850, "Chartreuse")
+	%AddMenuColor($F858A8, "Pink")
+	%AddMenuColor($F76D61, "Peach42")
+	%AddMenuColor($2AA8D9, "Siriusly?")
+	%AddMenuColor($B8D850, "Chartreuse")
 
-	%fixed_color($FFBFFF, "Blunt pink")
-	%fixed_color($78886A, "Futaba")
+	%AddMenuColor($FFBFFF, "Blunt pink")
+	%AddMenuColor($78886A, "Futaba")
 
 ;===================================================================================================
+
 UnmutedInstruments:
 	dw .end-.start, $3D00
 
@@ -221,19 +244,6 @@ UnmutedInstruments:
 
 .end
 	dw $0000, $0800
-
-;---------------------------------------------------------------------------------------------------
-
-SYSTEM_SUBMENU:
-%menu_header("SYSTEM AND ROM", 6)
-
-%info1d("CPU version", SA1RAM.CPUVERSION)
-%info1d("PPU1 version", SA1RAM.PPU1VERSION)
-%info1d("PPU2 version", SA1RAM.PPU2VERSION)
-%info1d("SA-1 version", $00230E)
-
-%info4h("ROM checksum 1", $00FFDC)
-%info4h("ROM checksum 2", $00FFDE)
 
 ;===================================================================================================
 
@@ -269,3 +279,22 @@ MutedInstruments:
 
 .end
 	dw $0000, $0800
+
+;===================================================================================================
+
+SYSTEM_SUBMENU:
+%menu_header("SYSTEM AND ROM")
+
+%info1d("CPU version", $4210)
+%info1d("PPU1 version", $213E)
+%info1d("PPU2 version", $213F)
+
+%info1d("SA-1 version", $00230E)
+
+%info4h("ROM checksum 1", $00FFDC)
+%info4h("ROM checksum 2", $00FFDE)
+
+%func("Crash test", this)
+	BRK #$BE
+
+;===================================================================================================

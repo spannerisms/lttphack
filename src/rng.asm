@@ -2,9 +2,9 @@ pushpc
 
 org $0688E9 : JSL rng_pokey
 
-org $01ED6EF : JSL rng_agahnim
+org $1ED6EF : JSL rng_agahnim
 
-org $01E8262 : JSL rng_helmasaur
+org $1E8262 : JSL rng_helmasaur
 
 org $1D9488 : JSL rng_ganon_warp_location
 org $1D91E3 : JSL rng_ganon_warp
@@ -150,3 +150,5 @@ choose_vitty_eye:
 	DEC
 
 	RTL
+
+;===================================================================================================

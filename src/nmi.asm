@@ -1,6 +1,7 @@
+;===================================================================================================
+
 pushpc
 
-; Other interrupt stuff
 org $00CF50
 BadInterrupt:
 	JML OOPS
@@ -39,16 +40,13 @@ org $00841E
 ++	PLA ; remove return point
 	PLA
 
-	PEA.w RequestShortcut-1
-
-	RTS
+	JMP RequestShortcut
 
 warnpc $008489
 
 org $0085FC
 	JSL MergeOAM
 	JMP.w $00865C
-
 
 ;===================================================================================================
 ; This small joypad improvement of 8 cycles gives us a little more leeway
@@ -178,6 +176,8 @@ ClearOAM:
 
 	RTL
 
+;===================================================================================================
+
 MergeOAM:
 macro preponeoam(offset)
 	LDA.b $0A20+$03+(<offset>*4) : ASL : ASL
@@ -203,9 +203,9 @@ endmacro
 	RTL
 
 ;===================================================================================================
-; Custom NMI for hud
+; Custom NMI for menu
 ;===================================================================================================
-NMI_UpdatePracticeHUD:
+UploadPracticeMenu:
 	REP #$20
 
 	LDA.w #SA1RAM.MENU
@@ -230,11 +230,19 @@ NMI_UpdatePracticeHUD:
 	LDA.b #$20
 	STA.w $420B
 
+;===================================================================================================
+
+NoBonusRoutine:
 	RTS
 
 ;===================================================================================================
 
 SNES_ENABLE_CUSTOM_NMI:
+	REP #$20
+
+	LDA.w #NoBonusRoutine
+	STA.w SA1RAM.NMIBonusVector
+
 --	SEP #$21
 
 	LDA.b #$11
@@ -249,6 +257,8 @@ SNES_ENABLE_CUSTOM_NMI:
 	BEQ --
 
 	RTL
+
+;===================================================================================================
 
 SNES_DISABLE_CUSTOM_NMI:
 --	SEP #$21
@@ -300,11 +310,19 @@ SNES_CUSTOM_NMI:
 .good_to_go
 	INC.b $12
 
-	JSR.w NMI_UpdatePracticeHUD
+	JSR.w UploadPracticeMenu
+
+	PEA.w .bonus_return-1
+
+	JMP.w (SA1RAM.NMIBonusVector)
+
+.bonus_return
+	REP #$20
 
 	PEA.w $0000 ; used to be D=0 later
-	PEA.w $2100
-	PLD
+
+	LDA.w #$2100
+	TCD
 
 	PHK
 	PLB
@@ -316,7 +334,7 @@ SNES_CUSTOM_NMI:
 	STZ.b $212D
 
 	LDA.b #$09 : STA.w $2105 ; BG mode 1
-	LDA.b #$63 : STA.w $2109 ; restore tilemap and char addresses
+	LDA.b #$63 : STA.w $2109 ; tilemap and char addresses
 	LDA.b #$07 : STA.w $210C
 
 	; BG 3 scroll
@@ -352,6 +370,19 @@ SNES_CUSTOM_NMI:
 
 	; Refresh colors every frame just cause it's easier
 	REP #$10
+
+
+	LDA.b #$05 : STA.w $2121
+
+	LDA.b #$31 : STA.w $2122
+	LDA.b #$5A : STA.w $2122
+
+	LDA.b #$FF : STA.w $2122
+	LDA.b #$7F : STA.w $2122
+
+	STZ.w $2122
+	STZ.w $2122
+
 	LDY.w #0
 
 .next_color
@@ -419,3 +450,79 @@ SNES_CUSTOM_NMI:
 	db 27 : dw !config_hud_bg
 
 	db $FF ; done
+
+;===================================================================================================
+
+NMIBonusLoadoutPopup:
+	SEP #$30
+
+	LDY.b #!LOPOPUPSIZE
+	LDX.b #$20
+
+	REP #$21
+
+	LDA.w #SA1RAM.LoadoutPopupDraw
+	STA.w $4352
+
+	LDA.w SA1RAM.LoadoutPopupVRAM
+	PHA
+
+	STA.w $2116
+	ADC.w #$0020
+	STA.w SA1RAM.LoadoutPopupVRAM
+	TYA
+	STA.w $4355
+	STX.w $420B
+
+	LDA.w SA1RAM.LoadoutPopupVRAM
+	STA.w $2116
+	ADC.w #$0020
+	STA.w SA1RAM.LoadoutPopupVRAM
+	TYA
+	STA.w $4355
+	STX.w $420B
+
+	LDA.w SA1RAM.LoadoutPopupVRAM
+	STA.w $2116
+	ADC.w #$0020
+	STA.w SA1RAM.LoadoutPopupVRAM
+	TYA
+	STA.w $4355
+	STX.w $420B
+
+	LDA.w SA1RAM.LoadoutPopupVRAM
+	STA.w $2116
+	ADC.w #$0020
+	STA.w SA1RAM.LoadoutPopupVRAM
+	TYA
+	STA.w $4355
+	STX.w $420B
+
+	LDA.w SA1RAM.LoadoutPopupVRAM
+	STA.w $2116
+	ADC.w #$0020
+	STA.w SA1RAM.LoadoutPopupVRAM
+	TYA
+	STA.w $4355
+	STX.w $420B
+
+	LDA.w SA1RAM.LoadoutPopupVRAM
+	STA.w $2116
+	ADC.w #$0020
+	STA.w SA1RAM.LoadoutPopupVRAM
+	TYA
+	STA.w $4355
+	STX.w $420B
+
+	LDA.w SA1RAM.LoadoutPopupVRAM
+	STA.w $2116
+	TYA
+	STA.w $4355
+	STX.w $420B
+
+	PLA
+	STA.w SA1RAM.LoadoutPopupVRAM
+
+	RTS
+
+;===================================================================================================

@@ -30,7 +30,7 @@ CorruptionCrash:
 
 	LDA.w #$7800 : STA.b $2116
 
-	LDA.w #$202F
+	LDA.w #$203F
 	LDX.w #36*32
 --	STA.b $2118
 	DEX
@@ -53,6 +53,23 @@ CorruptionCrash:
 
 ;===================================================================================================
 
+SA1CRASHED:
+
+.draw
+	LDA.w #$2966
+	STA.l SA1RAM.HUD+$90
+	STA.l SA1RAM.HUD+$92
+	STA.l SA1RAM.HUD+$94
+	STA.l SA1RAM.HUD+$96
+	STA.l SA1RAM.HUD+$98
+	STA.l SA1RAM.HUD+$9A
+	STA.l SA1RAM.HUD+$9C
+	STA.l SA1RAM.HUD+$9E
+	STA.l SA1RAM.HUD+$A0
+	BRA .draw
+
+;===================================================================================================
+
 OOPS:
 	REP #$30
 	TSC
@@ -63,6 +80,13 @@ OOPS:
 
 	TCS
 
+	LDA.l $33213E ; read STAT77/78
+	CMP.w #$3333 ; if we get this, it's open bus, and thus the SA-1
+	BNE .snes_crash
+
+	JMP SA1CRASHED
+
+.snes_crash
 	SEP #$34
 
 	LDX.b #$80 : STX.w $2100
@@ -81,7 +105,7 @@ OOPS:
 
 	LDA.w #$7800 : STA.b $2116
 
-	LDA.w #$202F
+	LDA.w #$203F
 	LDX.w #36*32
 --	STA.b $2118
 	DEX
@@ -139,8 +163,8 @@ OOPS:
 .text
 	; "012345678901234567890123456789012"
 	db "A fatal error has occured.$"
-	db "The system halted to attempt$"
-	db "to prevent config damage."
+	db "The system has halted to$"
+	db "help prevent config damage."
 	db $FF
 
 ;===================================================================================================
@@ -162,8 +186,7 @@ DrawCrashText:
 	CMP.w #'$' : BNE .not_newline
 
 	TYA
-	CLC
-	ADC.w #$0020
+	ADC.w #$0020-1 ; carry set if equal
 	STA.b $2116
 	TAY
 
@@ -236,14 +259,21 @@ DrawPekola:
 	DEX
 	BNE --
 
-	STZ.b $2116
-
 	SEP #$10
 
 	LDA.w #$4300 : TCD
 
+	LDA.w #$6000 : STA.w $2116
+	LDA.w #$1809 : STA.b $4300
+	LDX.b #ZeroLand>>16 : STX.b $4304
+	LDA.w #ZeroLand+1 : STA.b $4302
+	LDA.w #$0080 : STA.b $4305
+	LDY.b #$01 : STY.w $420B
+
+
+	STZ.w $2116
+
 	LDA.w #$1801 : STA.b $4300
-	TAY
 
 	LDX.b #Pekola>>16 : STX.b $4304
 	LDA.w #$8000 : STA.b $4302
@@ -255,10 +285,10 @@ DrawPekola:
 	LDA.w #Pekola_end&$7FFF : STA.b $4305
 	STY.w $420B
 
-	LDA.w #$C000>>1 : STA.w $2116
-	LDA.w #cm_gfx>>0 : STA.b $4302
+	LDA.w #$C100>>1 : STA.w $2116
+	LDA.w #cm_gfx+$0100 : STA.b $4302
 	LDX.b #cm_gfx>>16 : STX.b $4304
-	LDA.w #16*16*7 : STA.b $4305
+	LDA.w #16*16*6 : STA.b $4305
 	STY.w $420B
 
 	LDA.w #.hex>>0 : STA.b $4302
@@ -275,8 +305,11 @@ DrawPekola:
 
 	RTS
 
+.zero
+	db $00
+
 .palette
-	dw hexto555($000050), hexto555($282828), hexto555($FFFFFF), hexto555($282828), hexto555($303028), hexto555($303028), hexto555($303030), hexto555($303030), hexto555($303030), hexto555($383030), hexto555($383030), hexto555($303838), hexto555($303830), hexto555($383830), hexto555($383840), hexto555($383838), hexto555($383840), hexto555($403838), hexto555($404040), hexto555($404040), hexto555($404040), hexto555($484040), hexto555($404048), hexto555($404840), hexto555($484848), hexto555($484840), hexto555($484838), hexto555($484848), hexto555($484848), hexto555($484850), hexto555($484850), hexto555($504848), hexto555($504848), hexto555($485058), hexto555($505048), hexto555($505048), hexto555($505058), hexto555($505050), hexto555($505050), hexto555($585050), hexto555($585058), hexto555($505058), hexto555($505060), hexto555($505858), hexto555($505850), hexto555($585850), hexto555($585850), hexto555($605858), hexto555($605860), hexto555($585868), hexto555($585858), hexto555($585860), hexto555($605848), hexto555($605858), hexto555($605850), hexto555($585870), hexto555($585860), hexto555($606060), hexto555($606060), hexto555($586070), hexto555($686060), hexto555($686060), hexto555($606068), hexto555($686058), hexto555($606070), hexto555($686060), hexto555($606068), hexto555($606068), hexto555($606078), hexto555($686060), hexto555($606870), hexto555($706060), hexto555($686860), hexto555($686870), hexto555($706060), hexto555($686860), hexto555($606860), hexto555($606880), hexto555($686878), hexto555($706868), hexto555($706860), hexto555($706868), hexto555($786860), hexto555($606880), hexto555($706860), hexto555($687070), hexto555($687078), hexto555($786868), hexto555($707068), hexto555($707070), hexto555($707068), hexto555($786870), hexto555($707070), hexto555($787068), hexto555($707080), hexto555($687088), hexto555($787068), hexto555($787070), hexto555($787068), hexto555($707088), hexto555($787068), hexto555($787068), hexto555($807068), hexto555($707080), hexto555($787870), hexto555($707878), hexto555($787878), hexto555($707890), hexto555($887070), hexto555($787878), hexto555($707888), hexto555($807878), hexto555($787888), hexto555($807870), hexto555($807870), hexto555($787870), hexto555($807870), hexto555($787898), hexto555($887878), hexto555($787890), hexto555($807880), hexto555($807880), hexto555($887878), hexto555($788080), hexto555($888080), hexto555($788098), hexto555($908078), hexto555($788098), hexto555($888078), hexto555($888078), hexto555($888070), hexto555($888080), hexto555($888088), hexto555($808088), hexto555($908080), hexto555($808090), hexto555($808878), hexto555($808098), hexto555($988080), hexto555($888870), hexto555($888868), hexto555($808898), hexto555($908888), hexto555($8088A0), hexto555($908878), hexto555($888888), hexto555($888880), hexto555($888898), hexto555($988880), hexto555($8888A0), hexto555($988888), hexto555($909070), hexto555($A08888), hexto555($8890A0), hexto555($989080), hexto555($909088), hexto555($8890A8), hexto555($989088), hexto555($A08888), hexto555($909070), hexto555($909090), hexto555($9090A8), hexto555($989090), hexto555($A09088), hexto555($989088), hexto555($989088), hexto555($989090), hexto555($989890), hexto555($9098A8), hexto555($909898), hexto555($A89090), hexto555($9098A0), hexto555($9098B0), hexto555($989898), hexto555($9098B0), hexto555($9898A8), hexto555($9898A0), hexto555($9898B0), hexto555($A89890), hexto555($989890), hexto555($A0A090), hexto555($A0A078), hexto555($98A0A0), hexto555($B09898), hexto555($A8A0A0), hexto555($A0A098), hexto555($A0A0B8), hexto555($A0A0A8), hexto555($B0A098), hexto555($A8A898), hexto555($B0A0A0), hexto555($A0A8A8), hexto555($A8A880), hexto555($A8A8C0), hexto555($B0A8A8), hexto555($B0B080), hexto555($B0B0A0), hexto555($C0A8A8), hexto555($A8B0B0), hexto555($B8B0A8), hexto555($B0B8B8), hexto555($C0B0B0), hexto555($B0B8C8), hexto555($B8B8A8), hexto555($C0B8B8), hexto555($B8B8C0), hexto555($C8B8B8), hexto555($B8C0D0), hexto555($C0C0B0), hexto555($C0C0C8), hexto555($C8C0C0), hexto555($C8C0C0), hexto555($C0C8C8), hexto555($D0C8C8), hexto555($C8D0D8), hexto555($D0D0D8), hexto555($D8D0D0), hexto555($D8D8E0), hexto555($D8E0E8), hexto555($E0D8D8), hexto555($E0E0E0), hexto555($E0E0E0), hexto555($000088), hexto555($000088), hexto555($000088), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000), hexto555($000000)
+dw $2800, $0000, $7FFF, $0000, $0000, $635C, $7BFF, $77DF, $73DF, $77FE, $7BFE, $7FDE, $73DE, $7BDF, $73BF, $7BBF, $7FBE, $6FBF, $77BE, $77BE, $77DD, $7FBD, $6BBE, $779E, $7B9C, $6F9D, $6F9D, $739E, $739C, $779E, $6F9E, $7B9C, $6B9C, $7B9C, $737D, $6F7C, $637C, $777B, $6F7B, $6B7C, $637B, $677B, $6B7C, $6F5C, $6B5B, $775B, $6F5B, $735A, $5F5B, $635C, $5B5B, $6B5A, $5B5A, $5F5A, $635C, $5B3B, $673A, $6B3B, $6F3A, $5F3B, $633A, $6739, $5B3A, $573A, $631A, $631A, $5B1A, $671A, $5F39, $6B18, $5B1A, $6318, $571A, $6718, $5319, $5AF9, $62F9, $62F8, $5EF8, $52F8, $56F8, $5EF7, $56F9, $6AF8, $52F7, $5AF8, $62F7, $66F6, $66D7, $5ED7, $5AD7, $52D8, $5AD6, $4ED7, $4ED6, $62B6, $5EB6, $62B6, $52B6, $5AB5, $4AB6, $5EB5, $4EB6, $56B6, $56B5, $4E97, $4E96, $5A96, $5E95, $4A96, $5A95, $5A94, $4A95, $5E94, $4E95, $4A79, $4695, $4E93, $5A74, $4A75, $5673, $5674, $5275, $4A77, $4675, $5274, $4674, $4A74, $4274, $4655, $4254, $5253, $4E54, $4653, $5653, $5252, $4253, $4254, $3E53, $5652, $4E52, $4652, $5233, $4A33, $4A33, $4234, $4E32, $3E33, $4E31, $4232, $3E32, $4E11, $4612, $3A12, $4A10, $3E11, $4211, $3A11, $3611, $3DF2, $49F1, $39F2, $35F1, $4DF0, $39F1, $35F0, $45F0, $3DD0, $39D0, $41CF, $41CF, $39CF, $45D0, $49CE, $35D0, $39CE, $31CF, $31AF, $35AF, $45AD, $31AE, $35AE, $2DAE, $458D, $3D8E, $3DAD, $31AD, $318E, $498C, $2D8E, $318D, $298D, $298D, $418C, $3D6D, $2D8B, $2D6D, $356C, $296D, $2D6C, $454B, $256C, $256C, $354C, $294A, $454A, $294C, $254C, $294B, $294B, $254B, $312B, $3D2A, $2D4A, $254A, $3D2A, $4529, $292B, $212B, $252B, $3129, $4909, $212A, $350A, $2529, $254A, $2129, $210A, $4907, $3508, $2508, $2509, $38E9, $2108, $40E8, $38E9, $44E7, $3CC7, $1CE8, $1CE6, $44C6, $3CA6, $14C6, $1CA6, $14C6, $3CA6, $40A5, $14A6, $4485, $10A4, $4484, $4463, $4444, $4423, $4402, $4401
 
 .hex
 incbin "resources/bsodhex.2bpp"

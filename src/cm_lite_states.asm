@@ -1,29 +1,37 @@
+;===================================================================================================
+
 LITESTATES_SUBMENU:
-%menu_header("LITE STATES", 16)
+%menu_header("LITE STATES")
+	%litestate("Lite State 01", $00)
+	%litestate("Lite State 02", $01)
+	%litestate("Lite State 03", $02)
+	%litestate("Lite State 04", $03)
+	%litestate("Lite State 05", $04)
+	%litestate("Lite State 06", $05)
+	%litestate("Lite State 07", $06)
+	%litestate("Lite State 08", $07)
+	%litestate("Lite State 09", $08)
+	%litestate("Lite State 10", $09)
+	%litestate("Lite State 11", $0A)
+	%litestate("Lite State 12", $0B)
+	%litestate("Lite State 13", $0C)
+	%litestate("Lite State 14", $0D)
+	%litestate("Lite State 15", $0E)
+	%litestate("Lite State 16", $0F)
 
 ;===================================================================================================
 
-%litestate("Litestate 01", $00)
-%litestate("Litestate 02", $01)
-%litestate("Litestate 03", $02)
-%litestate("Litestate 04", $03)
-%litestate("Litestate 05", $04)
-%litestate("Litestate 06", $05)
-%litestate("Litestate 07", $06)
-%litestate("Litestate 08", $07)
-%litestate("Litestate 09", $08)
-%litestate("Litestate 10", $09)
-%litestate("Litestate 11", $0A)
-%litestate("Litestate 12", $0B)
-%litestate("Litestate 13", $0C)
-%litestate("Litestate 14", $0D)
-%litestate("Litestate 15", $0E)
-%litestate("Litestate 16", $0F)
+GetLiteStateOffset:
+	AND.w #$00FF
+	XBA
+	ASL
+	ASL
+	ASL
+	RTS
 
 ;===================================================================================================
 
 ValidateLiteState:
-	CLC
 	PHP
 	REP #$30
 	PHX
@@ -33,35 +41,32 @@ ValidateLiteState:
 	PHK
 	PLB
 
-	; times 0x0800
-	AND.w #$00FF
-	XBA
-	ASL
-	ASL
-	ASL
+	JSR GetLiteStateOffset
 	TAX
-
 	STA.w SA1IRAM.litestate_off
 
 	LDY.w #$0000
 	SEP #$20
 
---	LDA.w LiteStateHeader,Y
+.test_header
+	LDA.w LiteStateHeader,Y
 	CMP.l LiteStateData,X
 	BNE .fail
 
 	INY
 	INX
-	CPY.w #$0010 : BCC --
+	CPY.w #$0010 : BCC .test_header
 
 	SEC
-	BRA ++
+	BRA .set_return
 
 .fail
 	CLC
 
-	; set carry flag for P we pull
-++	LDA 6,S
+	; set carry flag for P pulled
+.set_return
+	LDA 6,S
+	AND.b #$FE
 	ADC.b #$00
 	STA 6,S
 
@@ -78,8 +83,7 @@ ValidateLiteState:
 
 LiteStateHeader:
 	;  "0123456789ABCDEF"
-	db "LITESTATELUIBETH"
-;	db "LITESTATELUICOOL"
+	db "LITESTATELUIV001"
 
 ;===================================================================================================
 
@@ -89,12 +93,7 @@ DeleteLiteState:
 	PHX
 	PHY
 
-	; times 0x0800
-	AND.w #$00FF
-	XBA
-	ASL
-	ASL
-	ASL
+	JSR GetLiteStateOffset
 	TAX
 
 	LDA.w #$0000
@@ -151,11 +150,7 @@ SaveLiteState:
 	REP #$30
 
 	LDA.w SA1IRAM.litestate_act
-	AND.w #$00FF
-	XBA
-	ASL
-	ASL
-	ASL
+	JSR GetLiteStateOffset
 	TAY
 
 	LDA.w #$000F
@@ -181,7 +176,7 @@ SaveLiteState:
 --	RTL
 
 .banned
-	JSL CM_MenuSFX_error
+	JSL MenuSFX_error
 	BRA .exit
 
 ;===================================================================================================
@@ -194,11 +189,8 @@ LoadLiteState:
 
 	STZ.w SA1IRAM.preset_addr
 	LDA.w SA1IRAM.litestate_last
-	AND.w #$00FF
-	XBA
-	ASL
-	ASL
-	ASL
+
+	JSR GetLiteStateOffset
 	ADC.w #$0010
 	TAY
 
@@ -213,15 +205,10 @@ LoadLiteState:
 	LDA.b #$00
 	JSR DMALiteStates
 
+	JSL HandleCustomLoadout
 	JSL SetHUDItemGraphics
 
-	REP #$20
-	LDA.w #$0000 : TCD
-
-	SEP #$30
-	PHA : PLB
-
-	JSL set_link_equips
+	JSL FixLinkEquipment
 
 	JSL ApplyAfterLoading
 
@@ -235,6 +222,8 @@ LoadLiteState:
 LiteSRAMSize = $0402
 
 DMALiteStates:
+	STZ.w $4200
+
 	REP #$10
 
 	STA.w $4350
@@ -250,15 +239,12 @@ DMALiteStates:
 
 	LDA.b #$20 : STA.w $420B
 
-	LDX.w #$0000
+	LDX.w #.utmost_importance
+	JSR .do_transfer
 
-.next_important
-	LDY.w .utmost_importance+0,X
-	BEQ .done_important
+	; room stuff
+	LDA.w $001B : BEQ .dumb_fake_room
 
-	CPY.w #$0001 : BNE .not_dumb_room_hack
-
-	LDA.w $001B : BEQ .dumb_room_fake
 	REP #$20
 	LDA.w $00A0
 	ASL
@@ -266,58 +252,52 @@ DMALiteStates:
 	ADC.w #$DF80
 	TAY
 	SEP #$20
-	BRA .not_dumb_room_hack
+	BRA .not_dumb_fake_room
 
-.dumb_room_fake
+.dumb_fake_room
 	LDY.w #$FF00
 
-.not_dumb_room_hack
+.not_dumb_fake_room
 	STY.w $2181
 
-	LDA.w .utmost_importance+2,X
-	STA.w $2183
-
-	LDA.w .utmost_importance+3,X
-	STA.w $4355 : STZ.w $4356
-
+	LDA.b #$7F : STA.w $2183
+	LDY.w #$0002 : STY.w $4355
 	LDA.b #$20 : STA.w $420B
 
-	INX : INX : INX : INX
-	BRA .next_important
+	NOP
 
-.done_important
+	STZ.w $2183
+
+	; back to normal transfers
+	LDY.w $4352
+	STY.w SA1RAM.LiteStateDupeOffset ; remember location of data
+	JSR .do_duped_importance
+
 	LDA.w $4350 : CMP.b #$80 : BEQ .saving
 
-	JSR SaveATon
+	JSR SaveATonLiteState
+	JSR SaveATonLiteState
 
-	PHD
 	JSL ResetBeforeLoading
-	PLD
 
+	JSR PullATonLiteState
 
-	SEP #$20
-	PHK
-	PLB
+	JSR .do_duped_importance
+
 	LDA.b $1B : BEQ .overworld
 
 .underworld
 	; save important values
 	LDA.l $7E0468 : PHA ; shutters
 	LDA.l $7EC172 : PHA ; pegs
-	LDA.l $7EF36F : PHA ; keys
-	LDA.l $7E040C : PHA
 
 	LDA.w $010E : JSL SetDungeonEntranceAndProperties
-
-	SEP #$20
-	PLA : STA.l $7E040C
 
 	JSL PresetLoadArea_UW
 
 	SEP #$20
 	LDA.b #$01 : STA.w $4200
 
-	PLA : STA.l $7EF36F
 	PLA : JSL HandlePegState
 	SEP #$20
 	PLA : JSL HandleOpenShutters
@@ -328,39 +308,24 @@ DMALiteStates:
 	BRA .done_stuff_1
 
 .overworld
+	REP #$20
+
+	LDA.b $E2 : STA.w $011E
+	LDA.b $E0 : STA.w $0120
+	LDA.b $E6 : STA.w $0124
+	LDA.b $E8 : STA.w $0122
+
 	JSL HandleOverworldLoad
 
-	REP #$20
-	LDA.w #$0009 : STA.b $10
-
-	SEP #$20
-	STZ.w $0200 : STZ.b $B0
-
 .done_stuff_1
-	JSR PullATon
+	JSR PullATonLiteState
+
+	JSR .do_duped_importance
 
 .saving
-	SEP #$20
-	LDX.w #$0000
+	LDX.w #.less_importance
+	JSR .do_transfer
 
-.next_less_important
-	LDY.w .less_importance+0,X
-	BEQ .done_less_important
-
-	STY.w $2181
-
-	LDA.w .less_importance+2,X
-	STA.w $2183
-
-	LDA.w .less_importance+3,X
-	STA.w $4355 : STZ.w $4356
-
-	LDA.b #$20 : STA.w $420B
-
-	INX : INX : INX : INX
-	BRA .next_less_important
-
-.done_less_important
 	LDA.b $4350 : BPL .done_loading
 
 	; Some dumb after hacks
@@ -371,7 +336,34 @@ DMALiteStates:
 .leave_state
 
 .done_loading
+.done_set
 	RTS
+
+;---------------------------------------------------------------------------------------------------
+
+.do_duped_importance
+	LDY.w SA1RAM.LiteStateDupeOffset
+	STY.w $4352
+
+	LDX.w #.duped_importance
+
+.do_transfer
+	LDY.w $0000,X
+	BEQ .done_set
+
+	STY.w $2181
+
+	LDA.w $0002,X : STA.w $2183
+
+	LDA.w $0003,X
+	STA.w $4355 : STZ.w $4356
+
+	LDA.b #$20 : STA.w $420B
+
+	INX : INX : INX : INX
+	BRA .do_transfer
+
+;===================================================================================================
 
 	; dl addr : db size
 .utmost_importance
@@ -379,56 +371,58 @@ DMALiteStates:
 	dl $7E00A0 : db $04 ; UW screen ID
 	dl $7E008A : db $04 ; OW screen ID
 	dl $7E0020 : db $04 ; coordinates
+
 	dl $7E002F : db $01 ; direction
-	dl $7E040A : db $02 ; OW screen ID
 	dl $7E0084 : db $06 ; OW tilemap
-	dl $7E010E : db $02 ; entrance
-	dl $7E0400 : db $09 ; dungeon stuff
-	dl $7E040C : db $01 ; dungeon id
-	dl $7E048E : db $02 ; room ID
-	dl $7E0303 : db $01 ; item
-	dl $7E0618 : db $08 ; OW pan
-	dl $7E0600 : db $20 ; camera stuff
 	dl $7E00EE : db $01 ; layer
-	dl $7E0476 : db $01 ; layer
+	dl $7E010E : db $02 ; entrance
+	dl $7E0303 : db $01 ; item
 	dl $7E0468 : db $01 ; shutters
+	dl $7E0476 : db $01 ; layer
+	dl $7E048E : db $02 ; room ID
 	dl $7E0AA0 : db $18 ; gfx
-	dl $7EC172 : db $01 ; pegs
+
+	dw $0000 ; end
+
+	; these few things need reinforcement to preserve them, unfortunately
+.duped_importance
+	dl $7E0400 : db $0D ; dungeon stuff + overworld screen ID
+	dl $7E0600 : db $20 ; camera stuff
+	dl $7E00E0 : db $04 ; camera
+	dl $7E00E6 : db $04 ; camera
 	dl $7E0ABD : db $01 ; color math
-	dl $7F0001 : db $02 ; stupid hack for sprite deaths
+	dl $7EC172 : db $01 ; pegs
 	dw $0000 ; end
 
 .less_importance
 	dl $7E0046 : db $01 ; i frames
-	dl $7E031F : db $01 ; i frames
+	dl $7E0056 : db $01 ; bunny
 	dl $7E005B : db $01 ; falling
 	dl $7E005D : db $01 ; state
-	dl $7E0056 : db $01 ; bunny
-	dl $7E02E0 : db $01 ; bunny
-	dl $7E02E2 : db $01 ; bunny
 	dl $7E006C : db $01 ; door state
 	dl $7E00A4 : db $07 ; floor and quadrants
 	dl $7E00B7 : db $05 ; object pointers
-	dl $7E00E0 : db $04 ; camera
-	dl $7E00E6 : db $04 ; camera
-	dl $7E0624 : db $08 ; camera stuff
-	dl $7E0130 : db $04 ; music stuff
+	dl $7E0130 : db $03 ; music stuff
 	dl $7E0136 : db $01 ; music bank
-	dl $7E02FA : db $01 ; statue drag
-	dl $7E0345 : db $01 ; swimming
 	dl $7E029E : db $05 ; ancilla altitude
+	dl $7E02E0 : db $01 ; bunny
+	dl $7E02E2 : db $01 ; bunny
+	dl $7E02FA : db $01 ; statue drag
+	dl $7E031F : db $01 ; i frames
+	dl $7E0345 : db $01 ; swimming
 	dl $7E03C4 : db $01 ; ancilla index
 	dl $7E044A : db $02 ; EG strength
-	dl $7E047A : db $01 ; armed EG
 	dl $7E045A : db $02 ; torches lit
+	dl $7E047A : db $01 ; armed EG
 	dl $7E04F0 : db $04 ; torch timers
+	dl $7E0624 : db $08 ; camera stuff
 	dl $7E0642 : db $01 ; shutter tags
-	dl $7E0FC7 : db $08 ; prize packs
 	dl $7E0B08 : db $02 ; overlord
 	dl $7E0B10 : db $02 ; overlord
 	dl $7E0B20 : db $02 ; overlord
 	dl $7E0CF7 : db $01 ; bush prizes
 	dl $7E0CF9 : db $04 ; drop luck and trees
+	dl $7E0FC7 : db $08 ; prize packs
 	dl $7E1ABF : db $01 ; mirror portal
 	dl $7E1ACF : db $01 ; mirror portal
 	dl $7E1ADF : db $01 ; mirror portal
@@ -439,7 +433,7 @@ DMALiteStates:
 
 ;===================================================================================================
 
-SaveATon:
+SaveATonLiteState:
 	REP #$30
 	PLA
 
@@ -447,7 +441,6 @@ SaveATon:
 	PHD
 	PHY
 	PHX
-	PHB
 
 	PHK
 	PLB
@@ -466,20 +459,25 @@ SaveATon:
 
 	RTS
 
-PullATon:
+PullATonLiteState:
 	REP #$30
 	PLA
+
+	PHK
+	PLB
 
 	PLY : STY.w $4356
 	PLY : STY.w $4354
 	PLY : STY.w $4352
 	PLY : STY.w $4350
 
-	PLB
 	PLX
 	PLY
 	PLD
 	PLP
 
 	PHA
+	SEP #$20
 	RTS
+
+;===================================================================================================

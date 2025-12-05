@@ -71,9 +71,11 @@ pullpc
 
 init_hook:
 	SEP #$30
+
 	LDA.b #$03 : STA.l $002224 ; image 3 for page $60
 
 	LDA.l !config_feature_music : BNE ++
+
 	JSL mute_music
 
 ++	LDA.b #$22 : STA.l $2143 ; BWOOWOOOWOWOOOOOO
@@ -153,7 +155,7 @@ init_hook:
 	LDA.w !config_init_sig : CMP.w #!INIT_SIGNATURE : BEQ .noforcereset
 
 .forcereset
-	JSR init_initialize_all
+	JSR ResetConfig
 	BRA .sram_initialized
 
 .noforcereset
@@ -191,11 +193,6 @@ init_hook:
 
 	REP #$30
 
-	LDA.w #$0000
-	STA.l SA1RAM.CPUVERSION
-	STA.l SA1RAM.PPU1VERSION
-	STA.l SA1RAM.PPU2VERSION
-
 	JSL ConfigMenuSize
 
 	SEP #$30
@@ -209,26 +206,20 @@ init_hook:
 	STA.b $10
 	STA.w $04AA
 
-	LDA.l $004210 : AND.b #$0F : STA.l SA1RAM.CPUVERSION
-	LDA.l $00213E : AND.b #$0F : STA.l SA1RAM.PPU1VERSION
-	LDA.l $00213F : AND.b #$0F : STA.l SA1RAM.PPU2VERSION
-
 	LDA.b #$81 : STA.w $4200
 
 	JML init_done
 
 ;===================================================================================================
 
-init_initialize_all:
-	PEA.w VERSIONSTABLE
-
+ResetConfig:
 	SEP #$20
 
 	LDA.b #$1F : STA.w $2143
 	STA.l SA1RAM.old_music_bank
 
 	REP #$30
-	PLY
+	LDY.w #VERSIONSTABLE
 
 	PHB
 	PHK
@@ -236,7 +227,7 @@ init_initialize_all:
 
 .next
 	LDX.w $0000,Y
-	BEQ .done
+	BEQ .done_options
 
 	INY
 	INY
@@ -248,9 +239,156 @@ init_initialize_all:
 	INY
 	BRA .next
 
-.done
+.done_options
+
+;---------------------------------------------------------------------------------------------------
+
+
+	SEP #$30
+
+	LDY.b #$00
+	STY.b $00
+
+.next_loadout
+	LDA.b #$00
+	LDX.b #$7F
+
+.clear_loadout
+	STA.l $7EF340,X
+
+	DEX
+	BPL .clear_loadout
+
+	INC.b $00
+
+	LDX.b #$FF
+
+.next_row
+	JSR .get_row
+
+	INX : JSR .add_if_set
+	INX : JSR .add_if_set
+	INX : JSR .add_if_set
+	INX : JSR .add_if_set
+	INX : JSR .add_if_set
+
+	CPX.b #$13
+	BCC .next_row
+
+	JSR .get_row
+
+
+
+	LDA.b #$01
+
+	LDX.b #$15 : JSR .add_if_set
+	LDX.b #$14 : JSR .add_if_set
+	LDX.b #$16 : JSR .add_if_set
+	LDX.b #$17 : JSR .add_if_set
+	LDX.b #$3B : JSR .add_if_set
+
+	PHY
+
+	; fix mirror
+	LDA.l $7EF353
+	ASL
+	STA.l $7EF353
+
+	; set hearts
+	LDA.b #$18
+	STA.l $7EF36C
+	STA.l $7EF36D
+
+	JSL SetFlippersFlag
+	JSL SetBootsFlag
+
+	LDA.b $00
+	JSL SaveCustomLoadout
+
+	SEP #$30
+
+	PLY
+
+	LDA.b $00
+	CMP.b #$08
+	BCC .next_loadout
+
+.done_loadouts
 	PLB
 	RTS
+
+;===================================================================================================
+
+.get_row
+	LDA.w .equipment_sets,Y
+	STA.b $02
+
+	LDA.b #$01
+	INY
+	RTS
+
+.add_if_set
+	ASL.b $02
+	BCC .no
+
+	STA.l $7EF340,X
+
+.no
+	RTS
+
+.equipment_sets
+	db %01110000
+	db %01001000
+	db %01110000
+	db %01000000
+	db %01000000
+
+	db %01001000
+	db %01001000
+	db %01001000
+	db %01001000
+	db %00110000
+
+	db %01001000
+	db %01101000
+	db %01011000
+	db %01001000
+	db %01001000
+
+	db %01110000
+	db %00100000
+	db %00100000
+	db %00100000
+	db %01110000
+
+	db %01110000
+	db %01001000
+	db %01110000
+	db %01001000
+	db %01001000
+
+	db %01001000
+	db %01001000
+	db %01001000
+	db %01001000
+	db %00110000
+
+	db %01010000
+	db %01010000
+	db %01010000
+	db %00000000
+	db %01010000
+
+	db %00000000
+	db %00000000
+	db %00000000
+	db %00000000
+	db %00000000
+
+
+
+
+;===================================================================================================
 
 VERSIONSTABLE:
 	!PERM_INIT

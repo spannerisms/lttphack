@@ -1,5 +1,5 @@
-!SRAM_VERSION = $0032
-!INIT_SIGNATURE = $25B9
+!SRAM_VERSION = $0033
+!INIT_SIGNATURE = $26B9
 
 function hexto555(h) = ((((h&$FF)/8)<<10)|(((h>>8&$FF)/8)<<5)|(((h>>16&$FF)/8)<<0))
 function RoomFlags(room) = $7EF000+(room*2)
@@ -29,16 +29,42 @@ function char(n) = $2150+n
 !DESYNC = char($11)|!RED_PAL
 !HAMMER = char($12)|!BROWN_PAL
 
+!CUSTOM_LOADOUTS #= 8
+
+!LOPOPUPLENGTH #= 10
+!LOPOPUPSIZE #= !LOPOPUPLENGTH*2
+
+macro MVN(src, dest) ; why asar
+	MVN <dest>, <src>
+endmacro
+
+macro MVP(src, dest)
+	MVP <dest>, <src>
+endmacro
+
+
+; Magic words
+!EMPTY = $207F
+!QMARK = $252A
+!BLANK_TILE = $24F5
+
+; special stuff
+
+!offset = $407000
+!offsetinc = 0
+!OFF = 0
+!ON = 1
+
 
 ;===================================================================================================
 ; Memory map:
 ; Bank 40:
 ;    $0000..$1FFF - vanilla SRAM
 ;    $2000..$20FF - meta data
-;    $2100..$2FFF - custom loadout
-;    $3000..$5FFF - unused
+;    $2100..$24FF - custom loadout
+;    $2500..$5FFF - unused
 ;    $6000..$7FFF - mirrored to page $60 for SNES
-;    $8000..$FFFF - unused
+;    $8000..$FFFF - self modifying code
 ; Bank 41: savestates
 ; Bank 42: savestates vram
 ; Bank 43:
@@ -81,6 +107,7 @@ struct SA1IRAM $003000
 	.cm_current_menu: skip 4
 	.cm_current_selection: skip 4
 	.cm_current_draw: skip 4
+	.cm_action_length: skip 2
 	.cm_draw_color: skip 2
 
 	; these can be shared because they're never used at the same time
@@ -95,13 +122,16 @@ struct SA1IRAM $003000
 	.cm_shoulder: skip 1 ; N=l V=r
 	skip 1 ; for safety
 
-	.cm_writer_args: skip 8
+	.prgtext_jump:
+	.cm_writer_args: skip 4
 
 	.preset_addr: skip 3 ; never share memory with this
+	.preset_type: skip 2 ; never share memory with this
 
 	.preset_prog: skip 3
 	.preset_prog_end: skip 2
 
+	.draw_text_ptr:
 	.preset_pert: skip 3
 	.preset_pert_end: skip 2
 
@@ -115,14 +145,11 @@ struct SA1IRAM $003000
 	.preset_writer: skip 2
 
 	.sentry_selected_address:
-	.preset_type: skip 2
 	.preset_scratch: skip 4
 
 	.hud_props: skip 2
 	.hud_val: skip 2
 	.hud_val2: skip 2
-
-	reset bytes
 
 .savethis_start
 	.TIMER_FLAG: skip 2
@@ -203,7 +230,7 @@ struct SA1IRAM $003000
 
 	print ""
 	print "SA1 dp: $", pc
-	print "Saved: ", bytes, "/640 (acceptable savestate limit)"
+	print "Saved: ", dec(.savethis_end-.savethis_start), "/640 (acceptable savestate limit)"
 
 warnpc $003100
 
@@ -235,10 +262,12 @@ org $003100
 
 	.HUDSIZE: skip 2
 	.highestline: skip 2
+	.LoadOutScratch: skip 2
+
 
 	print "SA1 mirroring: $", pc
 
-org $003600
+	org $003600
 	.SA1CorruptionBuffer: skip $180
 
 	warnpc $003800
@@ -248,13 +277,16 @@ endstruct
 org $400000
 
 struct SA1RAM $402000 ; DO NOT CHANGE THIS
-	.CPUVERSION: skip 2
-	.PPU1VERSION: skip 2
-	.PPU2VERSION: skip 2
+
 
 
 	warnpc $4020FF
 
+	org $402100
+	.Loadouts
+	.CustomLoadout.slot0: skip $30
+
+	.CustomLoadout.slot1: skip $30*!CUSTOM_LOADOUTS
 
 	org $406000 ; DO NOT CHANGE THIS
 	.HUD skip $800 ; bg3 HUD
@@ -277,8 +309,14 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 
 .clearable_sa1ram:
 	skip 2
+
 	.disable_beams: skip 2
 	.drop_rng: skip 2
+	.loadout_to_save: skip 2
+	.loadout_to_use: skip 2
+
+	.visible_probes: skip 2
+	.light_rooms: skip 2
 
 	.pokey_rng: skip 2
 	.agahnim_rng: skip 2
@@ -322,7 +360,6 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 	.sentry_category_index: skip 2
 	.sentry_item: skip 2
 
-
 .end_of_clearable_sa1ram:
 
 	.cm_input_timer: skip 2
@@ -334,9 +371,22 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 
 	.EasyJMP: skip 2
 
-	.SaveStateMVN: skip 4
+	.LiteStateDupeOffset: skip 2
+
+	.ArbitraryMVN: skip 4
+
 
 	.MessageHighScratch: skip 2
+
+
+	.NMIBonusVector: skip 2
+
+	.LoadoutPopupVRAM: skip 2
+	.LoadoutPopupDraw: skip $100
+
+
+
+	print "end of sa1 vars: ", pc
 
 	warnpc $407BFF
 
@@ -351,35 +401,7 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 	warnpc $407FFF
 endstruct
 
-
-struct CustomLoadout $402100
-	.items : skip $22
-	.other: skip $10
-endstruct
-
-
-macro MVN(src, dest) ; why asar
-	MVN <dest>, <src>
-endmacro
-
-macro MVP(src, dest)
-	MVP <dest>, <src>
-endmacro
-
-
-; Magic words
-!EMPTY = $207F
-!QMARK = $252A
-!BLANK_TILE = $24F5
-
-; special stuff
-
-function color(h) = ((((h&$FF)/8)<<10)|(((h>>8&$FF)/8)<<5)|(((h>>16&$FF)/8)<<0))
-
-!offset = $407000
-!offsetinc = 0
-!OFF = 0
-!ON = 1
+;===================================================================================================
 
 macro def_sram(name, default)
 	!config_<name> #= !offset+!offsetinc
@@ -395,17 +417,11 @@ macro def_sram(name, default)
 	!last_config #= !offsetinc
 endmacro
 
-macro def_sram_long(name, size)
-	!config_<name> #= !offset+!offsetinc
-
-	!offsetinc #= !offsetinc+<size>
-	!last_config #= !offsetinc
-endmacro
+;===================================================================================================
 
 %def_sram("sram_initialized", !SRAM_VERSION)
 
 ; permanent SRAM that doesn't reinit across versions
-; DO NOT CHANGE THE ORDER OF THESE
 %def_sram("init_sig", !INIT_SIGNATURE)
 
 %def_sram("cm_save_place", 0)
@@ -433,27 +449,21 @@ endmacro
 %def_sram("heart_display", 0)
 %def_sram("feature_music", !ON)
 
-%def_sram("sentry1", SENTRY_ROOMTIME)
-%def_sram("sentry2", SENTRY_LAGFRAMES)
-%def_sram("sentry3", SENTRY_IDLEFRAMES)
-%def_sram("sentry4", SENTRY_OFF)
-%def_sram("sentry5", SENTRY_COORDINATES)
+%def_sram("rerandomize", !ON)
 
-%def_sram("linesentry1", !OFF)
-%def_sram("linesentry2", !OFF)
-%def_sram("linesentry3", !OFF)
-%def_sram("linesentry4", !OFF)
+%def_sram("hide_lines", !OFF)
 
 %def_sram("qw_toggle", !ON)
-%def_sram("hudlag_spinner", !ON)
-%def_sram("toggle_boss_cycles", !ON)
+%def_sram("hudlag_spinner", !OFF)
+%def_sram("boss_cycles", !ON)
 
-%def_sram("lit_rooms_toggle", !OFF)
+%def_sram("skip_triforce", !OFF)
 %def_sram("fast_moving_walls", !ON)
-%def_sram("probe_toggle", !OFF)
+%def_sram("somaria_pits", !OFF)
 
-%def_sram("rerandomize_toggle", !ON)
-%def_sram("skip_triforce_toggle", !OFF)
+%def_sram("fastrom", !OFF)
+%def_sram("vanillaitems", !OFF)
+
 
 %def_sram("hud_bg", 0)
 %def_sram("hud_header_fg", 1)
@@ -464,8 +474,20 @@ endmacro
 %def_sram("hud_dis_fg", 3)
 
 %def_sram("death_reload", !OFF)
+; EVERYTHING ABOVE HERE SHOULD BE CONSIDERED RELATIVELY STABLE AND NOT MOVED
 
-%def_sram("use_custom_load", !OFF)
+%def_sram("state_icons", !OFF)
+
+%def_sram("sentry1", SENTRY_ROOMTIME)
+%def_sram("sentry2", SENTRY_LAGFRAMES)
+%def_sram("sentry3", SENTRY_IDLEFRAMES)
+%def_sram("sentry4", SENTRY_OFF)
+%def_sram("sentry5", SENTRY_COORDINATES)
+
+%def_sram("linesentry1", !OFF)
+%def_sram("linesentry2", !OFF)
+%def_sram("linesentry3", !OFF)
+%def_sram("linesentry4", !OFF)
 
 %def_sram("safeties_nmg_sanc_heart", !OFF)
 %def_sram("safeties_nmg_powder", !OFF)
@@ -480,15 +502,6 @@ endmacro
 %def_sram("safeties_adold_silvers", !OFF)
 
 %def_sram("safeties_anyrmg_hook", !OFF)
-
-%def_sram("state_icons", !OFF)
-
-%def_sram("somaria_pits", !OFF)
-
-%def_sram("hide_lines", !OFF)
-
-%def_sram("fastrom", !OFF)
-%def_sram("vanillaitems", !OFF)
 
 print ""
 print "Config end: $", hex(!last_config,3)

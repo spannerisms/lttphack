@@ -67,7 +67,6 @@ p.warped::selection {
 	color: red;
 	font-family: monospace;
 	text-shadow: none
-
 }
 
 span.morewarped::selection {
@@ -78,152 +77,12 @@ span.morewarped::selection {
 	content: 'Attack on ';
 }
 
-span.dgIcon {
-	background-image: url("doorwatchicons.png");
-	background-color: #AEAEAE;
-	outline: 2px solid #AEAEAE;
-	width: 16px;
-	height: 16px;
-	display: inline-block;
-	margin-right: .3em;
-	margin-left: .5px;
-	image-rendering: crisp-edges;
-	image-rendering: pixelated;
-}
-
-span.dgIcon.dgRoom {
-	width: 32px;
-	background-position: -16px 0px;
-}
-
-span.dgIcon.dgSync {
-	background-position: 0px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgDesync {
-	background-position: -16px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgFixed {
-	background-position: -32px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgQuad {
-	background-position: -64px -16px;
-}
-
-span.dgIcon.dgFlags {
-	background-position: -144px -16px;
-}
-
-span.dgIcon.dgHeart {
-	background-position: 0px -32px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgKey {
-	background-position: -16px -32px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgChest {
-	background-position: -80px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgDoor {
-	background-position: -160px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgQuadUL {
-	background-position: -32px -32px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgQuadUR {
-	background-position: -48px -32px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgQuadBL {
-	background-position: -64px -32px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgQuadBR {
-	background-position: -80px -32px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgOverlay {
-	background-position: -128px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgRAMOverlay {
-	background-position: -176px -16px;
-}
-
-span.dgIcon.dgROMOverlay {
-	background-position: -192px -16px;
-}
-
-span.dgIcon.dgWarning {
-	background-position: -96px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgCritical {
-	background-position: -112px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgCamera {
-	background-position: -48px -16px;
-	background-color: transparent;
-	outline-color: transparent;
-}
-
-span.dgIcon.dgXleft {
-	background-position: -144px 0px;
-}
-
-span.dgIcon.dgXright {
-	background-position: -160px 0px;
-}
-
-span.dgIcon.dgYtop {
-	background-position: -176px 0px;
-}
-
-span.dgIcon.dgYbottom {
-	background-position: -192px 0px;
-}
-
 table.ctrltable th:first-child {
 	text-align: center;
 }
 
 span.menuIcon {
-	background-image: url("menuicons.png");
+	background: url("menuicons.png") black;
 	outline: 2px solid #282828;
 	width: 16px;
 	height: 16px;
@@ -278,12 +137,16 @@ ul.fontList > li > span.fontPreview {
 	display: inline-block;
 	background-image: url("fontpreviews.png");
 	background-color: #489848;
-	outline: 2px solid #489848;
+	outline: 1px solid #489848;
 	width: 256px;
 	height: 16px;
 	vertical-align: sub;
 	image-rendering: crisp-edges;
 	image-rendering: pixelated;
+}
+
+ul.fontList > li {
+	margin-bottom: 1px;
 }
 
 ul.fontList > li:hover > span.fontName {
@@ -295,110 +158,6 @@ ul.fontList > li:hover > span.fontPreview {
 	transform: scale(2.0) translate(65px, 0);
 	background-color: #8080F0;
 	outline: 2px solid #8080F0;
-}
-
-span.fontPreview.font1 {
-	background-position: 0px 0px;
-}
-
-span.fontPreview.font2 {
-	background-position: 0px -16px;
-}
-
-span.fontPreview.font3 {
-	background-position: 0px -32px;
-}
-
-span.fontPreview.font4 {
-	background-position: 0px -48px;
-}
-
-span.fontPreview.font5 {
-	background-position: 0px -64px;
-}
-
-span.fontPreview.font6 {
-	background-position: 0px -80px;
-}
-
-span.fontPreview.font7 {
-	background-position: 0px -96px;
-}
-
-span.fontPreview.font8 {
-	background-position: 0px -112px;
-}
-
-span.fontPreview.font9 {
-	background-position: 0px -128px;
-}
-
-span.fontPreview.font10 {
-	background-position: 0px -144px;
-}
-
-span.fontPreview.font11 {
-	background-position: 0px -160px;
-}
-
-span.fontPreview.font12 {
-	background-position: 0px -176px;
-}
-
-span.fontPreview.font13 {
-	background-position: 0px -192px;
-}
-
-span.fontPreview.font14 {
-	background-position: 0px -208px;
-}
-
-span.fontPreview.font15 {
-	background-position: 0px -224px;
-}
-
-span.fontPreview.font16 {
-	background-position: 0px -240px;
-}
-
-span.fontPreview.font17 {
-	background-position: 0px -256px;
-}
-
-span.fontPreview.font18 {
-	background-position: 0px -272px;
-}
-
-span.fontPreview.font19 {
-	background-position: 0px -288px;
-}
-
-span.fontPreview.font20 {
-	background-position: 0px -304px;
-}
-
-span.fontPreview.font21 {
-	background-position: 0px -320px;
-}
-
-span.fontPreview.font22 {
-	background-position: 0px -336px;
-}
-
-span.fontPreview.font23 {
-	background-position: 0px -352px;
-}
-
-span.fontPreview.font24 {
-	background-position: 0px -368px;
-}
-
-span.fontPreview.font25 {
-	background-position: 0px -384px;
-}
-
-span.fontPreview.font26 {
-	background-position: 0px -400px;
 }
 
 span.snesButton {

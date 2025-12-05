@@ -50,7 +50,7 @@ org $1CFD7E : JML UpdateOnEnteringMessaging
 org $05FC83 : JSL UpdateOnKey ; bonk key
 org $06D192 : JSL UpdateOnKey ; normal key
 org $078FFB : JSL UpdateOnBonk
-org $07999D : PHB : JSL UpdateOnReceiveItem
+org $0799F3 : JSL UpdateOnReceiveItem
 org $09F775 : JSL UpdateOnDeath
 
 ; Wait for key
@@ -94,6 +94,11 @@ org $07CAAA : JSL UpdateOnLedgeHop : NOP
 org $07C2F0 : JSL UpdateOnWaterHop
 org $07C3ED : JSL UpdateOnWaterHop
 org $07CC67 : JSL UpdateOnWaterHop
+
+; sprites
+org $1E848C : JSL UpdateOnHelmaMaskBreak
+
+
 
 pullpc
 
@@ -309,10 +314,17 @@ UpdateOnBonk:
 	RTL
 
 UpdateOnReceiveItem:
-	LDA.b #$07 : PHA : PLB ; to make up for PHK : PLB
 	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
-	LDA.b $4D
+	LDY.b #$04
+	LDA.b #$22
 	RTL
+
+UpdateOnHelmaMaskBreak:
+	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDY.b #$0F
+	LDA.b #$00
+	RTL
+
 
 ;===================================================================================================
 ; Idle frames

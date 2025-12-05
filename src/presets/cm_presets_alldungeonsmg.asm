@@ -6,7 +6,7 @@ presetheader_alldungeonsmg:
 	dw presetpersistent_alldungeonsmg ; location of persistent data
 
 ;===================================================================================================
-%menu_header("All Dungeons MG", 15)
+%menu_header("All Dungeons MG")
 	%submenu("Escape", presetmenu_alldungeonsmg_escape)
 	%submenu("Collection", presetmenu_alldungeonsmg_collection)
 	%submenu("Eastern Palace", presetmenu_alldungeonsmg_eastern_palace)
@@ -29,7 +29,7 @@ presetheader_alldungeonsmg:
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_escape:
-%menu_header("Escape", 12)
+%menu_header("Escape")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Link's Bed", "alldungeonsmg", "escape", "links_bed")
@@ -218,7 +218,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_collection:
-%menu_header("Collection", 7)
+%menu_header("Collection")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Sanctuary to Bat Cave", "alldungeonsmg", "collection", "sanctuary_to_bat_cave")
@@ -334,7 +334,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_eastern_palace:
-%menu_header("Eastern Palace", 4)
+%menu_header("Eastern Palace")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Link's House", "alldungeonsmg", "eastern_palace", "links_house")
@@ -403,7 +403,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_skull_woods:
-%menu_header("Skull Woods", 10)
+%menu_header("Skull Woods")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Eastern", "alldungeonsmg", "skull_woods", "outside_eastern")
@@ -549,7 +549,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_skull_woods_helmasaur:
-%menu_header("Skull Woods Helmasaur", 5)
+%menu_header("Skull Woods Helmasaur")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Skull Entrance (Mirror)", "alldungeonsmg", "skull_woods_helmasaur", "skull_entrance_mirror")
@@ -628,7 +628,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_palace_of_darkness_blind:
-%menu_header("Palace of Darkness Blind", 5)
+%menu_header("Palace of Darkness Blind")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("PoD Entrance", "alldungeonsmg", "palace_of_darkness_blind", "pod_entrance")
@@ -709,7 +709,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_thieves_town_kholdstare:
-%menu_header("Thieves' Town Kholdstare", 8)
+%menu_header("Thieves' Town Kholdstare")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Thieves'", "alldungeonsmg", "thieves_town_kholdstare", "outside_thieves")
@@ -860,7 +860,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_ice_palace_agahnim_2:
-%menu_header("Ice Palace Agahnim 2", 5)
+%menu_header("Ice Palace Agahnim 2")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Ice Entrance (Crystal)", "alldungeonsmg", "ice_palace_agahnim_2", "ice_entrance_crystal")
@@ -939,7 +939,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_hyrule_castle_lanmolas:
-%menu_header("Hyrule Castle Lanmolas", 4)
+%menu_header("Hyrule Castle Lanmolas")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Pyramid", "alldungeonsmg", "hyrule_castle_lanmolas", "pyramid")
@@ -1003,7 +1003,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_desert_palace_vitreous:
-%menu_header("Desert Palace Vitreous", 5)
+%menu_header("Desert Palace Vitreous")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Hookpush to Desert", "alldungeonsmg", "desert_palace_vitreous", "hookpush_to_desert")
@@ -1084,7 +1084,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_misery_mire_trinexx:
-%menu_header("Misery Mire Trinexx", 5)
+%menu_header("Misery Mire Trinexx")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Mire", "alldungeonsmg", "misery_mire_trinexx", "outside_mire")
@@ -1170,7 +1170,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_turtle_rock_arrghus:
-%menu_header("Turtle Rock Arrghus", 4)
+%menu_header("Turtle Rock Arrghus")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Turtle Rock Entrance", "alldungeonsmg", "turtle_rock_arrghus", "turtle_rock_entrance")
@@ -1241,7 +1241,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_tower_of_hera:
-%menu_header("Tower of Hera", 4)
+%menu_header("Tower of Hera")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Swamp Crystal Hookpush", "alldungeonsmg", "tower_of_hera", "swamp_crystal_hookpush")
@@ -1305,7 +1305,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_agahnim:
-%menu_header("Agahnim", 5)
+%menu_header("Agahnim")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Hera Entrance", "alldungeonsmg", "agahnim", "hera_entrance")
@@ -1386,7 +1386,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_alldungeonsmg_ganon:
-%menu_header("Ganon", 1)
+%menu_header("Ganon")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Pyramid", "alldungeonsmg", "ganon", "pyramid")

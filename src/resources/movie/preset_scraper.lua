@@ -203,7 +203,7 @@ function print_header()
 	dprint(string.format('	dw presetpersistent_%s ; location of persistent data', labelize_trim(category)))
 
 	dprint('\n'..fat_line)
-	dprint(string.format('%%menu_header("%s", %s)', category, segment_count))
+	dprint(string.format('%%menu_header("%s")', category))
 
 	for _, v in ipairs(presets) do
 		dprint(string.format('	%%submenu("%s", presetmenu_%s_%s)', v.name, labelize_trim(category), labelize(v.name)))
@@ -225,7 +225,7 @@ function print_segheader(s)
 	dprint(string.format('presetmenu_%s_%s:', labelize_trim(category), labelize(presets[s].name)))
 
 	local sss = presets[s]
-	dprint(string.format('%%menu_header("%s", %s)\n', sss.name, #sss))
+	dprint(string.format('%%menu_header("%s")\n', sss.name))
 end
 
 function print_persist()
@@ -323,8 +323,6 @@ ow_args = {
 }
 
 single_args = {
-	{ addr = 0x00ABD, indoors = true, reader = u8, filter = 'nonzero', comment = 'Palette swap' },
-
 	{ addr = 0x002E0, reader = u8, filter = 'nonzero', comment = 'Bunny' },
 	{ addr = 0x00056, reader = u8, filter = 'nonzero', comment = 'Bunny' },
 	{ addr = 0x0005D, reader = u8, filter = 'linkstate', comment = 'Link state' },

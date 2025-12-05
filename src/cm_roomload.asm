@@ -1,7 +1,8 @@
 ROOMLOAD_SUBMENU:
-%menu_header("ROOM MASTER", 19)
+%menu_header("ROOM MASTER")
 
 ;===================================================================================================
+
 %numfield_hex_update("Set room", SA1RAM.loadroomid, $00, $FF, $10)
 
 ;===================================================================================================
@@ -41,44 +42,41 @@ ROOMLOAD_SUBMENU:
 ;===================================================================================================
 
 ROOMLOADCONFIG_SUBMENU:
-%menu_header("ROOM LOAD CONFIGURATION", 6)
-
-%choice_here("Equipment", SA1RAM.loadroomequip, 3)
-	%list_item("Current")
-	%list_item("Loadout")
-	%list_item("Full")
+%menu_header("ROOM LOAD CONFIGURATION")
 
 %toggle_onoff("Open shutters", SA1RAM.loadroomshutters)
 
 %toggle_onoff("Kill sprites", SA1RAM.loadroomkill)
 
 %choice_here("Peg state", SA1RAM.loadroompegset, 3)
-	%list_item("Red")
-	%list_item("Blue")
-	%list_item("Current")
+	%add_list_item(CMTEXT_RED)
+	%add_list_item(CMTEXT_BLUE)
+	%add_list_item(CMTEXT_CURRENT)
 
 %choice_here("World state", SA1RAM.loadroomworldset, 4)
-	%list_item("Default")
-	%list_item("Current")
-	%list_item("Light world")
-	%list_item("Dark world")
+	%add_list_item(CMTEXT_DEFAULT)
+	%add_list_item(CMTEXT_CURRENT)
+	%add_list_item(CMTEXT_LIGHTWORLD)
+	%add_list_item(CMTEXT_DARKWORLD)
 
 %choice_here("Dungeon ID", SA1RAM.loadroomdungeonset, 18)
-	%list_item("Default")
-	%list_item("Current")
-	%list_item("Sewers")
+	%add_list_item(CMTEXT_DEFAULT)
+	%add_list_item(CMTEXT_CURRENT)
+	%add_list_item(CMTEXT_SEWERS)
 	%list_item("Hyrule")
 	%list_item("Eastern")
 	%list_item("Desert")
 	%list_item("Hera")
-	%list_item("Agahnim")
+	%list_item("Aga Tower")
 	%list_item("PoD")
 	%list_item("Swamp")
 	%list_item("Skull")
-	%list_item("Thieves'")
+	%list_item("Thieves")
 	%list_item("Ice")
 	%list_item("Mire")
 	%list_item("TRock")
 	%list_item("GTower")
 	%list_item("Caves")
 	%list_item("Caves FD")
+
+;===================================================================================================

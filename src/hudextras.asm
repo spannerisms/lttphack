@@ -116,10 +116,17 @@ Draw:
 	STY.b SA1IRAM.hud_props
 	BRA .digit100_always
 
+;---------------------------------------------------------------------------------------------------
+
 .short_three
 	STA.b SA1IRAM.SCRATCH+10
 	STY.b SA1IRAM.hud_props
-	JSR .set_conditional_flags_d3
+
+	LDA.b (SA1IRAM.SCRATCH+10)
+	CLC
+	ADC.w #$7F00 ; overflow set if digit 3 exists
+	LDA.b (SA1IRAM.SCRATCH+10)
+	CMP.w #$0010 ; carry set if digit 2 or 3 exists
 
 .digit100
 	BVC .digit10
@@ -132,10 +139,14 @@ Draw:
 	STA.b HUDProxy+10,X
 	BRA .digit10_always
 
+;---------------------------------------------------------------------------------------------------
+
 .short_two
 	STA.b SA1IRAM.SCRATCH+10
 	STY.b SA1IRAM.hud_props
-	JSR .set_conditional_flags_d2
+
+	LDA.b (SA1IRAM.SCRATCH+10)
+	CMP.w #$0010 ; carry set if digit 2 or 3 exists
 
 .digit10
 	BCC .digit1
@@ -157,16 +168,6 @@ Draw:
 	STA.b HUDProxy+14,X
 
 .done
-	RTS
-
-.set_conditional_flags_d3
-	LDA.b (SA1IRAM.SCRATCH+10)
-	CLC
-	ADC.w #$7F00 ; overflow set if digit 3 exists
-
-.set_conditional_flags_d2
-	LDA.b (SA1IRAM.SCRATCH+10)
-	CMP.w #$0010 ; carry set if digit 2 or 3 exists
 	RTS
 
 ;===================================================================================================
@@ -312,8 +313,6 @@ HUD_NMI_DMA_SIZE:
 ;===================================================================================================
 
 draw_hud_extras:
-	PHP
-	PHB
 	PHK
 	PLB
 
@@ -486,8 +485,7 @@ draw_hud_sentry:
 ;===================================================================================================
 
 draw_hud_linesentrys:
-	LDA.w !config_hide_lines
-	BNE .no_line_sentries
+	LDA.w !config_hide_lines : BNE .no_line_sentries
 
 	LDY.w #16*0 : LDX.w #HUDProxyOffset($014A)
 	PEA.w .return_1-1 : JMP.w (SA1IRAM.LINEVECTOR1) : .return_1
@@ -517,6 +515,7 @@ hud_draw_input_display:
 
 ;===================================================================================================
 ; clean up the stuff right under items
+;===================================================================================================
 	REP #$30
 
 	LDA.w #$207F
@@ -562,9 +561,7 @@ hud_draw_input_display:
 ;===================================================================================================
 
 done_extras:
-	PLB
-	PLP
-	RTL
+	JML SA1IRQ_exit
 
 ;===================================================================================================
 
@@ -725,7 +722,7 @@ draw_hearts_options:
 
 ;===================================================================================================
 
-; wrap at 7a
+; wrap at 7A
 hud_draw_input_display_options:
 	dw .off
 	dw .cool
@@ -755,7 +752,7 @@ hud_draw_input_display_options:
 	; this ASL takes care of one for figuring out LR inputs
 	ASL.b SA1IRAM.SCRATCH+1 : ADC.b #$70 ; a in place
 
-	; #$70 is the character offset we want
+	; $70 is the character offset we want
 	; top byte contains $29 from doing dpad, which is what we want
 	REP #$20
 	STA.w SA1RAM.HUD+$66+6
@@ -847,7 +844,7 @@ hud_draw_input_display_options:
 ;===================================================================================================
 
 draw_boss_cycles:
-	LDA.w !config_toggle_boss_cycles
+	LDA.w !config_boss_cycles
 	BEQ .no
 
 	LDA.b SA1IRAM.CopyOf_A0

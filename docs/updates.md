@@ -1,9 +1,70 @@
 ---
 layout: practicehack
-title: Change log - ALTTP Practice Hack
+title: "Change log - ALTTP Practice Hack"
+ogdesc: "Index of updates for the ALTTP practice hack, which you should remember to keep up to date."
 ---
 
 ## Latest update
+
+### [v15.0.0](https://github.com/spannerisms/lttphack/releases/tag/15.0.0) &mdash; 16 January 2026
+
+**This version has breaking changes with the save file. Older versions' saves will be deleted automatically. If you have problems loading the hack, try holding START+SELECT on boot.**
+
+- Presets:
+  - Renamed a handful of presets and did some standardization.
+  - Add some new ones:
+    - Thieves' Town before mitts
+    - Misery Mire spike pot key
+  - Old All Dungeons: changed the Ice Palace entrance preset to outside the dungeon
+  - Correct dungeon ID for sewers presets where applicable.
+- Equipment:
+  - Added bomb and arrow capacity settings.
+  - Bomb and arrow count menus adjust to the respective capacity setting.
+- Game state:
+  - Removed map indicator.
+  - Removed inconsequential game state flags.
+  - Toggling the sanc visited flag ("Escaped") will also toggle the castle gate overlay.
+  - Toggling the Agahnim 1 defeated flag will also toggle the lumberjacks overlay and turning it on will activate the castle gate overlay.
+  - Toggling the Agahnim 2 defeated flag will also toggle the pyramid hole overlay.
+- Link state:
+  - Added a "Create portal" function.
+- HUD extras:
+  - New arrow icons to indicate direction.
+  - Conveyor sentry.
+  - Timer update on Helmasaur King mask break.
+  - HUD spinner defaults to off.
+- RNG control:
+  - Changed how prize packs are controlled: drop luck now overrides the setting, and prize pack 4 is 100% even when set to "never".
+- Preset config:
+  - Added a new option to allow loading presets with your current equipment.
+  - Custom loadout settings now apply to Lite States.
+  - The custom loadout has been expanded to 8 different custom loadouts. You also have the option to equip custom loadouts via the menu at any time.
+- Config:
+  - Replaced Tazmania font with NES Open
+  - Corrected the default colors for selected row when pressing X.
+- Bug fixes:
+  - Fixed crash when loading last preset after using the sentry picker.
+  - Lite States load their properties correctly. All older lite states have been invalidated.
+  - Lite States correctly activate overworld sprites.
+  - Room translucency should work with room loading.
+  - HUD graphics behave better when losing/gaining equipment.
+- Other:
+  - If the SA-1 crashes, it will print ⚠ across the top of the screen.
+  - Updated the BSOD.
+  - Adjusted preset positionings for consistency and quicker transitions.
+  - Changed how bastard doors are encoded in preset data. Please tell me if anything is wrong.
+  - Refactored and optimized the backend of the practice menu. Please tell me if anything is busted, but be gentle, because, if anything is, I will cry.
+  - Tweaked the menu font to be more stylistically uniform.
+  - Open Graph implementation. Please post links everywhere so people can see.
+  - The following settings no longer persist across sessions:
+    - Lit rooms
+    - Visible probes
+    - Loadout overrides
+
+
+----
+
+## Older updates
 
 ### [v14.5.0](https://github.com/spannerisms/lttphack/releases/tag/14.5.0) &mdash; 17 November 2025
 - Sentries:
@@ -13,9 +74,6 @@ title: Change log - ALTTP Practice Hack
 - Bug fixes:
   - Fixed persistent lines when they're changed across savestates (I hope).
 
-----
-
-## Older updates
 
 ### [v14.4.3](https://github.com/spannerisms/lttphack/releases/tag/14.4.3) &mdash; 27 October 2025
 - Bug fixes:

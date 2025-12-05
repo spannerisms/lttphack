@@ -6,7 +6,7 @@ presetheader_nmg:
 	dw presetpersistent_nmg ; location of persistent data
 
 ;===================================================================================================
-%menu_header("Any% NMG (NO SQ)", 15)
+%menu_header("Any% NMG (NO SQ)")
 	%submenu("Escape", presetmenu_nmg_escape)
 	%submenu("Eastern Palace", presetmenu_nmg_eastern)
 	%submenu("Desert Palace", presetmenu_nmg_desert)
@@ -29,7 +29,7 @@ presetheader_nmg:
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_escape:
-%menu_header("Escape", 14)
+%menu_header("Escape")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Link's Bed", "nmg", "escape", "bed")
@@ -71,8 +71,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0804, $0718 ; Scroll X,Y
 dw $05B2 ; Tilemap position
-;dw $0005 ; Scroll mod Y
-;dw $0009 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -200,6 +198,8 @@ db $D1 ; Room layout / Floor
 db $00 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
+%write8_enable()
+%write8($7E040C, $00) ; Dungeon ID
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -215,6 +215,8 @@ db $CF ; Room layout / Floor
 db $01 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
+%write8_enable()
+%write8($7E040C, $00) ; Dungeon ID
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -230,6 +232,8 @@ db $AF ; Room layout / Floor
 db $01 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
+%write8_enable()
+%write8($7E040C, $00) ; Dungeon ID
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -245,6 +249,8 @@ db $5F ; Room layout / Floor
 db $00 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
+%write8_enable()
+%write8($7E040C, $00) ; Dungeon ID
 %write_7F_16()
 %write16($7FDFC2, $0001) ; Room $21 sprite deaths
 %write_end()
@@ -255,7 +261,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_eastern:
-%menu_header("Eastern Palace", 15)
+%menu_header("Eastern Palace")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Before Cutscene", "nmg", "eastern", "before_cutscene")
@@ -271,6 +277,7 @@ db $8D ; Door / Peg state / Layer
 dw $000A ; Dead sprites
 ;-----------------------------
 %write8_enable()
+%write8($7E040C, $00) ; Dungeon ID
 %write8($7E0642, $01) ; Room puzzle state
 %write_end()
 
@@ -287,6 +294,8 @@ db $C0 ; Room layout / Floor
 db $08 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
+%write8_enable()
+%write8($7E040C, $00) ; Dungeon ID
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -299,8 +308,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0B1B, $078B ; Scroll X,Y
 dw $0894 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0002 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -314,8 +321,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0C7D, $0A6D ; Scroll X,Y
 dw $0000 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -329,8 +334,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0F5B, $066F ; Scroll X,Y
 dw $005A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -492,7 +495,7 @@ dw $07FF ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_desert:
-%menu_header("Desert Palace", 14)
+%menu_header("Desert Palace")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Eastern Palace", "nmg", "desert", "outside_eastern_palace")
@@ -504,8 +507,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0F5B, $066D ; Scroll X,Y
 dw $005A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -561,8 +562,6 @@ db $04 ; Link direction
 ;-----------------------------
 dw $0C85, $0A78 ; Scroll X,Y
 dw $0000 ; Tilemap position
-;dw $FFF5 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -576,8 +575,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0485, $0B8D ; Scroll X,Y
 dw $0900 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -591,8 +588,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $08DD, $0B8D ; Scroll X,Y
 dw $090C ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -606,8 +601,6 @@ db $04 ; Link direction
 ;-----------------------------
 dw $0485, $0F8B ; Scroll X,Y
 dw $0880 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -621,8 +614,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $012F, $0CC3 ; Scroll X,Y
 dw $0294 ; Tilemap position
-;dw $0008 ; Scroll mod Y
-;dw $FFF6 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -656,17 +647,13 @@ db $4F ; Room layout / Floor
 db $02 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
-%write_7F()
-%write8($7F23DC, $00) ; Bastard door
-%write8($7F23E3, $00)
-%write8($7F249C, $00)
-%write8($7F24A3, $00)
+%write_bastard_door(%0010)
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Pot Room", "nmg", "desert", "pot_room")
 dw $0073 ; Screen ID
-dw $0725, $0F78 ; Link Coords
+dw $070C, $0F78 ; Link Coords
 dw $0700, $0F0B ; Camera HV
 db $0C ; Item
 db $04 ; Link direction
@@ -748,7 +735,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_hera:
-%menu_header("Tower of Hera", 12)
+%menu_header("Tower of Hera")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Desert Palace", "nmg", "hera", "outside_desert_palace")
@@ -760,8 +747,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $012F, $0C6D ; Scroll X,Y
 dw $0016 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $000E ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -775,8 +760,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $097D, $0F8B ; Scroll X,Y
 dw $0820 ; Tilemap position
-;dw $FFF2 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -805,8 +788,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $0729, $038D ; Scroll X,Y
 dw $1816 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF6 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -820,8 +801,6 @@ db $04 ; Link direction
 ;-----------------------------
 dw $0824, $0143 ; Scroll X,Y
 dw $0638 ; Tilemap position
-;dw $000A ; Scroll mod Y
-;dw $000B ; Scroll mod X
 ;-----------------------------
 %write8_enable()
 %write8($7E031F, $90) ; iframes from mirror
@@ -830,22 +809,20 @@ dw $0638 ; Tilemap position
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Entrance", "nmg", "hera", "entrance")
 dw $0003 ; Screen ID
-dw $08F0, $0085 ; Link Coords
+dw $08F0, $007A ; Link Coords
 dw $087C, $0021 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $08FB, $0090 ; Scroll X,Y
 dw $00D0 ; Tilemap position
-;dw $000D ; Scroll mod Y
-;dw $FFF4 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Tile room", "nmg", "hera", "tile_room")
 dw $0077 ; Screen ID
-dw $0E78, $0E45 ; Link Coords
+dw $0E78, $0E38 ; Link Coords
 dw $0E00, $0E00 ; Camera HV
 db $02 ; Item
 db $00 ; Link direction
@@ -860,7 +837,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Torches", "nmg", "hera", "torches")
 dw $0087 ; Screen ID
-dw $0F78, $10BC ; Link Coords
+dw $0F78, $10E0 ; Link Coords
 dw $0F00, $1010 ; Camera HV
 db $02 ; Item
 db $02 ; Link direction
@@ -875,7 +852,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Beetles", "nmg", "hera", "beetles")
 dw $0077 ; Screen ID
-dw $0F68, $0F4E ; Link Coords
+dw $0F68, $0F48 ; Link Coords
 dw $0EF0, $0EE2 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
@@ -890,8 +867,8 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Petting Zoo", "nmg", "hera", "petting_zoo")
 dw $0031 ; Screen ID
-dw $03B8, $067C ; Link Coords
-dw $0300, $060F ; Camera HV
+dw $03B8, $0670 ; Link Coords
+dw $0300, $0603 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
@@ -905,8 +882,8 @@ dw $0580 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Bumper Skip", "nmg", "hera", "bumper_skip")
 dw $0027 ; Screen ID
-dw $0E38, $0471 ; Link Coords
-dw $0E00, $0404 ; Camera HV
+dw $0E38, $0470 ; Link Coords
+dw $0E00, $0403 ; Camera HV
 db $03 ; Item
 db $00 ; Direction
 ;-----------------------------
@@ -920,8 +897,8 @@ dw $0064 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Moldorm", "nmg", "hera", "moldorm")
 dw $0017 ; Screen ID
-dw $0FA8, $027A ; Link Coords
-dw $0F00, $020D ; Camera HV
+dw $0FA8, $0270 ; Link Coords
+dw $0F00, $0203 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
 ;-----------------------------
@@ -940,7 +917,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_aga:
-%menu_header("Agahnim's Tower", 14)
+%menu_header("Agahnim's Tower")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Hera", "nmg", "aga", "outside_hera")
@@ -952,15 +929,13 @@ db $02 ; Link direction
 ;-----------------------------
 dw $08FB, $0087 ; Scroll X,Y
 dw $0050 ; Tilemap position
-;dw $0006 ; Scroll mod Y
-;dw $FFF4 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("First Rupee Tree", "nmg", "aga", "first_rupee_tree")
 dw $00E6 ; Screen ID
-dw $0C78, $1DB8 ; Link Coords
+dw $0C78, $1DE0 ; Link Coords
 dw $0C00, $1D10 ; Camera HV
 db $03 ; Item
 db $02 ; Link direction
@@ -984,8 +959,6 @@ db $04 ; Link direction
 ;-----------------------------
 dw $048D, $0085 ; Scroll X,Y
 dw $0100 ; Tilemap position
-;dw $0008 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -999,38 +972,32 @@ db $02 ; Link direction
 ;-----------------------------
 dw $00A7, $00DA ; Scroll X,Y
 dw $0306 ; Tilemap position
-;dw $FFF3 ; Scroll mod Y
-;dw $000E ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("After Lost Woods", "nmg", "aga", "after_lost_woods")
 dw $0000 ; Screen ID
-dw $0388, $03D0 ; Link Coords
+dw $0388, $03E3 ; Link Coords
 dw $0300, $031E ; Camera HV
 db $03 ; Item
 db $02 ; Link direction
 ;-----------------------------
 dw $0385, $038D ; Scroll X,Y
 dw $1860 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Castle Screen", "nmg", "aga", "castle_screen")
 dw $001A ; Screen ID
-dw $05E5, $0728 ; Link Coords
+dw $05E7, $0728 ; Link Coords
 dw $0500, $06CA ; Camera HV
 db $03 ; Item
 db $06 ; Link direction
 ;-----------------------------
 dw $057D, $0737 ; Scroll X,Y
 dw $0620 ; Tilemap position
-;dw $FFF6 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1044,15 +1011,13 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0803, $066D ; Scroll X,Y
 dw $002E ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Prize Pack Guards", "nmg", "aga", "prize_pack_guards")
 dw $00E0 ; Screen ID
-dw $00DA, $1C78 ; Link Coords
+dw $00E9, $1C78 ; Link Coords
 dw $0000, $1C0B ; Camera HV
 db $03 ; Item
 db $06 ; Link direction
@@ -1065,9 +1030,9 @@ dw $0003 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Dark Room of Despair", "nmg", "aga", "dark_room_of_despair")
+%preset_UW("Dark Maze", "nmg", "aga", "dark_maze")
 dw $00D0 ; Screen ID
-dw $010A, $1A78 ; Link Coords
+dw $0108, $1A78 ; Link Coords
 dw $0100, $1A0B ; Camera HV
 db $03 ; Item
 db $04 ; Link direction
@@ -1082,9 +1047,9 @@ dw $0000 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Dark Room of Melancholy", "nmg", "aga", "dark_room_of_melancholy")
+%preset_UW("Dark Catwalk", "nmg", "aga", "dark_catwalk")
 dw $00C0 ; Screen ID
-dw $0125, $1978 ; Link Coords
+dw $0108, $1978 ; Link Coords
 dw $0100, $190B ; Camera HV
 db $03 ; Item
 db $04 ; Link direction
@@ -1101,7 +1066,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Spear Guards", "nmg", "aga", "spear_guards")
 dw $00C0 ; Screen ID
-dw $0178, $182C ; Link Coords
+dw $0178, $1820 ; Link Coords
 dw $0100, $1800 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
@@ -1116,7 +1081,7 @@ dw $0018 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Circle of Pots", "nmg", "aga", "circle_of_pots")
 dw $00B0 ; Screen ID
-dw $0078, $16C4 ; Link Coords
+dw $0078, $16E3 ; Link Coords
 dw $0000, $1610 ; Camera HV
 db $03 ; Item
 db $02 ; Link direction
@@ -1148,7 +1113,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Agahnim", "nmg", "aga", "agahnim")
 dw $0030 ; Screen ID
-dw $0078, $062D ; Link Coords
+dw $0078, $0612 ; Link Coords
 dw $0000, $0600 ; Camera HV
 db $02 ; Item
 db $00 ; Link direction
@@ -1166,7 +1131,7 @@ dw $0001 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_pod:
-%menu_header("Palace of Darkness", 14)
+%menu_header("Palace of Darkness")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Pyramid", "nmg", "pod", "pyramid")
@@ -1178,45 +1143,39 @@ db $02 ; Link direction
 ;-----------------------------
 dw $07F7, $066F ; Scroll X,Y
 dw $002E ; Tilemap position
-;dw $FFFE ; Scroll mod Y
-;dw $FFF8 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Palace Overworld Screen", "nmg", "pod", "pod_overworld")
 dw $006E ; Screen ID
-dw $0C70, $0A0C ; Link Coords
+dw $0C70, $0A04 ; Link Coords
 dw $0C00, $0A00 ; Camera HV
 db $02 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $0C7D, $0A6D ; Scroll X,Y
 dw $0000 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Entrance", "nmg", "pod", "entrance")
 dw $005E ; Screen ID
-dw $0F50, $064C ; Link Coords
+dw $0F50, $063A ; Link Coords
 dw $0EDE, $0600 ; Camera HV
 db $02 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $0F5B, $066F ; Scroll X,Y
 dw $005A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Main Hub (Small Key)", "nmg", "pod", "main_hub_small_key")
 dw $004A ; Screen ID
-dw $14F8, $081B ; Link Coords
+dw $14F8, $0812 ; Link Coords
 dw $1480, $0800 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
@@ -1231,7 +1190,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Main Hub (Big Key)", "nmg", "pod", "main_hub_bk")
 dw $004A ; Screen ID
-dw $14F8, $081A ; Link Coords
+dw $14F8, $0812 ; Link Coords
 dw $1480, $0800 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
@@ -1246,7 +1205,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Main Hub (Hammerjump)", "nmg", "pod", "main_hub_hammeryump")
 dw $004A ; Screen ID
-dw $14F8, $0818 ; Link Coords
+dw $14F8, $0812 ; Link Coords
 dw $1480, $0800 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
@@ -1261,7 +1220,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Hammerjump", "nmg", "pod", "hammeryump")
 dw $002A ; Screen ID
-dw $1478, $0424 ; Link Coords
+dw $1478, $0412 ; Link Coords
 dw $1400, $0400 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
@@ -1274,9 +1233,9 @@ dw $0000 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Pre Sexy Statue", "nmg", "pod", "before_sexy_statue")
+%preset_UW("Switch Shooting", "nmg", "pod", "switch_shooting")
 dw $003A ; Screen ID
-dw $1578, $062C ; Link Coords
+dw $1578, $0612 ; Link Coords
 dw $1500, $0600 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
@@ -1291,7 +1250,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Sexy Statue Room", "nmg", "pod", "sexy_statue_room")
 dw $002A ; Screen ID
-dw $15B4, $04F8 ; Link Coords
+dw $15E8, $04F8 ; Link Coords
 dw $1500, $048B ; Camera HV
 db $03 ; Item
 db $06 ; Link direction
@@ -1306,7 +1265,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Mimics", "nmg", "pod", "mimics")
 dw $002B ; Screen ID
-dw $1678, $0413 ; Link Coords
+dw $1678, $0412 ; Link Coords
 dw $1600, $0400 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
@@ -1322,9 +1281,9 @@ dw $0000 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Statue", "nmg", "pod", "statue")
+%preset_UW("Eyegore Statue", "nmg", "pod", "eyegore_statue")
 dw $001B ; Screen ID
-dw $1678, $0320 ; Link Coords
+dw $1678, $0312 ; Link Coords
 dw $1600, $0300 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
@@ -1339,7 +1298,7 @@ dw $0038 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Basement", "nmg", "pod", "basement")
 dw $001B ; Screen ID
-dw $1790, $0251 ; Link Coords
+dw $1790, $0257 ; Link Coords
 dw $1700, $0200 ; Camera HV
 db $04 ; Item
 db $02 ; Link direction
@@ -1354,7 +1313,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Turtle Room", "nmg", "pod", "turtle_room")
 dw $000B ; Screen ID
-dw $1678, $00C8 ; Link Coords
+dw $1678, $00E3 ; Link Coords
 dw $1600, $0010 ; Camera HV
 db $04 ; Item
 db $02 ; Link direction
@@ -1369,7 +1328,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Helmasaur", "nmg", "pod", "helma")
 dw $006A ; Screen ID
-dw $1578, $0C24 ; Link Coords
+dw $1578, $0C12 ; Link Coords
 dw $1500, $0C00 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
@@ -1387,7 +1346,7 @@ dw $0010 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_thieves:
-%menu_header("Thieves' Town", 18)
+%menu_header("Thieves' Town")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside PoD", "nmg", "thieves", "outside_pod")
@@ -1399,8 +1358,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0F5B, $066D ; Scroll X,Y
 dw $005A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1414,23 +1371,19 @@ db $04 ; Link direction
 ;-----------------------------
 dw $0C85, $0A79 ; Scroll X,Y
 dw $0000 ; Tilemap position
-;dw $FFF4 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Grove", "nmg", "thieves", "grove")
 dw $0072 ; Screen ID
-dw $04DA, $0C0C ; Link Coords
+dw $04DA, $0C04 ; Link Coords
 dw $045C, $0C00 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $04E1, $0C6D ; Scroll X,Y
 dw $000C ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0004 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1444,8 +1397,6 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0485, $0B8D ; Scroll X,Y
 dw $0900 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1459,8 +1410,6 @@ db $04 ; Link direction
 ;-----------------------------
 dw $01D1, $07A3 ; Scroll X,Y
 dw $092A ; Tilemap position
-;dw $000A ; Scroll mod Y
-;dw $0004 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1474,23 +1423,19 @@ db $04 ; Link direction
 ;-----------------------------
 dw $0168, $0562 ; Scroll X,Y
 dw $079E ; Tilemap position
-;dw $FFFB ; Scroll mod Y
-;dw $000D ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Entrance", "nmg", "thieves", "entrance")
 dw $0058 ; Screen ID
-dw $01F8, $07C2 ; Link Coords
-dw $017E, $0764 ; Camera HV
+dw $01F8, $07BA ; Link Coords
+dw $017E, $075C ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $0203, $07D1 ; Scroll X,Y
 dw $0BAE ; Tilemap position
-;dw $000C ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1512,7 +1457,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Stalfos Hallway", "nmg", "thieves", "blind_hallway")
 dw $00CC ; Screen ID
-dw $1978, $181D ; Link Coords
+dw $1978, $1812 ; Link Coords
 dw $1900, $1800 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
@@ -1529,7 +1474,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Conveyor Gibos", "nmg", "thieves", "conveyor_gibos")
 dw $00BC ; Screen ID
-dw $181D, $1778 ; Link Coords
+dw $1809, $1778 ; Link Coords
 dw $1800, $170B ; Camera HV
 db $04 ; Item
 db $04 ; Link direction
@@ -1544,7 +1489,7 @@ dw $0340 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Hellway", "nmg", "thieves", "hellway")
 dw $00BB ; Screen ID
-dw $1716, $1778 ; Link Coords
+dw $1709, $1778 ; Link Coords
 dw $1700, $170B ; Camera HV
 db $01 ; Item
 db $04 ; Link direction
@@ -1554,8 +1499,6 @@ db $3F ; Room layout / Floor
 db $02 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
-%write8_enable()
-%write8($7E0ABD, $01) ; Palette swap
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -1574,9 +1517,9 @@ dw $0000 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Backtracking", "nmg", "thieves", "backtracking_1")
+%preset_UW("Backtracking", "nmg", "thieves", "backtracking")
 dw $0064 ; Screen ID
-dw $0878, $0D28 ; Link Coords
+dw $0878, $0D20 ; Link Coords
 dw $0800, $0D00 ; Camera HV
 db $01 ; Item
 db $00 ; Link direction
@@ -1591,7 +1534,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Basement", "nmg", "thieves", "basement")
 dw $00BC ; Screen ID
-dw $1878, $162A ; Link Coords
+dw $1878, $1620 ; Link Coords
 dw $1800, $1600 ; Camera HV
 db $01 ; Item
 db $00 ; Link direction
@@ -1606,7 +1549,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Prison", "nmg", "thieves", "prison")
 dw $0045 ; Screen ID
-dw $0AE4, $0978 ; Link Coords
+dw $0AE8, $0978 ; Link Coords
 dw $0A00, $090B ; Camera HV
 db $04 ; Item
 db $06 ; Link direction
@@ -1619,9 +1562,27 @@ dw $0002 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
+%preset_UW("Mitts", "nmg", "thieves", "mitts")
+dw $0044 ; Screen ID
+dw $0909, $0978 ; Link Coords
+dw $0900, $090B ; Camera HV
+db $04 ; Item
+db $04 ; Link direction
+;-----------------------------
+db $34 ; Entrance
+db $7E ; Room layout / Floor
+db $42 ; Door / Peg state / Layer
+dw $0000 ; Dead sprites
+;-----------------------------
+%write_bastard_door(%0010)
+%write_7F_16()
+%write16($7FE00A, $00E2) ; Room $45 sprite deaths
+%write_end()
+
+;---------------------------------------------------------------------------------------------------
 %preset_UW("After Mitts", "nmg", "thieves", "after_mitts")
 dw $0044 ; Screen ID
-dw $08DC, $0978 ; Link Coords
+dw $08E8, $0978 ; Link Coords
 dw $0800, $090B ; Camera HV
 db $04 ; Item
 db $06 ; Link direction
@@ -1631,6 +1592,7 @@ db $2E ; Room layout / Floor
 db $42 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
+%write_bastard_door(%0010)
 %write_7F_16()
 %write16($7FE00A, $0162) ; Room $45 sprite deaths
 %write_end()
@@ -1638,7 +1600,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Pot Hammerdash", "nmg", "thieves", "pot_hammerdash")
 dw $0045 ; Screen ID
-dw $0A78, $082C ; Link Coords
+dw $0A78, $0820 ; Link Coords
 dw $0A00, $0800 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
@@ -1655,7 +1617,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Blind", "nmg", "thieves", "blind")
 dw $00BC ; Screen ID
-dw $1978, $1619 ; Link Coords
+dw $1978, $1612 ; Link Coords
 dw $1900, $1600 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
@@ -1673,7 +1635,7 @@ dw $0002 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_skull:
-%menu_header("Skull Woods", 12)
+%menu_header("Skull Woods")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Thieves'", "nmg", "skull", "outside_thieves")
@@ -1685,8 +1647,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0203, $07D7 ; Scroll X,Y
 dw $0B2E ; Tilemap position
-;dw $FFF6 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1700,90 +1660,78 @@ db $02 ; Link direction
 ;-----------------------------
 dw $035B, $098B ; Scroll X,Y
 dw $1858 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Getting Tempered", "nmg", "skull", "getting_tempered")
 dw $0058 ; Screen ID
-dw $03E1, $091A ; Link Coords
+dw $03E7, $091A ; Link Coords
 dw $0300, $08B6 ; Camera HV
 db $14 ; Item
 db $06 ; Link direction
 ;-----------------------------
 dw $038D, $0925 ; Scroll X,Y
 dw $1560 ; Tilemap position
-;dw $0008 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Fencedash", "nmg", "skull", "fence_dash")
 dw $0062 ; Screen ID
-dw $0408, $0909 ; Link Coords
+dw $0406, $0909 ; Link Coords
 dw $0400, $08A6 ; Camera HV
 db $14 ; Item
 db $04 ; Link direction
 ;-----------------------------
 dw $047D, $0915 ; Scroll X,Y
 dw $0400 ; Tilemap position
-;dw $FFF8 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Dash to Skull Woods", "nmg", "skull", "dash_to_sw")
 dw $0058 ; Screen ID
-dw $0348, $0608 ; Link Coords
+dw $0348, $0604 ; Link Coords
 dw $02CA, $0600 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $034F, $066F ; Scroll X,Y
 dw $005A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0006 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Mummy Room", "nmg", "skull", "mummy_room")
 dw $0040 ; Screen ID
-dw $0248, $0250 ; Link Coords
+dw $0248, $024A ; Link Coords
 dw $01CA, $01F0 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $024F, $025F ; Scroll X,Y
 dw $0EBA ; Tilemap position
-;dw $FFFE ; Scroll mod Y
-;dw $0006 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Bomb Jump", "nmg", "skull", "bomb_jump")
 dw $0040 ; Screen ID
-dw $02E8, $025B ; Link Coords
+dw $02E8, $025A ; Link Coords
 dw $0266, $01FD ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $02F3, $026A ; Scroll X,Y
 dw $0F4E ; Tilemap position
-;dw $0003 ; Scroll mod Y
-;dw $000A ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Key Pot", "nmg", "skull", "key_pot")
 dw $0056 ; Screen ID
-dw $0D1A, $0B78 ; Link Coords
+dw $0D0A, $0B78 ; Link Coords
 dw $0D00, $0B0C ; Camera HV
 db $01 ; Item
 db $04 ; Link direction
@@ -1805,15 +1753,13 @@ db $00 ; Link direction
 ;-----------------------------
 dw $009F, $00D5 ; Scroll X,Y
 dw $0282 ; Tilemap position
-;dw $000A ; Scroll mod Y
-;dw $FFFE ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Mummy Hellway", "nmg", "skull", "mummy_hellway")
 dw $0049 ; Screen ID
-dw $12DC, $0978 ; Link Coords
+dw $12E8, $0978 ; Link Coords
 dw $1200, $090B ; Camera HV
 db $05 ; Item
 db $06 ; Link direction
@@ -1830,7 +1776,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Mummy Key", "nmg", "skull", "mummy_key")
 dw $0049 ; Screen ID
-dw $1278, $0815 ; Link Coords
+dw $1278, $0813 ; Link Coords
 dw $1200, $0800 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -1845,7 +1791,7 @@ dw $0801 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Mothula", "nmg", "skull", "mothula")
 dw $0039 ; Screen ID
-dw $12D0, $0778 ; Link Coords
+dw $12E7, $0778 ; Link Coords
 dw $1200, $070B ; Camera HV
 db $05 ; Item
 db $06 ; Link direction
@@ -1855,11 +1801,7 @@ db $2F ; Room layout / Floor
 db $02 ; Door / Peg state / Layer
 dw $0002 ; Dead sprites
 ;-----------------------------
-%write_7F()
-%write8($7F2BDC, $00) ; Bastard door
-%write8($7F2BE3, $00)
-%write8($7F2C9C, $00)
-%write8($7F2CA3, $00)
+%write_bastard_door(%0010)
 %write_end()
 
 ;===================================================================================================
@@ -1868,7 +1810,7 @@ dw $0002 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_ice:
-%menu_header("Ice Palace", 16)
+%menu_header("Ice Palace")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Skull", "nmg", "ice", "outside_skull")
@@ -1880,53 +1822,45 @@ db $02 ; Link direction
 ;-----------------------------
 dw $00A3, $00D6 ; Scroll X,Y
 dw $0282 ; Tilemap position
-;dw $0007 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Bridge Warp", "nmg", "ice", "bridge_warp")
 dw $002C ; Screen ID
-dw $0898, $0A0C ; Link Coords
+dw $0898, $0A04 ; Link Coords
 dw $0820, $0A00 ; Camera HV
 db $08 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $089F, $0A6D ; Scroll X,Y
 dw $0004 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Lottery", "nmg", "ice", "lottery")
 dw $0055 ; Screen ID
-dw $0BE1, $0587 ; Link Coords
+dw $0BE7, $0588 ; Link Coords
 dw $0B00, $051E ; Camera HV
 db $08 ; Item
 db $06 ; Link direction
 ;-----------------------------
 dw $0B7D, $058D ; Scroll X,Y
 dw $0920 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Catfish", "nmg", "ice", "medallion")
 dw $0057 ; Screen ID
-dw $0F70, $040C ; Link Coords
+dw $0F70, $0404 ; Link Coords
 dw $0EFE, $0400 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $0F7B, $046F ; Scroll X,Y
 dw $009E ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -1940,45 +1874,39 @@ db $00 ; Link direction
 ;-----------------------------
 dw $0F4A, $026F ; Scroll X,Y
 dw $0098 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF3 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Tiny Warp Dik", "nmg", "ice", "tiny_warp")
 dw $000F ; Screen ID
-dw $0F40, $0221 ; Link Coords
+dw $0F40, $021F ; Link Coords
 dw $0ECD, $0200 ; Camera HV
 db $14 ; Item
 db $02 ; Link direction
 ;-----------------------------
 dw $0F4A, $026F ; Scroll X,Y
 dw $0098 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF3 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Entrance", "nmg", "ice", "ice_entrance")
 dw $0075 ; Screen ID
-dw $0CB8, $0DCB ; Link Coords
+dw $0CB8, $0DC9 ; Link Coords
 dw $0C32, $0D69 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $0CBF, $0DD6 ; Scroll X,Y
 dw $0BC6 ; Tilemap position
-;dw $0007 ; Scroll mod Y
-;dw $FFFE ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Ice 2", "nmg", "ice", "ice2")
 dw $000E ; Screen ID
-dw $1D1E, $0178 ; Link Coords
+dw $1D0A, $0178 ; Link Coords
 dw $1D00, $010C ; Camera HV
 db $05 ; Item
 db $04 ; Link direction
@@ -1993,7 +1921,7 @@ dw $0001 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Penguin Switch Room", "nmg", "ice", "penguin_switch_room")
 dw $001E ; Screen ID
-dw $1DD8, $0378 ; Link Coords
+dw $1DE6, $0378 ; Link Coords
 dw $1D00, $030B ; Camera HV
 db $05 ; Item
 db $06 ; Link direction
@@ -2010,7 +1938,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Bombable Floor", "nmg", "ice", "bombable_floor")
 dw $001E ; Screen ID
-dw $1D78, $0314 ; Link Coords
+dw $1D78, $0313 ; Link Coords
 dw $1D00, $0300 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -2027,7 +1955,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Conveyor Room", "nmg", "ice", "conveyor_room")
 dw $003E ; Screen ID
-dw $1D78, $06D0 ; Link Coords
+dw $1D78, $06E3 ; Link Coords
 dw $1D00, $0610 ; Camera HV
 db $01 ; Item
 db $02 ; Link direction
@@ -2045,7 +1973,7 @@ dw $0006 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("IPBJ", "nmg", "ice", "ipbj")
 dw $003E ; Screen ID
-dw $1C78, $07D3 ; Link Coords
+dw $1C78, $07E3 ; Link Coords
 dw $1C00, $0710 ; Camera HV
 db $01 ; Item
 db $02 ; Link direction
@@ -2060,7 +1988,7 @@ dw $0306 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Penguin Lineup Room", "nmg", "ice", "penguin_room")
 dw $004E ; Screen ID
-dw $1DB8, $0862 ; Link Coords
+dw $1DB8, $0860 ; Link Coords
 dw $1D00, $0800 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
@@ -2075,7 +2003,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Lonely Firebar", "nmg", "ice", "lonely_firebar")
 dw $005E ; Screen ID
-dw $1D10, $0B78 ; Link Coords
+dw $1D09, $0B78 ; Link Coords
 dw $1D00, $0B0B ; Camera HV
 db $04 ; Item
 db $04 ; Link direction
@@ -2125,7 +2053,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_swamp:
-%menu_header("Swamp Palace", 18)
+%menu_header("Swamp Palace")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Ice", "nmg", "swamp", "outside_ice")
@@ -2137,8 +2065,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0CC3, $0DDA ; Scroll X,Y
 dw $0BC6 ; Tilemap position
-;dw $0003 ; Scroll mod Y
-;dw $FFF2 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -2152,60 +2078,52 @@ db $02 ; Link direction
 ;-----------------------------
 dw $08BF, $0B32 ; Scroll X,Y
 dw $0608 ; Tilemap position
-;dw $FFFB ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Swamp Overworld", "nmg", "swamp", "swamp_overworld")
 dw $0073 ; Screen ID
-dw $07AF, $0DD9 ; Link Coords
+dw $07AF, $0DE3 ; Link Coords
 dw $0700, $0D1E ; Camera HV
 db $04 ; Item
 db $02 ; Link direction
 ;-----------------------------
 dw $0785, $0D93 ; Scroll X,Y
 dw $08A0 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Dam", "nmg", "swamp", "dam")
 dw $003B ; Screen ID
-dw $0778, $0EF0 ; Link Coords
-dw $06FA, $0E91 ; Camera HV
+dw $0778, $0EEA ; Link Coords
+dw $06FA, $0E8E ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
-dw $077F, $0EFE ; Scroll X,Y
+dw $077F, $0EF9 ; Scroll X,Y
 dw $0520 ; Tilemap position
-;dw $000F ; Scroll mod Y
-;dw $0006 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Entrance", "nmg", "swamp", "entrance")
 dw $007B ; Screen ID
-dw $0778, $0EEF ; Link Coords
-dw $06FA, $0E91 ; Camera HV
+dw $0778, $0EE9 ; Link Coords
+dw $06FA, $0E8E ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
 ;-----------------------------
-dw $077F, $0EFE ; Scroll X,Y
+dw $077F, $0EF9 ; Scroll X,Y
 dw $0520 ; Tilemap position
-;dw $000F ; Scroll mod Y
-;dw $0006 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("First Key Pot", "nmg", "swamp", "first_key_pot")
 dw $0028 ; Screen ID
-dw $1078, $0426 ; Link Coords
+dw $1078, $0420 ; Link Coords
 dw $1000, $0400 ; Camera HV
 db $14 ; Item
 db $00 ; Link direction
@@ -2220,7 +2138,7 @@ dw $000E ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Tiny Hallway Key", "nmg", "swamp", "hallway_key_1")
 dw $0037 ; Screen ID
-dw $0EF8, $0728 ; Link Coords
+dw $0EF8, $0712 ; Link Coords
 dw $0E80, $0700 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
@@ -2235,7 +2153,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Water Lever 1", "nmg", "swamp", "water_lever_1")
 dw $0037 ; Screen ID
-dw $0E78, $071D ; Link Coords
+dw $0E78, $0712 ; Link Coords
 dw $0E00, $0700 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
@@ -2250,7 +2168,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Main Hub", "nmg", "swamp", "main_hub")
 dw $0037 ; Screen ID
-dw $0E18, $0778 ; Link Coords
+dw $0E09, $0778 ; Link Coords
 dw $0E00, $070B ; Camera HV
 db $04 ; Item
 db $04 ; Link direction
@@ -2265,7 +2183,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Water Lever 2", "nmg", "swamp", "water_lever_2")
 dw $0036 ; Screen ID
-dw $0C17, $0678 ; Link Coords
+dw $0C09, $0678 ; Link Coords
 dw $0C00, $060B ; Camera HV
 db $04 ; Item
 db $04 ; Link direction
@@ -2282,8 +2200,8 @@ dw $0031 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Sociable Firebar", "nmg", "swamp", "sociable_firebar")
 dw $0034 ; Screen ID
-dw $0878, $072C ; Link Coords
-dw $0800, $06BF ; Camera HV
+dw $0878, $0720 ; Link Coords
+dw $0800, $06B3 ; Camera HV
 db $04 ; Item
 db $00 ; Link direction
 ;-----------------------------
@@ -2299,7 +2217,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Backtracking", "nmg", "swamp", "backtracking")
 dw $0035 ; Screen ID
-dw $0A19, $0678 ; Link Coords
+dw $0A09, $0678 ; Link Coords
 dw $0A00, $060B ; Camera HV
 db $04 ; Item
 db $04 ; Link direction
@@ -2316,7 +2234,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Hookshot", "nmg", "swamp", "hookshot")
 dw $0035 ; Screen ID
-dw $0BDA, $0778 ; Link Coords
+dw $0BE9, $0778 ; Link Coords
 dw $0B00, $070B ; Camera HV
 db $04 ; Item
 db $06 ; Link direction
@@ -2333,7 +2251,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Hookdash", "nmg", "swamp", "hookdash")
 dw $0036 ; Screen ID
-dw $0CF8, $062C ; Link Coords
+dw $0CF8, $0612 ; Link Coords
 dw $0C80, $0600 ; Camera HV
 db $0E ; Item
 db $00 ; Link direction
@@ -2348,7 +2266,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Water Lever 3", "nmg", "swamp", "water_lever_3")
 dw $0026 ; Screen ID
-dw $0DA8, $0426 ; Link Coords
+dw $0DA8, $0420 ; Link Coords
 dw $0D00, $0400 ; Camera HV
 db $0E ; Item
 db $00 ; Link direction
@@ -2363,7 +2281,7 @@ dw $0400 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Restock Room", "nmg", "swamp", "restock")
 dw $0066 ; Screen ID
-dw $0D78, $0D2A ; Link Coords
+dw $0D78, $0D12 ; Link Coords
 dw $0D00, $0D00 ; Camera HV
 db $0E ; Item
 db $00 ; Link direction
@@ -2378,9 +2296,9 @@ dw $0080 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Phelps Way", "nmg", "swamp", "phelps_way")
+%preset_UW("Phelps' Way", "nmg", "swamp", "phelps_way")
 dw $0016 ; Screen ID
-dw $0D78, $02D8 ; Link Coords
+dw $0D78, $02E3 ; Link Coords
 dw $0D00, $0210 ; Camera HV
 db $0E ; Item
 db $02 ; Link direction
@@ -2413,7 +2331,7 @@ dw $0004 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_mire:
-%menu_header("Misery Mire", 19)
+%menu_header("Misery Mire")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Swamp", "nmg", "mire", "outside_swamp")
@@ -2425,8 +2343,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $077F, $0EFA ; Scroll X,Y
 dw $049E ; Tilemap position
-;dw $FFF4 ; Scroll mod Y
-;dw $FFFC ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -2440,8 +2356,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $0682, $0337 ; Scroll X,Y
 dw $1600 ; Tilemap position
-;dw $FFF6 ; Scroll mod Y
-;dw $FFF3 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -2455,8 +2369,6 @@ db $06 ; Link direction
 ;-----------------------------
 dw $06C8, $006D ; Scroll X,Y
 dw $000A ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFD ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -2470,30 +2382,26 @@ db $06 ; Link direction
 ;-----------------------------
 dw $0099, $0F8D ; Scroll X,Y
 dw $1880 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFF4 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Mire Entrance", "nmg", "mire", "entrance")
 dw $0070 ; Screen ID
-dw $0128, $0CE6 ; Link Coords
-dw $00A6, $0C82 ; Camera HV
+dw $0128, $0CD9 ; Link Coords
+dw $00A6, $0C75 ; Camera HV
 db $10 ; Item
 db $00 ; Link direction
 ;-----------------------------
-dw $0133, $0CF1 ; Scroll X,Y
+dw $0133, $0CE4 ; Scroll X,Y
 dw $0414 ; Tilemap position
-;dw $000C ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Mire 2", "nmg", "mire", "mire2")
 dw $0098 ; Screen ID
-dw $1188, $132A ; Link Coords
+dw $1188, $1320 ; Link Coords
 dw $1100, $1300 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -2508,7 +2416,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Main Hub", "nmg", "mire", "main_hub")
 dw $00D2 ; Screen ID
-dw $0578, $1A1C ; Link Coords
+dw $0578, $1A12 ; Link Coords
 dw $0500, $1A00 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -2520,10 +2428,25 @@ dw $03EF ; Dead sprites
 ;-----------------------------
 %write_end()
 
+;-------------------------------------------------------------------------------
+%preset_UW("Spikey Pot Key", "nmg", "mire", "spikey_pot_key")
+dw $00B2 ; Screen ID
+dw $05E9, $1778 ; Link Coords
+dw $0500, $170B ; Camera HV
+db $05 ; Item
+db $06 ; Link direction
+;-----------------------------
+db $27 ; Entrance
+db $3F ; Room layout / Floor
+db $02 ; Door / Peg state / Layer
+dw $0000 ; Dead sprites
+;-----------------------------
+%write_end()
+
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Beat the Fireball", "nmg", "mire", "beat_the_fireball")
 dw $00B2 ; Screen ID
-dw $0578, $17E2 ; Link Coords
+dw $0578, $17E3 ; Link Coords
 dw $0500, $1710 ; Camera HV
 db $05 ; Item
 db $02 ; Link direction
@@ -2538,7 +2461,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Bari Key", "nmg", "mire", "bari_key")
 dw $00C2 ; Screen ID
-dw $0415, $1978 ; Link Coords
+dw $0409, $1978 ; Link Coords
 dw $0400, $190B ; Camera HV
 db $05 ; Item
 db $04 ; Link direction
@@ -2553,7 +2476,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Sluggulas", "nmg", "mire", "sluggulas")
 dw $00C1 ; Screen ID
-dw $0278, $19CF ; Link Coords
+dw $0278, $19E3 ; Link Coords
 dw $0200, $1910 ; Camera HV
 db $05 ; Item
 db $02 ; Link direction
@@ -2568,7 +2491,7 @@ dw $0200 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Torches", "nmg", "mire", "torches")
 dw $00D1 ; Screen ID
-dw $02A8, $1A28 ; Link Coords
+dw $02A8, $1A20 ; Link Coords
 dw $0200, $1A00 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -2583,7 +2506,7 @@ dw $0040 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Spark Gamble", "nmg", "mire", "spark_gamble")
 dw $00C1 ; Screen ID
-dw $03D6, $1878 ; Link Coords
+dw $03EA, $1878 ; Link Coords
 dw $0300, $180B ; Camera HV
 db $05 ; Item
 db $06 ; Link direction
@@ -2598,7 +2521,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Big Chest Room", "nmg", "mire", "big_chest_room")
 dw $00C3 ; Screen ID
-dw $06D8, $1978 ; Link Coords
+dw $06EA, $1978 ; Link Coords
 dw $0600, $190B ; Camera HV
 db $0E ; Item
 db $06 ; Link direction
@@ -2611,9 +2534,9 @@ dw $0000 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Spike Key", "nmg", "mire", "spike_key")
+%preset_UW("Spikey Chest Key", "nmg", "mire", "spikey_chest_key")
 dw $00C3 ; Screen ID
-dw $0678, $1814 ; Link Coords
+dw $0678, $1812 ; Link Coords
 dw $0600, $1800 ; Camera HV
 db $0E ; Item
 db $00 ; Link direction
@@ -2628,7 +2551,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Wizzrobe", "nmg", "mire", "wizzrobe")
 dw $00B3 ; Screen ID
-dw $0624, $1678 ; Link Coords
+dw $0608, $1678 ; Link Coords
 dw $0600, $160B ; Camera HV
 db $0E ; Item
 db $04 ; Link direction
@@ -2643,7 +2566,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Basement", "nmg", "mire", "basement")
 dw $00A2 ; Screen ID
-dw $04F8, $1444 ; Link Coords
+dw $04F8, $1438 ; Link Coords
 dw $0480, $1400 ; Camera HV
 db $0E ; Item
 db $00 ; Link direction
@@ -2660,7 +2583,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Spooky Action 1", "nmg", "mire", "spooky_action_1")
 dw $0093 ; Screen ID
-dw $0612, $1378 ; Link Coords
+dw $0608, $1378 ; Link Coords
 dw $0600, $130B ; Camera HV
 db $05 ; Item
 db $04 ; Link direction
@@ -2675,7 +2598,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Spooky Action 2", "nmg", "mire", "spooky_action_2")
 dw $0092 ; Screen ID
-dw $0515, $1378 ; Link Coords
+dw $0508, $1378 ; Link Coords
 dw $0500, $130B ; Camera HV
 db $05 ; Item
 db $04 ; Link direction
@@ -2690,7 +2613,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Vitreous", "nmg", "mire", "vitty")
 dw $00A0 ; Screen ID
-dw $0078, $1428 ; Link Coords
+dw $0078, $1412 ; Link Coords
 dw $0000, $1400 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
@@ -2710,7 +2633,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_trock:
-%menu_header("Turtle Rock", 17)
+%menu_header("Turtle Rock")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Mire", "nmg", "trock", "outside_mire")
@@ -2722,23 +2645,19 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0133, $0CE9 ; Scroll X,Y
 dw $0414 ; Tilemap position
-;dw $0004 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Ice Rod Overworld", "nmg", "trock", "icerod_overworld")
 dw $003F ; Screen ID
-dw $0F70, $0E07 ; Link Coords
+dw $0F70, $0E04 ; Link Coords
 dw $0EF6, $0E00 ; Camera HV
 db $08 ; Item
 db $00 ; Link direction
 ;-----------------------------
 dw $0F7B, $0E6D ; Scroll X,Y
 dw $001E ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -2752,15 +2671,13 @@ db $06 ; Link direction
 ;-----------------------------
 dw $0682, $0337 ; Scroll X,Y
 dw $1600 ; Tilemap position
-;dw $FFF6 ; Scroll mod Y
-;dw $FFF3 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Squirrels", "nmg", "trock", "squirrels")
 dw $00DF ; Screen ID
-dw $1EF8, $1BD9 ; Link Coords
+dw $1EF8, $1BE3 ; Link Coords
 dw $1E80, $1B10 ; Camera HV
 db $0E ; Item
 db $02 ; Link direction
@@ -2775,37 +2692,33 @@ dw $0003 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Peg Puzzle", "nmg", "trock", "peg_puzzle")
 dw $0005 ; Screen ID
-dw $0DE1, $0077 ; Link Coords
+dw $0DE7, $0078 ; Link Coords
 dw $0D00, $0013 ; Camera HV
 db $0E ; Item
 db $06 ; Link direction
 ;-----------------------------
 dw $0D7D, $0082 ; Scroll X,Y
 dw $0060 ; Tilemap position
-;dw $000B ; Scroll mod Y
-;dw $0000 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Entrance", "nmg", "trock", "entrance")
 dw $0047 ; Screen ID
-dw $0F08, $013D ; Link Coords
-dw $0E96, $00DB ; Camera HV
+dw $0F08, $0139 ; Link Coords
+dw $0E96, $00D7 ; Camera HV
 db $12 ; Item
 db $00 ; Link direction
 ;-----------------------------
-dw $0F13, $014A ; Scroll X,Y
+dw $0F13, $0146 ; Scroll X,Y
 dw $0614 ; Tilemap position
-;dw $0003 ; Scroll mod Y
-;dw $000A ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Torches", "nmg", "trock", "torches")
 dw $00C6 ; Screen ID
-dw $0DCD, $1878 ; Link Coords
+dw $0DEA, $1878 ; Link Coords
 dw $0D00, $180B ; Camera HV
 db $12 ; Item
 db $06 ; Link direction
@@ -2820,7 +2733,7 @@ dw $0028 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Roller Room", "nmg", "trock", "roller_room")
 dw $00C7 ; Screen ID
-dw $0E78, $1820 ; Link Coords
+dw $0E78, $1812 ; Link Coords
 dw $0E00, $1800 ; Camera HV
 db $0E ; Item
 db $00 ; Link direction
@@ -2835,7 +2748,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Pokey 0", "nmg", "trock", "pokey_0")
 dw $00C6 ; Screen ID
-dw $0C78, $182B ; Link Coords
+dw $0C78, $1812 ; Link Coords
 dw $0C00, $1800 ; Camera HV
 db $12 ; Item
 db $00 ; Link direction
@@ -2848,9 +2761,9 @@ dw $0000 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Chomps", "nmg", "trock", "chomps")
+%preset_UW("Chain Chomps", "nmg", "trock", "chain_chomps")
 dw $00B6 ; Screen ID
-dw $0C78, $1718 ; Link Coords
+dw $0C78, $1712 ; Link Coords
 dw $0C00, $1700 ; Camera HV
 db $12 ; Item
 db $00 ; Link direction
@@ -2865,7 +2778,7 @@ dw $0020 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Pokey 1", "nmg", "trock", "pokey_1")
 dw $0014 ; Screen ID
-dw $0819, $0278 ; Link Coords
+dw $0808, $0278 ; Link Coords
 dw $0800, $020B ; Camera HV
 db $12 ; Item
 db $04 ; Link direction
@@ -2880,7 +2793,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Pokeys 2", "nmg", "trock", "pokeys_2")
 dw $0014 ; Screen ID
-dw $0878, $03C4 ; Link Coords
+dw $0878, $03C0 ; Link Coords
 dw $0800, $0310 ; Camera HV
 db $12 ; Item
 db $02 ; Link direction
@@ -2897,7 +2810,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Crystaroller", "nmg", "trock", "crystaroller")
 dw $0014 ; Screen ID
-dw $0878, $022B ; Link Coords
+dw $0878, $0212 ; Link Coords
 dw $0800, $0200 ; Camera HV
 db $12 ; Item
 db $00 ; Link direction
@@ -2914,7 +2827,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Dark Maze", "nmg", "trock", "dark_maze")
 dw $0004 ; Screen ID
-dw $0878, $0025 ; Link Coords
+dw $0878, $0020 ; Link Coords
 dw $0800, $0000 ; Camera HV
 db $12 ; Item
 db $00 ; Link direction
@@ -2929,7 +2842,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Laser Skip", "nmg", "trock", "laser_skip")
 dw $00C5 ; Screen ID
-dw $0A78, $19DE ; Link Coords
+dw $0A78, $19E3 ; Link Coords
 dw $0A00, $1910 ; Camera HV
 db $12 ; Item
 db $02 ; Link direction
@@ -2942,9 +2855,9 @@ dw $0040 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Switch Room", "nmg", "trock", "switch_room")
+%preset_UW("Switch Puzzle", "nmg", "trock", "switch_puzzle")
 dw $00C5 ; Screen ID
-dw $0A18, $1978 ; Link Coords
+dw $0A08, $1978 ; Link Coords
 dw $0A00, $190B ; Camera HV
 db $12 ; Item
 db $04 ; Link direction
@@ -2961,7 +2874,7 @@ dw $0040 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Trinexx", "nmg", "trock", "trinexx")
 dw $00B4 ; Screen ID
-dw $0878, $161D ; Link Coords
+dw $0878, $1612 ; Link Coords
 dw $0800, $1600 ; Camera HV
 db $12 ; Item
 db $00 ; Link direction
@@ -2979,7 +2892,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_gtower:
-%menu_header("Ganon's Tower", 21)
+%menu_header("Ganon's Tower")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Outside Turtle Rock", "nmg", "gtower", "outside_trock")
@@ -2991,8 +2904,6 @@ db $02 ; Link direction
 ;-----------------------------
 dw $0F13, $014D ; Scroll X,Y
 dw $0712 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $FFFA ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -3006,15 +2917,13 @@ db $00 ; Link direction
 ;-----------------------------
 dw $08FF, $006F ; Scroll X,Y
 dw $0050 ; Tilemap position
-;dw $0000 ; Scroll mod Y
-;dw $0006 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Spike Skip", "nmg", "gtower", "spike_skip")
 dw $008B ; Screen ID
-dw $1715, $1078 ; Link Coords
+dw $1708, $1078 ; Link Coords
 dw $1700, $100C ; Camera HV
 db $04 ; Item
 db $04 ; Link direction
@@ -3027,9 +2936,9 @@ dw $0000 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Pre Firesnakes Room", "nmg", "gtower", "pre_firesnakes_room")
+%preset_UW("Spike Ambush", "nmg", "gtower", "spike_ambush")
 dw $009B ; Screen ID
-dw $16D4, $1278 ; Link Coords
+dw $16E9, $1278 ; Link Coords
 dw $1600, $120B ; Camera HV
 db $03 ; Item
 db $06 ; Link direction
@@ -3039,17 +2948,13 @@ db $00 ; Room layout / Floor
 db $42 ; Door / Peg state / Layer
 dw $0000 ; Dead sprites
 ;-----------------------------
-%write_7F()
-%write8($7F23DC, $00) ; Bastard door
-%write8($7F23E3, $00)
-%write8($7F249C, $00)
-%write8($7F24A3, $00)
+%write_bastard_door(%0001)
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Bombable Floor", "nmg", "gtower", "bombable_floor")
 dw $009C ; Screen ID
-dw $1978, $1224 ; Link Coords
+dw $1978, $1212 ; Link Coords
 dw $1900, $1200 ; Camera HV
 db $01 ; Item
 db $00 ; Link direction
@@ -3079,7 +2984,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Floor 3", "nmg", "gtower", "floor_3")
 dw $000C ; Screen ID
-dw $18F8, $0026 ; Link Coords
+dw $18F8, $0020 ; Link Coords
 dw $1880, $0000 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
@@ -3094,7 +2999,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Mimics 1", "nmg", "gtower", "mimics1")
 dw $006B ; Screen ID
-dw $1678, $0CD8 ; Link Coords
+dw $1678, $0CE3 ; Link Coords
 dw $1600, $0C10 ; Camera HV
 db $03 ; Item
 db $02 ; Link direction
@@ -3109,7 +3014,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Mimics 2", "nmg", "gtower", "mimics2")
 dw $006B ; Screen ID
-dw $16D8, $0D78 ; Link Coords
+dw $16EA, $0D78 ; Link Coords
 dw $1600, $0D0B ; Camera HV
 db $03 ; Item
 db $06 ; Link direction
@@ -3122,9 +3027,9 @@ dw $0240 ; Dead sprites
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
-%preset_UW("Spike Room", "nmg", "gtower", "spike_room")
+%preset_UW("Spike Pit", "nmg", "gtower", "spike_pit")
 dw $006B ; Screen ID
-dw $1778, $0C1C ; Link Coords
+dw $1778, $0C12 ; Link Coords
 dw $1700, $0C00 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
@@ -3139,7 +3044,7 @@ dw $2640 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Gauntlet 1", "nmg", "gtower", "gauntlet")
 dw $005C ; Screen ID
-dw $1978, $0A23 ; Link Coords
+dw $1978, $0A20 ; Link Coords
 dw $1900, $0A00 ; Camera HV
 db $03 ; Item
 db $00 ; Link direction
@@ -3154,7 +3059,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Gauntlet 3", "nmg", "gtower", "gauntlet3")
 dw $005D ; Screen ID
-dw $1A78, $0AE0 ; Link Coords
+dw $1A78, $0AE3 ; Link Coords
 dw $1A00, $0A10 ; Camera HV
 db $03 ; Item
 db $02 ; Link direction
@@ -3169,7 +3074,7 @@ dw $00FD ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Lanmola 2", "nmg", "gtower", "lanmola2")
 dw $006C ; Screen ID
-dw $19D5, $0D78 ; Link Coords
+dw $19D8, $0D78 ; Link Coords
 dw $1900, $0D0B ; Camera HV
 db $05 ; Item
 db $04 ; Link direction
@@ -3187,7 +3092,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Wizzrobes 1", "nmg", "gtower", "wizz1")
 dw $006C ; Screen ID
-dw $1878, $0C26 ; Link Coords
+dw $1878, $0C20 ; Link Coords
 dw $1800, $0C00 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -3202,7 +3107,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Wizzrobes 2", "nmg", "gtower", "wizz2")
 dw $00A5 ; Screen ID
-dw $0B78, $1524 ; Link Coords
+dw $0B78, $1512 ; Link Coords
 dw $0B00, $1500 ; Camera HV
 db $12 ; Item
 db $00 ; Link direction
@@ -3217,7 +3122,7 @@ dw $008C ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Torches 1", "nmg", "gtower", "torches1")
 dw $0095 ; Screen ID
-dw $0BD3, $1278 ; Link Coords
+dw $0BEA, $1278 ; Link Coords
 dw $0B00, $120B ; Camera HV
 db $09 ; Item
 db $06 ; Link direction
@@ -3234,7 +3139,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Torches 2", "nmg", "gtower", "torches2")
 dw $0096 ; Screen ID
-dw $0D78, $13A2 ; Link Coords
+dw $0D78, $1398 ; Link Coords
 dw $0D00, $1310 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -3249,7 +3154,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Helma Key", "nmg", "gtower", "helma_key")
 dw $003D ; Screen ID
-dw $1B78, $0718 ; Link Coords
+dw $1B78, $0712 ; Link Coords
 dw $1B00, $0700 ; Camera HV
 db $05 ; Item
 db $00 ; Link direction
@@ -3270,7 +3175,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Bombable Wall", "nmg", "gtower", "bombable_wall")
 dw $003D ; Screen ID
-dw $1B16, $0678 ; Link Coords
+dw $1B08, $0678 ; Link Coords
 dw $1B00, $060B ; Camera HV
 db $01 ; Item
 db $04 ; Link direction
@@ -3286,17 +3191,13 @@ dw $000C ; Dead sprites
 %write8($7E04F1, $A0)
 %write8($7E04F2, $7A)
 %write8($7E04F3, $64)
-%write_7F()
-%write8($7F23DC, $00) ; Bastard door
-%write8($7F23E3, $00)
-%write8($7F249C, $00)
-%write8($7F24A3, $00)
+%write_bastard_door(%0010)
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Moldorm 2", "nmg", "gtower", "moldorm_2")
 dw $003D ; Screen ID
-dw $1A78, $07D0 ; Link Coords
+dw $1A78, $07E3 ; Link Coords
 dw $1A00, $0710 ; Camera HV
 db $05 ; Item
 db $02 ; Link direction
@@ -3311,7 +3212,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 %preset_UW("Agahnim 2", "nmg", "gtower", "agahnim_2")
 dw $001D ; Screen ID
-dw $1A78, $0226 ; Link Coords
+dw $1A78, $0212 ; Link Coords
 dw $1A00, $0200 ; Camera HV
 db $0E ; Item
 db $00 ; Link direction
@@ -3329,7 +3230,7 @@ dw $0000 ; Dead sprites
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_ganon:
-%menu_header("Ganon", 2)
+%menu_header("Ganon")
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Ganon", "nmg", "ganon", "pyramid")
@@ -3341,23 +3242,19 @@ db $02 ; Link direction
 ;-----------------------------
 dw $07F7, $0677 ; Scroll X,Y
 dw $002E ; Tilemap position
-;dw $FFF6 ; Scroll mod Y
-;dw $FFF8 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
 %preset_OW("Ganon (Full Magic)", "nmg", "ganon", "pyramid_magic")
 dw $005B ; Screen ID
-dw $07F0, $0669 ; Link Coords
-dw $0778, $060B ; Camera HV
+dw $07F0, $0668 ; Link Coords
+dw $0778, $060A ; Camera HV
 db $0E ; Item
 db $02 ; Link direction
 ;-----------------------------
-dw $07F7, $0678 ; Scroll X,Y
+dw $07F7, $0677 ; Scroll X,Y
 dw $002E ; Tilemap position
-;dw $FFF5 ; Scroll mod Y
-;dw $FFF8 ; Scroll mod X
 ;-----------------------------
 %write_end()
 
@@ -3367,7 +3264,7 @@ dw $002E ; Tilemap position
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetmenu_nmg_boss:
-%menu_header("Bosses", 14)
+%menu_header("Bosses")
 %existing_preset("nmg", "eastern", "armos")
 %existing_preset("nmg", "desert", "lanmolas")
 %existing_preset("nmg", "hera", "moldorm")
@@ -3613,10 +3510,10 @@ presetpersistent_nmg_aga:
 %write8($7E0FC8, $07) ; Prize pack index
 ..end
 ;-----------------------------
-.dark_room_of_despair
+.dark_maze
 ..end
 ;-----------------------------
-.dark_room_of_melancholy
+.dark_catwalk
 ..end
 ;-----------------------------
 .spear_guards
@@ -3656,7 +3553,7 @@ presetpersistent_nmg_pod:
 .hammeryump
 ..end
 ;-----------------------------
-.before_sexy_statue
+.switch_shooting
 %write8($7E0FCD, $01) ; Prize pack index
 ..end
 ;-----------------------------
@@ -3666,7 +3563,7 @@ presetpersistent_nmg_pod:
 .mimics
 ..end
 ;-----------------------------
-.statue
+.eyegore_statue
 %write8($7E0FCB, $02) ; Prize pack index
 ..end
 ;-----------------------------
@@ -3720,13 +3617,16 @@ presetpersistent_nmg_thieves:
 .bombable_floor
 ..end
 ;-----------------------------
-.backtracking_1
+.backtracking
 ..end
 ;-----------------------------
 .basement
 ..end
 ;-----------------------------
 .prison
+..end
+;-----------------------------
+.mitts
 ..end
 ;-----------------------------
 .after_mitts
@@ -3930,6 +3830,9 @@ presetpersistent_nmg_mire:
 %write8($7E0FC8, $04) ; Prize pack index
 ..end
 ;-----------------------------
+.spikey_pot_key
+..end
+;-----------------------------
 .beat_the_fireball
 ..end
 ;-----------------------------
@@ -3949,7 +3852,7 @@ presetpersistent_nmg_mire:
 .big_chest_room
 ..end
 ;-----------------------------
-.spike_key
+.spikey_chest_key
 ..end
 ;-----------------------------
 .wizzrobe
@@ -4000,7 +3903,7 @@ presetpersistent_nmg_trock:
 .pokey_0
 ..end
 ;-----------------------------
-.chomps
+.chain_chomps
 %write8($7E0FCD, $02) ; Prize pack index
 ..end
 ;-----------------------------
@@ -4021,7 +3924,7 @@ presetpersistent_nmg_trock:
 .laser_skip
 ..end
 ;-----------------------------
-.switch_room
+.switch_puzzle
 ..end
 ;-----------------------------
 .trinexx
@@ -4039,7 +3942,7 @@ presetpersistent_nmg_gtower:
 .spike_skip
 ..end
 ;-----------------------------
-.pre_firesnakes_room
+.spike_ambush
 ..end
 ;-----------------------------
 .bombable_floor
@@ -4061,7 +3964,7 @@ presetpersistent_nmg_gtower:
 %write8($7E0FCB, $04) ; Prize pack index
 ..end
 ;-----------------------------
-.spike_room
+.spike_pit
 %write8($7E0FCB, $05) ; Prize pack index
 ..end
 ;-----------------------------
@@ -4479,12 +4382,12 @@ presetSRAM_nmg:
 %writeroom($0E0, $000A)
 ...end
 ;-----------------------------
-..dark_room_of_despair
+..dark_maze
 %writeroom($0D0, $0004)
 %writeroom($0E0, $201E)
 ...end
 ;-----------------------------
-..dark_room_of_melancholy
+..dark_catwalk
 %writeroom($0C0, $0001)
 %writeroom($0D0, $801F)
 ...end
@@ -4555,7 +4458,7 @@ presetSRAM_nmg:
 %writeroom($02A, $402F)
 ...end
 ;-----------------------------
-..before_sexy_statue
+..switch_shooting
 %write8($7EF34B, $01) ; Hammer
 %write8($7EF36F, $01) ; Keys
 %write8($7EF36D, $28) ; Health
@@ -4574,7 +4477,7 @@ presetSRAM_nmg:
 %writeroom($02B, $000A)
 ...end
 ;-----------------------------
-..statue
+..eyegore_statue
 %write8($7EF377, $07) ; Arrows
 %writeroom($01B, $0002)
 ...end
@@ -4658,7 +4561,7 @@ presetSRAM_nmg:
 %writeroom($0BB, $000B)
 ...end
 ;-----------------------------
-..backtracking_1
+..backtracking
 %write8($7EF343, $05) ; Bombs
 %writeroom($065, $0103)
 ...end
@@ -4672,11 +4575,15 @@ presetSRAM_nmg:
 %writeroom($045, $000A)
 ...end
 ;-----------------------------
+..mitts
+%write8($7EF3CC, $06) ; Follower
+%writeroom($044, $4005)
+%writeroom($045, $00FF)
+...end
+;-----------------------------
 ..after_mitts
 %write8($7EF354, $02) ; Gloves
-%write8($7EF3CC, $06) ; Follower
 %writeroom($044, $4017)
-%writeroom($045, $00FF)
 ...end
 ;-----------------------------
 ..pot_hammerdash
@@ -4985,12 +4892,16 @@ presetSRAM_nmg:
 %write8($7EF36E, $50) ; Magic
 %writeroom($0D2, $000F)
 ...end
+;-------------------------------------------------------------------------------
+..spikey_pot_key
+%writeroom($0B2, $0001)
+%writeroom($0C2, $000F)
+...end
 ;-----------------------------
 ..beat_the_fireball
 %write8($7EF36F, $01) ; Keys
 %writeroom($0B2, $0001)
 %writeroom($0B3, $0402)
-%writeroom($0C2, $000F)
 ...end
 ;-----------------------------
 ..bari_key
@@ -5021,7 +4932,7 @@ presetSRAM_nmg:
 %writeroom($0C3, $000A)
 ...end
 ;-----------------------------
-..spike_key
+..spikey_chest_key
 %write8($7EF350, $01) ; Cane of Somaria
 %writeroom($0C3, $001F)
 ...end
@@ -5116,7 +5027,7 @@ presetSRAM_nmg:
 %writeroom($0B7, $002A)
 ...end
 ;-----------------------------
-..chomps
+..chain_chomps
 %write8($7EF36D, $60) ; Health
 %writeroom($0B6, $3402)
 ...end
@@ -5153,7 +5064,7 @@ presetSRAM_nmg:
 %writeroom($0C5, $000A)
 ...end
 ;-----------------------------
-..switch_room
+..switch_puzzle
 %writeroom($0C5, $800A)
 %writeroom($0D5, $008A)
 ...end
@@ -5186,7 +5097,7 @@ presetSRAM_nmg:
 %writeroom($08C, $0008)
 ...end
 ;-----------------------------
-..pre_firesnakes_room
+..spike_ambush
 %writeroom($08B, $040E)
 %writeroom($09B, $8408)
 ...end
@@ -5222,7 +5133,7 @@ presetSRAM_nmg:
 %writeroom($06B, $000E)
 ...end
 ;-----------------------------
-..spike_room
+..spike_pit
 %write8($7EF377, $0A) ; Arrows
 %writeroom($06B, $800F)
 ...end

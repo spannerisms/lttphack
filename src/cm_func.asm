@@ -1,17 +1,6 @@
-CMDO_SAVE_ADDRESS_LONG:
-	JSR .continue
-
-	LDA.b [SA1IRAM.cm_current_selection],Y
-	STA.b SA1IRAM.cm_writer+2
-	INY
-	RTS
-
-#CMDO_SAVE_ADDRESS_00:
-	SEP #$20
-	STZ.b SA1IRAM.cm_writer+2
-
-.continue
+CMDO_SAVE_ADDRESS:
 	REP #$20
+
 	LDA.b [SA1IRAM.cm_current_selection],Y
 	INY
 	INY
@@ -19,6 +8,36 @@ CMDO_SAVE_ADDRESS_LONG:
 	STA.b SA1IRAM.cm_writer+0
 
 	SEP #$20
+
+	LDA.b [SA1IRAM.cm_current_selection],Y
+	STA.b SA1IRAM.cm_writer+2
+	INY
+
+	RTS
+
+;===================================================================================================
+
+CMDO_GET_FUNC_ADDRESS:
+	SEP #$31
+
+	LDA.b SA1IRAM.cm_action_length
+	SBC.b #3
+	TAY
+
+	REP #$20
+
+	LDA.b [SA1IRAM.cm_current_selection],Y
+	STA.b SA1IRAM.cm_writer+0
+	INY
+
+	LDA.b [SA1IRAM.cm_current_selection],Y
+	STA.b SA1IRAM.cm_writer+1
+
+	SEP #$20
+
+	RTS
+
+;===================================================================================================
 
 ; These do nothing
 ACTION_EXIT:
@@ -30,49 +49,89 @@ CMDO_INFO_4HEX:
 
 ;===================================================================================================
 
-CMDO_TOGGLE_BIT0:
-CMDO_TOGGLE_BIT0_CUSTOMTEXT:
-	LDA.b #$1<<0 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT0_FUNC:
+CMDO_TOGGLEBIT0_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT0
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT1:
-CMDO_TOGGLE_BIT1_CUSTOMTEXT:
-	LDA.b #$1<<1 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT1_FUNC:
+CMDO_TOGGLEBIT1_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT1
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT2:
-CMDO_TOGGLE_BIT2_CUSTOMTEXT:
-	LDA.b #$1<<2 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT2_FUNC:
+CMDO_TOGGLEBIT2_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT2
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT3:
-CMDO_TOGGLE_BIT3_CUSTOMTEXT:
-	LDA.b #$1<<3 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT3_FUNC:
+CMDO_TOGGLEBIT3_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT3
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT4:
-CMDO_TOGGLE_BIT4_CUSTOMTEXT:
-	LDA.b #$1<<4 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT4_FUNC:
+CMDO_TOGGLEBIT4_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT4
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT5:
-CMDO_TOGGLE_BIT5_CUSTOMTEXT:
-	LDA.b #$1<<5 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT5_FUNC:
+CMDO_TOGGLEBIT5_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT5
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT6:
-CMDO_TOGGLE_BIT6_CUSTOMTEXT:
-	LDA.b #$1<<6 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT6_FUNC:
+CMDO_TOGGLEBIT6_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT6
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT7:
-CMDO_TOGGLE_BIT7_CUSTOMTEXT:
-	LDA.b #$1<<7 : BRA CMDO_TOGGLE_BIT_LOCAL
+CMDO_TOGGLEBIT7_FUNC:
+CMDO_TOGGLEBIT7_FUNC_CUSTOMTEXT:
+	JSR CMDO_TOGGLEBIT7
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_TOGGLE_BIT_LONG:
+;---------------------------------------------------------------------------------------------------
+
+CMDO_TOGGLEBIT0:
+CMDO_TOGGLEBIT0_CUSTOMTEXT:
+	LDA.b #1<<0 : BRA CMDO_TOGGLEBIT
+
+CMDO_TOGGLEBIT1:
+CMDO_TOGGLEBIT1_CUSTOMTEXT:
+	LDA.b #1<<1 : BRA CMDO_TOGGLEBIT
+
+CMDO_TOGGLEBIT2:
+CMDO_TOGGLEBIT2_CUSTOMTEXT:
+	LDA.b #1<<2 : BRA CMDO_TOGGLEBIT
+
+CMDO_TOGGLEBIT3:
+CMDO_TOGGLEBIT3_CUSTOMTEXT:
+	LDA.b #1<<3 : BRA CMDO_TOGGLEBIT
+
+CMDO_TOGGLEBIT4:
+CMDO_TOGGLEBIT4_CUSTOMTEXT:
+	LDA.b #1<<4 : BRA CMDO_TOGGLEBIT
+
+CMDO_TOGGLEBIT5:
+CMDO_TOGGLEBIT5_CUSTOMTEXT:
+	LDA.b #1<<5 : BRA CMDO_TOGGLEBIT
+
+CMDO_TOGGLEBIT6:
+CMDO_TOGGLEBIT6_CUSTOMTEXT:
+	LDA.b #1<<6 : BRA CMDO_TOGGLEBIT
+
+CMDO_TOGGLEBIT7:
+CMDO_TOGGLEBIT7_CUSTOMTEXT:
+	LDA.b #1<<7 : BRA CMDO_TOGGLEBIT
+
+;===================================================================================================
+
+CMDO_TOGGLEBIT:
 	PHA
-	JSR CMDO_SAVE_ADDRESS_LONG
-	BRA .continue
 
-#CMDO_TOGGLE_BIT_LOCAL:
-	PHA
-	JSR CMDO_SAVE_ADDRESS_00
+	JSR CMDO_SAVE_ADDRESS
 
-.continue
 	PLA
+
 	BIT.b SA1IRAM.cm_ax
 	BMI .toggle
 	BVS .clear
@@ -90,14 +149,14 @@ CMDO_TOGGLE_BIT_LONG:
 .clear
 	EOR.b #$FF ; get complement for the AND
 	STZ.b SA1IRAM.cm_writer_args+0 ; EOR in nothing
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 	BRA CMDO_TOGGLE_SAVE_A
 
 .enable
 	STA.b SA1IRAM.cm_writer_args+0 ; EOR will toggle but
 	STA.b SA1IRAM.cm_writer_args+2 ; it also gets ORA'd in
 
-	JSL CM_MenuSFX_fill
+	JSL MenuSFX_fill
 	BRA CMDO_TOGGLE_SAVE_B
 
 .toggle
@@ -106,47 +165,12 @@ CMDO_TOGGLE_BIT_LONG:
 	LDA.b #$FF
 	BRA CMDO_TOGGLE_SAVE_A
 
-CMDO_TOGGLE_BIT7_LONG:
-CMDO_TOGGLE_BIT7_LONG_CUSTOMTEXT:
-	LDA.b #$1<<7 : BRA CMDO_TOGGLE_BIT_LONG
+;===================================================================================================
 
-CMDO_TOGGLE_BIT6_LONG:
-CMDO_TOGGLE_BIT6_LONG_CUSTOMTEXT:
-	LDA.b #$1<<6 : BRA CMDO_TOGGLE_BIT_LONG
+CMDO_TOGGLE:
+CMDO_TOGGLE_CUSTOMTEXT:
+	JSR CMDO_SAVE_ADDRESS
 
-CMDO_TOGGLE_BIT5_LONG:
-CMDO_TOGGLE_BIT5_LONG_CUSTOMTEXT:
-	LDA.b #$1<<5 : BRA CMDO_TOGGLE_BIT_LONG
-
-CMDO_TOGGLE_BIT4_LONG:
-CMDO_TOGGLE_BIT4_LONG_CUSTOMTEXT:
-	LDA.b #$1<<4 : BRA CMDO_TOGGLE_BIT_LONG
-
-CMDO_TOGGLE_BIT3_LONG:
-CMDO_TOGGLE_BIT3_LONG_CUSTOMTEXT:
-	LDA.b #$1<<3 : BRA CMDO_TOGGLE_BIT_LONG
-
-CMDO_TOGGLE_BIT2_LONG:
-CMDO_TOGGLE_BIT2_LONG_CUSTOMTEXT:
-	LDA.b #$1<<2 : BRA CMDO_TOGGLE_BIT_LONG
-
-CMDO_TOGGLE_BIT1_LONG:
-CMDO_TOGGLE_BIT1_LONG_CUSTOMTEXT:
-	LDA.b #$1<<1 : BRA CMDO_TOGGLE_BIT_LONG
-
-CMDO_TOGGLE_BIT0_LONG:
-CMDO_TOGGLE_BIT0_LONG_CUSTOMTEXT:
-	LDA.b #$1<<0 : BRA CMDO_TOGGLE_BIT_LONG
-
-CMDO_TOGGLE_LONG:
-	JSR CMDO_SAVE_ADDRESS_LONG
-	BRA .continue
-
-#CMDO_TOGGLE:
-#CMDO_TOGGLE_CUSTOMTEXT:
-	JSR CMDO_SAVE_ADDRESS_00
-
-.continue
 	SEP #$20
 
 	LDA.b #$01
@@ -166,6 +190,8 @@ CMDO_TOGGLE_LONG:
 	CLC
 	RTS
 
+;---------------------------------------------------------------------------------------------------
+
 .toggle
 #CMDO_TOGGLE_SAVE_A:
 	STZ.b SA1IRAM.cm_writer_args+2
@@ -182,41 +208,27 @@ CMDO_TOGGLE_LONG:
 	ORA.b SA1IRAM.cm_writer_args+2
 	STA.b [SA1IRAM.cm_writer]
 
-	JSL CM_MenuSFX_bink
+	JSL MenuSFX_bink
 	RTS
 
 .clear
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 	LDA.b #$00
 	BRA CMDO_TOGGLE_SAVE_A
 
 .enable
 	STA.b SA1IRAM.cm_writer_args+2
-	JSL CM_MenuSFX_fill
+	JSL MenuSFX_fill
 	BRA CMDO_TOGGLE_SAVE_B
 
 ;===================================================================================================
 
 CMDO_TOGGLE_FUNC:
-	JSR CMDO_TOGGLE
-	BRA CMDO_PERFORM_FUNC
-
-CMDO_TOGGLE_LONG_FUNC:
-	JSR CMDO_TOGGLE_LONG
-	BRA CMDO_PERFORM_FUNC
-
 CMDO_TOGGLE_FUNC_CUSTOMTEXT:
 	JSR CMDO_TOGGLE
-	BRA .continue
+	JMP CMDO_PERFORM_FUNC
 
-#CMDO_TOGGLE_LONG_FUNC_CUSTOMTEXT:
-	JSR CMDO_TOGGLE_LONG
-
-.continue
-	INY
-	INY
-	INY
-	BRA CMDO_PERFORM_FUNC
+;===================================================================================================
 
 CMDO_FUNC_FILTERED:
 	LDA.b SA1IRAM.cm_ax
@@ -224,7 +236,7 @@ CMDO_FUNC_FILTERED:
 	BCC .exit
 
 #CMDO_PERFORM_FUNC_FILTERED:
-	JSR CMDO_SAVE_ADDRESS_LONG
+	JSR CMDO_GET_FUNC_ADDRESS
 
 	PHD
 	PEA.w $0000
@@ -242,22 +254,26 @@ CMDO_FUNC_FILTERED:
 .return
 	PLD
 	SEC
-	JSL CM_MenuSFX_switch
+	JSL MenuSFX_switch
 
 .exit
 	RTS
+
+;===================================================================================================
 
 ; jump here for anything with an attached function
 ; expects Y to point to the current function argument
 ; carry means a function should happen
 CMDO_FUNC:
 	LDA.b SA1IRAM.cm_ax ; get A press in carry
+
+CMDO_PERFORM_FUNC_asl:
 	ASL
 
-#CMDO_PERFORM_FUNC:
+CMDO_PERFORM_FUNC:
 	BCC .exit
 
-	JSR CMDO_SAVE_ADDRESS_LONG
+	JSR CMDO_GET_FUNC_ADDRESS
 
 	PHK
 	PEA.w .return-1
@@ -267,34 +283,39 @@ CMDO_FUNC:
 
 .return
 	SEC
-	JSL CM_MenuSFX_switch
+	JSL MenuSFX_switch
 
 .exit
 	RTS
 
-CMDO_CHOICE_LONG_FUNC:
-CMDO_CHOICE_LONG_FUNC_PRGTEXT:
-	JSR CMDO_CHOICE_LONG
-	INY
-	INY
-	INY
-	BRA CMDO_PERFORM_FUNC
 
-#CMDO_CHOICE_FUNC:
-#CMDO_CHOICE_FUNC_PRGTEXT:
+;===================================================================================================
+
+CMDO_CHOICEPICK:
+CMDO_CHOICEPICK_PRGTEXT:
 	JSR CMDO_CHOICE
-	INY
-	INY
-	INY
-	BRA CMDO_PERFORM_FUNC
+	JMP CMDO_FUNC
 
-CMDO_CHOICE_LONG_FUNC_FILTERED_PRGTEXT:
-CMDO_CHOICE_LONG_FUNC_FILTERED:
-	JSR CMDO_CHOICE_LONG
-	INY
-	INY
-	INY
-	BRA CMDO_PERFORM_FUNC_FILTERED
+CMDO_CHOICEPICK_LOADOUT:
+	JSR CMDO_SAVE_ADDRESS
+
+	JSR CMDO_CHOICE_NOEMPTY
+
+	SEP #$20
+	LDA.b SA1IRAM.cm_ax
+	ORA.b SA1IRAM.cm_y
+
+	JMP CMDO_PERFORM_FUNC_asl
+
+CMDO_CHOICE_FUNC:
+CMDO_CHOICE_FUNC_PRGTEXT:
+	JSR CMDO_CHOICE
+	JMP CMDO_PERFORM_FUNC
+
+CMDO_CHOICE_FUNC_FILTERED_PRGTEXT:
+CMDO_CHOICE_FUNC_FILTERED:
+	JSR CMDO_CHOICE
+	JMP CMDO_PERFORM_FUNC_FILTERED
 
 ;===================================================================================================
 
@@ -302,17 +323,11 @@ CMDO_NUMFIELD_FUNC:
 CMDO_NUMFIELD_FUNC_HEX:
 CMDO_NUMFIELD_FUNC_PRGTEXT:
 	JSR CMDO_NUMFIELD
-	BRA CMDO_PERFORM_FUNC
+	JMP CMDO_PERFORM_FUNC
 
-CMDO_NUMFIELD_LONG_FUNC:
-CMDO_NUMFIELD_LONG_FUNC_HEX:
-CMDO_NUMFIELD_LONG_FUNC_PRGTEXT:
-	JSR CMDO_NUMFIELD_LONG
-	BRA CMDO_PERFORM_FUNC
-
-#CMDO_NUMFIELD16_LONG_FUNC:
-	JSR CMDO_NUMFIELD16_LONG
-	BRA CMDO_PERFORM_FUNC
+CMDO_NUMFIELD16_FUNC:
+	JSR CMDO_NUMFIELD16
+	JMP CMDO_PERFORM_FUNC
 
 CMDO_NUMFIELD_HEX_UPDATEWHOLEMENU:
 	JSR CMDO_NUMFIELD
@@ -321,20 +336,15 @@ CMDO_NUMFIELD_HEX_UPDATEWHOLEMENU:
 
 ;===================================================================================================
 
-CMDO_CHOICE_LONG:
-CMDO_CHOICE_LONG_PRGTEXT:
-	JSR CMDO_SAVE_ADDRESS_LONG
-	BRA .continue
-
-#CMDO_CHOICE:
-#CMDO_CHOICE_PRGTEXT:
-	JSR CMDO_SAVE_ADDRESS_00
-
-.continue
-	LDA.b [SA1IRAM.cm_writer]
+CMDO_CHOICE:
+CMDO_CHOICE_PRGTEXT:
+	JSR CMDO_SAVE_ADDRESS
 
 	BIT.b SA1IRAM.cm_ax
 	BVS .empty
+
+#CMDO_CHOICE_NOEMPTY:
+	LDA.b [SA1IRAM.cm_writer]
 
 	BIT.b SA1IRAM.cm_leftright
 	BMI .decrement
@@ -366,11 +376,11 @@ CMDO_CHOICE_LONG_PRGTEXT:
 	STA.b [SA1IRAM.cm_writer]
 	INY
 	SEC ; carry set = actionable, so do functions
-	JSL CM_MenuSFX_bink
+	JSL MenuSFX_bink
 	RTS
 
 .empty
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 	BRA .clear
 
 ;===================================================================================================
@@ -387,7 +397,7 @@ CMDO_SUBMENU:
 	AND.w #$FF00
 	STA.b SA1IRAM.cm_cursor+0
 
-	LDY.w #$02
+	LDY.w #$0002
 	LDA.b [SA1IRAM.cm_current_selection],Y
 	STA.b SA1IRAM.cm_cursor+2
 
@@ -395,7 +405,7 @@ CMDO_SUBMENU:
 	JSR DrawCurrentMenu
 
 	JSR CM_UpdateCurrentSelection
-	JSL CM_MenuSFX_submenu
+	JSL MenuSFX_submenu
 
 .no
 	RTS
@@ -407,10 +417,9 @@ CMDO_SUBMENU:
 	JSR EmptyCurrentMenu
 	JSR CM_PushMenuToStack
 
-	JSL CM_MenuSFX_submenu
+	JSL MenuSFX_submenu
 	SEC
 
-	LDY.w #1
 	JSR CMDO_PERFORM_FUNC
 	BRA .drawmenu
 
@@ -424,7 +433,7 @@ CMDO_PRESET_OW:
 	RTS
 
 .go
-	JSR CMDO_SAVE_ADDRESS_00
+	JSR CMDO_SAVE_ADDRESS
 
 	REP #$20
 	TXA
@@ -445,26 +454,19 @@ CMDO_PRESET_OW:
 
 ;===================================================================================================
 
-CMDO_CTRL_SHORTCUT_FINAL:
-	LDA.b SA1IRAM.cm_ax
-	BIT.b #$C0
-	BEQ .no
-
-	JSL CM_MenuSFX_error
-
-.no
-	RTS
-
-;===================================================================================================
-
 CMDO_CTRL_SHORTCUT:
-	JSR CMDO_SAVE_ADDRESS_00
+	JSR CMDO_SAVE_ADDRESS
 
 	LDA.b #$C0
 	BIT.b SA1IRAM.cm_ax
 	BEQ .no
 
 	REP #$20
+
+	LDA.b SA1IRAM.cm_writer
+	CMP.w #PracMenuShortcut
+	BEQ .banned
+
 	STZ.b SA1IRAM.preset_scratch
 
 	LDA.w #$0000
@@ -473,13 +475,17 @@ CMDO_CTRL_SHORTCUT:
 
 	LDA.w #$0008
 	STA.b SA1IRAM.cm_submodule
-	JSL CM_MenuSFX_setshortcut
+	JSL MenuSFX_setshortcut
 	RTS
 
 .delete
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 
 .no
+	RTS
+
+.banned
+	JSL MenuSFX_error
 	RTS
 
 ;===================================================================================================
@@ -505,7 +511,6 @@ CMDO_LITESTATE:
 
 	RTS
 
-
 .delete
 	LDA.w SA1IRAM.litestate_act
 	JSL ValidateLiteState
@@ -529,7 +534,7 @@ CMDO_LITESTATE:
 	JML LoadLiteState
 
 .invalid
-	JSL CM_MenuSFX_error
+	JSL MenuSFX_error
 	RTS
 
 ;===================================================================================================
@@ -566,40 +571,94 @@ CMDO_TOGGLE_ROOMFLAG:
 	EOR.w #$FFFF
 	AND.l $7EF000,X
 	STA.l $7EF000,X
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 	RTS
 
 .toggle
 	EOR.l $7EF000,X
 	STA.l $7EF000,X
-	JSL CM_MenuSFX_bink
+	JSL MenuSFX_bink
 	RTS
 
 .enable
 	ORA.l $7EF000,X
 	STA.l $7EF000,X
-	JSL CM_MenuSFX_fill
+	JSL MenuSFX_fill
 	RTS
-
 
 ;===================================================================================================
 
+; very dumb hack
+CMDO_NUMFIELD_CAPACITY:
+	JSR CMDO_SAVE_ADDRESS
+
+	REP #$30
+
+	PHY
+	PEI.b (SA1IRAM.cm_current_selection+2)
+	PEI.b (SA1IRAM.cm_current_selection+0)
+
+	PHX
+
+	LDX.w #$7EF371
+	LDY.w #$0DDB58
+
+	LDA.b SA1IRAM.cm_writer
+	CMP.w #$7EF377
+	BEQ .arrows
+
+	DEX
+	LDY.w #$0DDB48
+
+.arrows
+	LDA.l $7E0000,X
+	AND.w #$00FF
+	STY.b SA1IRAM.cm_current_selection
+	CLC
+	ADC.b SA1IRAM.cm_current_selection
+	TAX
+
+	LDA.l $0D0000,X
+	AND.w #$00FF
+	ORA.w #$0500
+	STZ.b SA1IRAM.preset_reader2+0
+	STA.b SA1IRAM.preset_reader2+1
+
+	STZ.b SA1IRAM.cm_current_selection+1
+	LDA.w #SA1IRAM.preset_reader2
+	STA.b SA1IRAM.cm_current_selection+0
+
+	PLX
+	SEP #$30
+
+	LDY.b #$00
+
+	JSR CMDO_NUMFIELD_MAIN
+
+	REP #$30
+
+	PLY
+	STY.b SA1IRAM.cm_current_selection+0
+	PLY
+	STY.b SA1IRAM.cm_current_selection+2
+	PLY
+
+	RTS
+
+;===================================================================================================
+
+CMDO_NUMFIELD16:
+	JSR CMDO_SAVE_ADDRESS
+	REP #$20
+	BRA CMDO_NUMFIELD_MAIN
+
 CMDO_NUMFIELD:
 CMDO_NUMFIELD_HEX:
-	JSR CMDO_SAVE_ADDRESS_00
-	BRA .continue
+CMDO_NUMFIELD_PRGTEXT:
+CMDO_NUMFIELD_2DIGITS:
+	JSR CMDO_SAVE_ADDRESS
 
-#CMDO_NUMFIELD16_LONG:
-	JSR CMDO_SAVE_ADDRESS_LONG
-	REP #$20
-	BRA .continue
-
-#CMDO_NUMFIELD_LONG:
-#CMDO_NUMFIELD_LONG_HEX:
-#CMDO_NUMFIELD_LONG_2DIGITS:
-	JSR CMDO_SAVE_ADDRESS_LONG
-
-.continue
+CMDO_NUMFIELD_MAIN:
 	PHX
 
 	CLC
@@ -637,11 +696,11 @@ CMDO_NUMFIELD_HEX:
 	RTS
 
 .delete
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 	BRA .clear_min
 
 .topoff
-	JSL CM_MenuSFX_fill
+	JSL MenuSFX_fill
 	BRA .get_max_min
 
 .increment
@@ -667,7 +726,7 @@ CMDO_NUMFIELD_HEX:
 
 	JSR .iny_twice_if_16 ; this should now point to after slide
 	SEC
-	JSL CM_MenuSFX_bink
+	JSL MenuSFX_bink
 	PLX
 	RTS
 
@@ -713,7 +772,6 @@ CMDO_NUMFIELD_HEX:
 .zero
 	dw 0
 
-
 .iny_twice_if_16
 	INY
 	INY
@@ -728,7 +786,7 @@ CMDO_NUMFIELD_HEX:
 	DEY
 	DEY
 
-	; if 8 bit, then it will DEY, otherwise it will BIT
+	; if 8 bit, then it will INY, otherwise it will BIT
 	BIT.b #$FF
 	INY
 

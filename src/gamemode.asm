@@ -55,7 +55,7 @@ ResetGameStack:
 ;===================================================================================================
 
 Rerandomize:
-	LDA.w !config_rerandomize_toggle : BEQ .dont_rerandomize
+	LDA.w !config_rerandomize : BEQ .dont_rerandomize
 
 	REP #$20
 
@@ -97,10 +97,14 @@ UseShortCut:
 
 	JMP.w (SA1IRAM.SHORTCUT_USED)
 
+;===================================================================================================
+
 UseShortCutSA1:
 	DEC
 	PHA
 	RTS
+
+;===================================================================================================
 
 ShortcutsBanned:
 	SEP #$20
@@ -465,16 +469,10 @@ Shortcut_DisableSprites:
 ;===================================================================================================
 
 Shortcut_FillEverything:
+	REP #$30
 	SEP #$20
-	REP #$10
-
-	PHD
-
-	PEA.w $0000
-	PLD
 
 	PHB
-
 	PHK
 	PLB
 
@@ -493,7 +491,7 @@ Shortcut_FillEverything:
 
 .itemsover
 	; do keys
-	LDA.b $1B ; are we indoors?
+	LDA.l $1B ; are we indoors?
 	BEQ .no_keys
 
 	LDA.w $040C ; are we in a dungeon?
@@ -504,17 +502,17 @@ Shortcut_FillEverything:
 .no_keys
 	LDA.l $7EF3C5 : BNE .ignoreprogress
 
-	LDA.b #$01 : STA.l $7EF3C5
+	INC : STA.l $7EF3C5
 
 .ignoreprogress
 	SEP #$30
 
-	JSL set_link_equips
+	JSL FixLinkEquipment
 
 	PLB
-	PLD
-
 	RTL
+
+;---------------------------------------------------------------------------------------------------
 
 .table
 	db 4   ; $F340 - silver bow w/ arrows
@@ -644,7 +642,7 @@ FixGraphics_Pegs:
 
 ;===================================================================================================
 
-FixGraphics_Underworld: ; mostly copied from PalaceMap_RestoreGraphics
+FixGraphics_Underworld: ; mostly copied from vanilla
 	PHB
 
 	LDA.b #$00 : PHA : PLB
@@ -694,6 +692,8 @@ Shortcut_ShowPits:
 	LDA.b #$81 : STA.w $4200
 
 ++	RTL
+
+;===================================================================================================
 
 ShowPits:
 	PHB ; rebalanced in redraw
@@ -752,7 +752,8 @@ ShowPits:
 .skip
 	DEY : BPL --
 
-.time_for_tilemaps ; just a delimiting label
+;---------------------------------------------------------------------------------------------------
+
 	SEP #$30
 
 	STZ.b $17

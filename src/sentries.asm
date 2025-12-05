@@ -182,6 +182,7 @@ Extra_SA1_Transfers:
 	dw SENTRY_ANCINDEX
 	dw SENTRY_HOOKSLOT
 	dw SENTRY_PLAIDTILE
+	dw SENTRY_CONVEYOR
 %end_sentry_group()
 
 ;===================================================================================================
@@ -246,16 +247,26 @@ Extra_SA1_Transfers:
 
 ;===================================================================================================
 
-%sentry_no_init("Off", "OFF")
+%sentry("Off", "OFF")
 	RTS
+
+;===================================================================================================
+
+DirectionIcons:
+
+.negative_y ; 0
+	dw $2D5F, $2D5D, $6D5F
+
+.zero_y ; 6
+	dw $6D5E, $608B, $2D5E
+
+.positive_y ; 12
+	dw $AD5F, $AD5D, $ED5F
 
 ;===================================================================================================
 
 ; for consistent timing
 no_sentry_init:
-;	LDA.l $000000
-;	STA.w SA1IRAM.sentry_cache,Y
-
 sentry_nothing:
 	RTS
 
@@ -277,7 +288,7 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry_no_init("Room time", "ROOMTIME")
+%sentry("Room time", "ROOMTIME")
 	LDY.w #!yellow
 	LDA.w #SA1IRAM.ROOM_TIME_F_DISPLAY
 	JSR Draw_all_two
@@ -292,7 +303,7 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry_no_init("Room time (live)", "ROOMLIVE")
+%sentry("Room time (live)", "ROOMLIVE")
 	LDY.w #!yellow
 	LDA.w #SA1IRAM.ROOM_TIME_F
 	JSR Draw_all_two
@@ -307,7 +318,7 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry_no_init("Segment time", "SEGTIME")
+%sentry("Segment time", "SEGTIME")
 	LDY.w #!gray
 	LDA.w #SA1IRAM.SEG_TIME_F_DISPLAY
 	JSR Draw_all_two
@@ -330,21 +341,21 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry_no_init("Lag frames", "LAGFRAMES")
+%sentry("Lag frames", "LAGFRAMES")
 	LDY.w #!red
 	LDA.w #SA1IRAM.ROOM_TIME_LAG_DISPLAY
 	JMP Draw_short_three
 
 ;===================================================================================================
 
-%sentry_no_init("Lag frames (live)", "LAGLIVE")
+%sentry("Lag frames (live)", "LAGLIVE")
 	LDY.w #!red
 	LDA.w #SA1IRAM.ROOM_TIME_LAG
 	JMP Draw_short_three
 
 ;===================================================================================================
 
-%sentry_no_init("Idle frames", "IDLEFRAMES")
+%sentry("Idle frames", "IDLEFRAMES")
 	LDA.w SA1IRAM.ROOM_TIME_IDLE_DISPLAY
 
 	PHX
@@ -370,8 +381,9 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($7E1CE9, "Text timer", "TEXTTIME")
-%set_sentry_icon($06, !GREEN_PAL)
+%sentry("Text timer", "TEXTTIME")
+%sentry_var($7E1CE9)
+%sentry_icon($24, !GREEN_PAL)
 	STY.b HUDProxy+10,X
 
 	AND.w #$00FF
@@ -382,7 +394,7 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry_no_init("Coordinates", "COORDINATES")
+%sentry("Coordinates", "COORDINATES")
 	LDA.b SA1IRAM.CopyOf_20
 	JSR DrawHex_yellow_4
 
@@ -391,7 +403,8 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($0030, "Velocity", "VELOCITY")
+%sentry("Velocity", "VELOCITY")
+%sentry_var($0030)
 	STA.b SA1IRAM.SENTRYTEMP
 
 	LDY.w #$355C
@@ -445,7 +458,8 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($002A, "Subpixel velocity", "SUBPIXELS")
+%sentry("Subpixel velocity", "SUBPIXELS")
+%sentry_var($002A)
 	STA.b SA1IRAM.SENTRYTEMP
 	AND.w #$00FF
 	JSR DrawHex_yellow_2
@@ -456,8 +470,9 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($0079, "Spin attack timer", "SPINTIME")
-%set_sentry_icon($03, !BLUE_PAL)
+%sentry("Spin attack timer", "SPINTIME")
+%sentry_var($0079)
+%sentry_icon($50, !BLUE_PAL)
 	STY.b HUDProxy+10,X
 
 	LDY.w #!gray
@@ -474,25 +489,29 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($0E50, "Boss HP", "BOSSHP")
-%set_sentry_icon($07, !RED_PAL)
+%sentry("Boss HP", "BOSSHP")
+%sentry_var($0E50)
+%sentry_icon($32, !RED_PAL)
 %set_sentry_raw()
 
 ;===================================================================================================
 
-%sentry($0B08, "Arc variable", "ARCVAR")
-%set_sentry_icon($09, !YELLOW_PAL)
+%sentry("Arc variable", "ARCVAR")
+%sentry_var($0B08)
+%sentry_icon($19, !YELLOW_PAL)
 	JMP DrawHex_white_4
 
 ;===================================================================================================
 
-%sentry($0F70, "Slot 0 altitude", "ENEMY0ALT")
-%set_sentry_icon($0A, !YELLOW_PAL)
+%sentry("Slot 0 altitude", "ENEMY0ALT")
+%sentry_var($0F70)
+%sentry_icon($1A, !YELLOW_PAL)
 	JMP DrawHex_white_2
 
 ;===================================================================================================
 
-%sentry($00A0, "Room ID", "ROOMID")
+%sentry("Room ID", "ROOMID")
+%sentry_var($00A0)
 	; calculate correct room id first
 	LDA.b SA1IRAM.CopyOf_21 : AND.w #$00FE
 	ASL : ASL : ASL
@@ -520,18 +539,19 @@ sentry_raw:
 	BRA .draw
 
 .overworld
-	LDY.w #char($11)|!GRAY_PAL
-
 	LDA.w #$608B
 	STA.b HUDProxy+14,X
 	STA.b HUDProxy+12,X
 	STA.b HUDProxy+10,X
 
+	LDY.w #char($11)|!GRAY_PAL
+	STY.b HUDProxy+8,X
+
 	TXA
 	SEC
 	SBC.w #$0008
 	TAX
-	STA.b HUDProxy+16,X
+
 	BRA ++
 
 .draw
@@ -548,7 +568,8 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($00A9, "Quadrant", "QUADRANT")
+%sentry("Quadrant", "QUADRANT")
+%sentry_var($00A9)
 	LDY.b SA1IRAM.CopyOf_1B-1
 	CPY.w #$0100 ; see if 1B is 00
 	BCC .no
@@ -643,8 +664,9 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($0114, "Tile under foot", "LINKTILE")
-%set_sentry_icon($08, !BROWN_PAL)
+%sentry("Tile under foot", "LINKTILE")
+%sentry_var($0114)
+%sentry_icon($18, !BROWN_PAL)
 	STY.b HUDProxy+10,X
 
 	LDY.b SA1IRAM.CopyOf_1B-1
@@ -658,7 +680,8 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($C000, "Pit behavior", "PITBEHAVIOR")
+%sentry("Pit behavior", "PITBEHAVIOR")
+%sentry_var($7EC000)
 	LDY.b SA1IRAM.CopyOf_1B-1
 	CPY.w #$0100 ; see if 1B is 00
 	BCC .no
@@ -688,14 +711,16 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($02A2, "Spooky action", "SPOOKY")
-%set_sentry_icon($01, !RED_PAL)
+%sentry("Spooky action", "SPOOKY")
+%sentry_var($02A2)
+%sentry_icon($10, !RED_PAL)
 %set_sentry_raw()
 
 ;===================================================================================================
 
-%sentry($0374, "Hovering", "HOVERING")
-%set_sentry_icon($05, !RED_PAL)
+%sentry("Hovering", "HOVERING")
+%sentry_var($0374)
+%sentry_icon($40, !RED_PAL)
 	STY.b HUDProxy+10,X
 
 	AND.w #$00FF
@@ -727,26 +752,30 @@ sentry_raw:
 
 ;===================================================================================================
 
-%sentry($0690, "WEST SOMARIA", "WESTSOM")
-%set_sentry_icon($04, !RED_PAL)
+%sentry("WEST SOMARIA", "WESTSOM")
+%sentry_var($0690)
+%sentry_icon($31, !RED_PAL)
 %set_sentry_raw()
 
 ;===================================================================================================
 
-%sentry($03C4, "Ancilla search index", "ANCINDEX")
-%set_sentry_icon($02, !BLUE_PAL)
+%sentry("Ancilla search index", "ANCINDEX")
+%sentry_var($03C4)
+%sentry_icon($17, !BLUE_PAL)
 %set_sentry_raw()
 
 ;===================================================================================================
 
-%sentry($039D, "Hookslot", "HOOKSLOT")
-%set_sentry_icon($00, !RED_PAL)
+%sentry("Hookslot", "HOOKSLOT")
+%sentry_var($039D)
+%sentry_icon($02, !RED_PAL)
 %set_sentry_raw()
 
 ;===================================================================================================
 
-%sentry($00EC, "Plaid tile index", "PLAIDTILE")
-%set_sentry_icon($0B, !REDYELLOW)
+%sentry("Plaid tile index", "PLAIDTILE")
+%sentry_var($00EC)
+%sentry_icon($1B, !REDYELLOW)
 	STY.b HUDProxy+6,X
 
 	LDY.b SA1IRAM.CopyOf_1B
@@ -779,6 +808,72 @@ sentry_raw:
 	STA.b HUDProxy+6,X
 
 	JMP NoDisplaySentry
+
+;===================================================================================================
+
+%sentry("Conveyor drag", "CONVEYOR")
+%sentry_var($03F3)
+%sentry_icon($1D, !BROWN_PAL)
+	STY.b HUDProxy+8,X
+
+	PHX
+
+	AND.w #$00FF
+	TAX
+	BEQ .zero
+
+	SEP #$20
+
+	; get y speed
+	LDA.l $07E5D1-1,X
+	BEQ .y_is_zero
+	BPL .y_is_positive
+
+.y_is_negative
+	LDY.w #0
+	BRA .save_y
+
+.y_is_zero
+	LDY.w #6
+	BRA .save_y
+
+.zero
+	LDA.w #$608B
+	BRA .no_move
+
+.y_is_positive
+	LDY.w #12
+
+.save_y
+	; get x speed
+	LDA.l $07E5D5-1,X
+	BEQ .x_is_zero
+	BMI .x_is_negative
+
+.x_is_positive
+	INY
+	INY
+
+.x_is_zero
+	INY
+	INY
+
+.x_is_negative
+	REP #$31
+
+	LDA.w DirectionIcons,Y
+
+.no_move
+	TXY
+
+	PLX
+	STA.b HUDProxy+14,X
+
+	DEX
+	DEX
+	TYA
+
+	JMP DrawHex_white_2
 
 ;===================================================================================================
 ;===================================================================================================
@@ -837,7 +932,7 @@ sentry_raw:
 	dw char($14)|!HFLIP|!VFLIP|!GREEN_PAL
 	dw char($14)|!VFLIP|!YELLOW_PAL
 
-.init
+%sentry_init()
 	SEP #$20
 
 	LDA.w $0401 : STA.w SA1IRAM.LINEVAL+0,Y
@@ -849,11 +944,11 @@ sentry_raw:
 ;===================================================================================================
 
 %line_sentry("Underworld camera X", UWCAMX)
-%set_sentry_icon($0F, !GRAY_PAL)
+%sentry_icon($0F, !GRAY_PAL)
 	LDA.w #char(9)
 	JMP LineSentryUWCameras
 
-.init
+%sentry_init()
 	SEP #$20
 
 	LDA.b $A6 : STA.w SA1IRAM.LINEVAL+0,Y
@@ -874,11 +969,11 @@ sentry_raw:
 ;===================================================================================================
 
 %line_sentry("Underworld camera Y", UWCAMY)
-%set_sentry_icon($0F, !GRAY_PAL)
+%sentry_icon($0F, !GRAY_PAL)
 	LDA.w #char(11)
 	JMP LineSentryUWCameras
 
-.init
+%sentry_init()
 	SEP #$20
 
 	LDA.b $A7 : STA.w SA1IRAM.LINEVAL+0,Y
@@ -1005,7 +1100,7 @@ LineSentryUWCameras:
 	LDA.w #$FFFF
 	JMP LineSentryOWCameras
 
-.init
+%sentry_init()
 	LDA.l $7EF3CA : STA.w SA1IRAM.LINEVAL+0,Y
 	RTS
 
@@ -1017,7 +1112,7 @@ LineSentryUWCameras:
 	LDA.w #$FFF8
 	JMP LineSentryOWCameras
 
-.init
+%sentry_init()
 	LDA.l $7EF3CA : STA.w SA1IRAM.LINEVAL+0,Y
 	RTS
 
@@ -1213,7 +1308,7 @@ HUDAncillaLineEG:
 ;===================================================================================================
 
 %line_sentry("Hookslot props", HOOKSLOTTER)
-%set_sentry_icon($0F, !GRAY_PAL)
+%sentry_icon($02, !RED_PAL)
 	LDA.w #char(2)|!RED_PAL
 	STA.b HUDProxy,X
 	INX
@@ -1256,8 +1351,8 @@ HUDAncillaLineEG:
 	JSR DrawHexForward_2digit_color_set
 
 	PHX
+	PHY
 
-	LDA.w #$2D00
 	SEP #$20
 
 	LDX.b SA1IRAM.SCRATCH+10 ; get direction
@@ -1268,39 +1363,36 @@ HUDAncillaLineEG:
 	BPL .y_is_positive
 
 .y_is_negative
-	LDA.b #$78
+	LDY.w #0
 	BRA .save_y
 
 .y_is_zero
-	LDA.b #$70
+	LDY.w #6
 	BRA .save_y
 
 .y_is_positive
-	LDA.b #$74
+	LDY.w #12
 
 .save_y
-	STA.b SA1IRAM.SCRATCH+10
-
 	; get x speed
 	LDA.l $07AB61,X
 	BEQ .x_is_zero
-	BPL .x_is_positive
-
-.x_is_negative
-	LDA.b #$02
-	BRA .save_x
-
-.x_is_zero
-	LDA.b #$00
-	BRA .save_x
+	BMI .x_is_negative
 
 .x_is_positive
-	LDA.b #$01
+	INY
+	INY
 
-.save_x
-	ORA.b SA1IRAM.SCRATCH+10
+.x_is_zero
+	INY
+	INY
 
+.x_is_negative
 	REP #$31
+
+	LDA.w DirectionIcons,Y
+
+	PLY
 	PLX
 	STA.b HUDProxy,X
 
@@ -1312,7 +1404,7 @@ HUDAncillaLineEG:
 	LDA.w SA1IRAM.LINEVAL+4,Y
 	JMP DrawHexForward_2digit_color_set
 
-.init
+%sentry_init()
 	SEP #$30
 
 	LDA.w $039D : STA.w SA1IRAM.LINEVAL+0,Y ; HOOKSLOT
@@ -1336,7 +1428,7 @@ HUDAncillaLineEG:
 macro ancilla_line_group(addr, icon, iconprop, propname, varname, drawroutine)
 
 %line_sentry("AncF <propname>", "ANCF_<varname>")
-%set_sentry_icon(<icon>, <iconprop>)
+%sentry_icon(<icon>, <iconprop>)
 	LDA.w SA1IRAM.LINEVAL+14,Y
 	STA.b HUDProxy+0,X
 
@@ -1346,13 +1438,15 @@ macro ancilla_line_group(addr, icon, iconprop, propname, varname, drawroutine)
 	INX : INX : INX : INX
 	JMP <drawroutine>
 
-.init
+%sentry_init()
 	REP #$30
 	LDX.w #<addr>
 	JMP CollectAncilla
 
+;---------------------------------------------------------------------------------------------------
+
 %line_sentry("AncB <propname>", "ANCB_<varname>")
-%set_sentry_icon(<icon>, <iconprop>)
+%sentry_icon(<icon>, <iconprop>)
 	LDA.w SA1IRAM.LINEVAL+14,Y
 	STA.b HUDProxy+0,X
 
@@ -1362,13 +1456,15 @@ macro ancilla_line_group(addr, icon, iconprop, propname, varname, drawroutine)
 	INX : INX : INX : INX
 	JMP <drawroutine>
 
-.init
+%sentry_init()
 	REP #$30
 	LDX.w #<addr>+5
 	JMP CollectAncilla
 
+;---------------------------------------------------------------------------------------------------
+
 %line_sentry("AncX <propname>", "ANCX_<varname>")
-%set_sentry_icon(<icon>, <iconprop>)
+%sentry_icon(<icon>, <iconprop>)
 	LDA.w SA1IRAM.LINEVAL+14,Y
 	STA.b HUDProxy+0,X
 
@@ -1378,23 +1474,24 @@ macro ancilla_line_group(addr, icon, iconprop, propname, varname, drawroutine)
 	INX : INX : INX : INX
 	JMP <drawroutine>
 
-.init
+%sentry_init()
 	REP #$31
 	LDX.w #<addr>
 	JMP CollectAncillaX
 
+
 endmacro
 
-%ancilla_line_group($0C4A, $10, !RED_PAL, "ID", "ID", HUDAncillaLineID)
-%ancilla_line_group($0C04, $11, !RED_PAL, "X coordinate", "XCOORD", HUDAncillaLineBasic)
-%ancilla_line_group($0BFA, $12, !RED_PAL, "Y coordinate", "YCOORD", HUDAncillaLineBasicYellow)
-%ancilla_line_group($029E, $13, !RED_PAL, "Altitude", "ZCOORD", HUDAncillaLineBasic)
-%ancilla_line_group($0C7C, $14, !BLUE_PAL, "Layer", "LAYER", HUDAncillaLineBasic)
-%ancilla_line_group($0C5E, $15, !RED_PAL, "Extension", "EXTEND", HUDAncillaLineBasic)
-%ancilla_line_group($03E4, $08, !BROWN_PAL, "Tile type", "TILE", HUDAncillaLineBasic)
-%ancilla_line_group($03A4, $16, !YELLOW_PAL, "EG check", "EG", HUDAncillaLineEG)
-%ancilla_line_group($0C72, $17, !BLUE_PAL, "Direction", "DIR", HUDAncillaLineBasic)
-%ancilla_line_group($03B1, $18, !REDYELLOW, "Decay", "DECAY", HUDAncillaLineBasic)
+%ancilla_line_group($0C4A, $07, !RED_PAL, "ID", "ID", HUDAncillaLineID)
+%ancilla_line_group($0C04, $08, !RED_PAL, "X coordinate", "XCOORD", HUDAncillaLineBasic)
+%ancilla_line_group($0BFA, $09, !RED_PAL, "Y coordinate", "YCOORD", HUDAncillaLineBasicYellow)
+%ancilla_line_group($029E, $0A, !RED_PAL, "Altitude", "ZCOORD", HUDAncillaLineBasic)
+%ancilla_line_group($0C7C, $0B, !BLUE_PAL, "Layer", "LAYER", HUDAncillaLineBasic)
+%ancilla_line_group($0C5E, $0C, !RED_PAL, "Extension", "EXTEND", HUDAncillaLineBasic)
+%ancilla_line_group($03E4, $18, !BROWN_PAL, "Tile type", "TILE", HUDAncillaLineBasic)
+%ancilla_line_group($03A4, $0D, !YELLOW_PAL, "EG check", "EG", HUDAncillaLineEG)
+%ancilla_line_group($0C72, $46, !BLUE_PAL, "Direction", "DIR", HUDAncillaLineBasic)
+%ancilla_line_group($03B1, $1C, !REDYELLOW, "Decay", "DECAY", HUDAncillaLineBasic)
 
 ;===================================================================================================
 

@@ -2,37 +2,48 @@
 !SENTRY_GROUP_ID #= -1
 !LINE_SENTRY_GROUP_ID #= -1
 
-macro defsentry(name, varname, init)
+macro defsentry(name, varname)
 	!SENTRY_ID #= !SENTRY_ID+2
 	<varname> = !SENTRY_ID
 
 	pushpc
-		org sentry_inits+!SENTRY_ID         : dw <init>
 		org sentry_routines+!SENTRY_ID      : dw ?code
 		org sentry_name_pointers+!SENTRY_ID : dw ?name
 	pullpc
 
 __SENTRY_CODE_<varname>:
 
-?name: db "<name>", $FF
+?name:
+	%cmstr("<name>")
 
 ?code:
 
 endmacro
 
-macro sentry(addr, name, varname)
-	%defsentry("<name>", "SENTRY_<varname>", <addr>)
+macro sentry(name, varname)
+	%defsentry("<name>", "SENTRY_<varname>")
 endmacro
 
-macro sentry_no_init(name, varname)
-	%defsentry("<name>", "SENTRY_<varname>", no_sentry_init)
+macro sentry_var(var)
+	pushpc
+		org sentry_inits+!SENTRY_ID         : dw <var>
+	pullpc
+endmacro
+
+macro sentry_init()
+	pushpc
+		org sentry_inits+!SENTRY_ID         : dw ?here
+	pullpc
+
+?here:
+
 endmacro
 
 macro line_sentry(name, varname)
-	%defsentry("<name>", "LINE_SENTRY_<varname>", __SENTRY_CODE_LINE_SENTRY_<varname>_init)
+	%defsentry("<name>", "LINE_SENTRY_<varname>")
 endmacro
 
-macro set_sentry_icon(gfxoffset, props)
+macro sentry_icon(gfxoffset, props)
 	pushpc
 		org sentry_icons+!SENTRY_ID        : dw <props>|$2020
 		org sentry_icongfx+!SENTRY_ID      : dw hud_sentryicons+(<gfxoffset>*$10)
@@ -56,7 +67,8 @@ macro sentry_group(name)
 		org SentryGroupCounts+0 : dw !SENTRY_GROUP_ID+1
 	pullpc
 
-?name: db "<name>", $FF
+?name:
+	%cmstr("<name>")
 
 ?list:
 
@@ -76,7 +88,8 @@ macro line_sentry_group(name)
 		org SentryGroupCounts+2 : dw !LINE_SENTRY_GROUP_ID+1
 	pullpc
 
-?name: db "<name>", $FF
+?name:
+	%cmstr("<name>")
 
 ?list:
 
@@ -112,7 +125,7 @@ GO_TO_SENTRY_PICKER:
 	BIT.b SA1IRAM.cm_ax
 	BEQ .nothing
 
-	JSR CMDO_SAVE_ADDRESS_00
+	JSR CMDO_SAVE_ADDRESS
 
 	BIT.b SA1IRAM.cm_ax
 	BMI .setting
@@ -121,7 +134,7 @@ GO_TO_SENTRY_PICKER:
 	LDA.b #$00
 	STA.b [SA1IRAM.cm_writer]
 
-	JSL CM_MenuSFX_empty
+	JSL MenuSFX_empty
 
 .nothing
 	RTS
@@ -149,7 +162,7 @@ GO_TO_SENTRY_PICKER:
 	JSR GetSentryGroups
 	JSR FindSentryMenuItem
 
-	JSL CM_MenuSFX_submenu
+	JSL MenuSFX_submenu
 
 	RTS
 
@@ -292,10 +305,10 @@ SentryGroupNames:
 	dw .line
 
 .normal
-	db "Setting sentry ", $FF
+	%cmstr("Setting sentry ")
 
 .line
-	db "Setting line sentry ", $FF
+	%cmstr("Setting line sentry ")
 
 ;===================================================================================================
 
@@ -389,7 +402,7 @@ SetSentry_Choose:
 	STA.w SA1RAM.sentry_item
 
 .cursor_fine
-	JSL CM_MenuSFX_boop
+	JSL MenuSFX_boop
 	JMP RedrawSentryMenu
 
 ;---------------------------------------------------------------------------------------------------
@@ -427,7 +440,7 @@ SetSentry_Choose:
 
 	JSR GetSentryCategoryInfo
 
-	JSL CM_MenuSFX_bink
+	JSL MenuSFX_bink
 	JMP RedrawSentryMenu
 
 ;---------------------------------------------------------------------------------------------------
@@ -441,7 +454,7 @@ SetSentry_Choose:
 	LDA.b (SA1IRAM.sentry_cat_list_pointer),Y
 	STA.b (SA1IRAM.sentry_selected_address)
 
-	JSL CM_MenuSFX_tinkle
+	JSL MenuSFX_tinkle
 	JMP RedrawSentryMenu
 
 ;===================================================================================================
@@ -457,7 +470,7 @@ RedrawSentryMenu:
 
 	; draw header
 	LDY.w #$0000
-	JSR CM_YRowToXOffset
+	LDX.w YRowToXOffset,Y
 
 	LDA.w #!HEADER
 	STA.b SA1IRAM.cm_draw_color
@@ -468,13 +481,14 @@ RedrawSentryMenu:
 
 	LDA.w SA1RAM.sentry_index
 	AND.w #$000F
+	ORA.w #$0010
 	JSR DrawSingleCharacter
 
 	JSR EmptyRestOfRow
 
 	; draw category header
 	LDY.w #$0002
-	JSR CM_YRowToXOffset
+	LDX.w YRowToXOffset,Y
 
 	JSR DrawEmptyCharacter
 
@@ -518,18 +532,18 @@ RedrawSentryMenu:
 	INY
 	INY
 	INY
-	JSR CM_YRowToXOffset
+	LDX.w YRowToXOffset,Y
 
 	JSR DrawEmptyCharacter
 
 	; get row's ID
 	LDA 1,S
 
-	LDY.w #$003A ; checkmark for selected
+	LDY.w #$0064 ; checkmark for selected
 	CMP.b (SA1IRAM.sentry_selected_address)
 	BEQ .active_sentry
 
-	LDY.w #$002F
+	LDY.w #' '
 
 .active_sentry
 	TYA

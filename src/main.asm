@@ -22,9 +22,16 @@ incsrc misc.asm
 incsrc rng.asm
 incsrc presets.asm
 incsrc roomload.asm
+incsrc linkstuff.asm
+
+print "Bank end: $", pc
 
 org $218000
 incsrc tiles.asm
+
+print "Bank end: $", pc
+
+print ""
 
 org $228000
 table resources/menu.tbl
@@ -76,7 +83,6 @@ incsrc presets/cm_presets_defeatagahnim.asm
 incsrc presets/cm_presets_defeathelmasaur.asm
 incsrc presets/cm_presets_defeatarrghus.asm
 incsrc presets/cm_presets_defeatagahnim2.asm
-incsrc presets/cm_presets_defeatblind.asm
 print "Bank 1 end: ", pc
 
 org $318000
@@ -97,6 +103,7 @@ incsrc presets/cm_presets_adold.asm
 incsrc presets/cm_presets_ad2020.asm
 incsrc presets/cm_presets_anyrmg.asm
 incsrc presets/cm_presets_reversebossorder.asm
+incsrc presets/cm_presets_defeatblind.asm
 print "Bank 3 end: ", pc
 
 org $338000

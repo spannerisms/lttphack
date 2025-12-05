@@ -1,6 +1,7 @@
 ---
 layout: practicehack
-title: Sentry list - ALTTP Practice Hack
+title: "Sentry list - ALTTP Practice Hack"
+ogdesc: "List of available sentries, with description, in the current version of the practice hack."
 ---
 
 ## Basic sentries

@@ -1,26 +1,86 @@
+; TODO merge item and direction dd.i iiii
+
 ; TODO command system for killing sprites in previous rooms
 ; db roomid : dw list
 ; populates $0B80
 
 ;===================================================================================================
+
+!PRESET_WRITE_END     = $0000
+!PRESET_WRITE_8       = $0001
+!PRESET_WRITE_16      = $0002
+
+!PRESET_WRITE_DIE     = $0008
+!PRESET_WRITE_BAST    = $0009
+
+!PRESET_WRITE_7F      = $000E
+!PRESET_WRITE_7F_16   = $000F
+
+macro write_end()
+	dw !PRESET_WRITE_END
+endmacro
+
+macro write_7F()
+	dw !PRESET_WRITE_7F
+endmacro
+
+macro write_7F_16()
+	dw !PRESET_WRITE_7F_16
+endmacro
+
+macro write8_enable()
+	dw !PRESET_WRITE_8
+endmacro
+
+macro write16_enable()
+	dw !PRESET_WRITE_16
+endmacro
+
+macro write_deaths_enable()
+	dw !PRESET_WRITE_DIE
+endmacro
+
+macro write_deaths(r, k)
+	db <r> : dw <k>
+endmacro
+
+macro write_bastard_door(flags)
+	dw !PRESET_WRITE_BAST : db <flags>
+endmacro
+
+macro write8(addr, data)
+	dw <addr> : db <data>
+endmacro
+
+macro write16(addr, data)
+	dw <addr> : dw <data>
+endmacro
+
+macro writeroom(room, n)
+	dw <room>*2 : dw <n>
+endmacro
+
+macro write16sram(addr, data)
+	dw <addr>&$0FFF|$4000 : dw <data>
+endmacro
+
+;---------------------------------------------------------------------------------------------------
+
+!PERTWRITE_SQ       = $0000
+!PERTWRITE_MIRROR   = $0001
+
+macro write_sq()
+	dw !PERTWRITE_SQ
+endmacro
+
+macro write_mirror(xl, xh, yl, yh)
+	dw !PERTWRITE_MIRROR
+	db <xl>, <xh>, <yl>, <yh>
+endmacro
+
+;===================================================================================================
+
 ; Useful manual stuff:
-
-; Bastard doors
-
-; subtile west<->east top
-; %write_7F()
-; %write8($7F23DC, $00) ; Bastard door
-; %write8($7F23E3, $00)
-; %write8($7F249C, $00)
-; %write8($7F24A3, $00)
-
-; subtile west<->east bottom
-; %write_7F()
-; %write8($7F2BDC, $00) ; Bastard door
-; %write8($7F2BE3, $00)
-; %write8($7F2C9C, $00)
-; %write8($7F2CA3, $00)
-
 
 ; Items:
 ; 0x00 - Nothing
@@ -99,7 +159,7 @@ pullpc
 
 ;===================================================================================================
 
-PRESET_SUBMENU:
+GetPresetsOffset:
 	SEP #$30
 
 	LDA.w !config_preset_category
@@ -109,6 +169,12 @@ PRESET_SUBMENU:
 	TAX
 
 	REP #$21
+	RTL
+
+;===================================================================================================
+
+PRESET_SUBMENU:
+	JSL GetPresetsOffset
 
 	LDA.l .pointers-1,X
 	AND.w #$FF00
@@ -153,75 +219,6 @@ PRESET_SUBMENU:
 
 ;===================================================================================================
 
-!PRESET_WRITE_END     = $0000
-!PRESET_WRITE_8       = $0001
-!PRESET_WRITE_16      = $0002
-
-!PRESET_WRITE_DIE     = $0008
-
-!PRESET_WRITE_7F      = $000E
-!PRESET_WRITE_7F_16   = $000F
-
-macro write_end()
-	dw !PRESET_WRITE_END
-endmacro
-
-macro write_7F()
-	dw !PRESET_WRITE_7F
-endmacro
-
-macro write_7F_16()
-	dw !PRESET_WRITE_7F_16
-endmacro
-
-macro write8_enable()
-	dw !PRESET_WRITE_8
-endmacro
-
-macro write16_enable()
-	dw !PRESET_WRITE_16
-endmacro
-
-macro write_deaths_enable()
-	dw !PRESET_WRITE_DIE
-endmacro
-
-macro write_deaths(r, k)
-	db <r> : dw <k>
-endmacro
-
-macro write8(addr, data)
-	dw <addr> : db <data>
-endmacro
-
-macro write16(addr, data)
-	dw <addr> : dw <data>
-endmacro
-
-macro writeroom(room, n)
-	dw <room>*2 : dw <n>
-endmacro
-
-macro write16sram(addr, data)
-	dw <addr>&$0FFF|$4000 : dw <data>
-endmacro
-
-;---------------------------------------------------------------------------------------------------
-
-!PERTWRITE_SQ       = $0000
-!PERTWRITE_MIRROR   = $0001
-
-macro write_sq()
-	dw !PERTWRITE_SQ
-endmacro
-
-macro write_mirror(xl, xh, yl, yh)
-	dw !PERTWRITE_MIRROR
-	db <xl>, <xh>, <yl>, <yh>
-endmacro
-
-;===================================================================================================
-
 emptybg3:
 	dw $7F20
 
@@ -254,6 +251,9 @@ emptybg3:
 ;		  l - layer ($EE)
 ;		  d - door ($6C)
 ;	dw $0000 ; Dead sprites
+
+;===================================================================================================
+
 LoadLastPreset:
 	REP #$20
 
@@ -262,12 +262,15 @@ LoadLastPreset:
 
 	LDA.w SA1IRAM.litestate_last
 	AND.w #$00FF
-	CMP.w #$0010 : BCS ++
+	CMP.w #$0010 : BCS .exit
 
 	JSL LoadLiteState
 
-++	SEP #$20
+.exit
+	SEP #$20
 	RTL
+
+;===================================================================================================
 
 LoadPreset:
 	JSL ResetBeforeLoading
@@ -359,10 +362,8 @@ LoadPreset:
 
 	JSR LoadPresetSRAM
 
-	LDA.l !config_use_custom_load : BEQ .no_loadout
-
-	JSR LoadCustomLoadOut
-	BRA .done_loadout
+	JSL HandleCustomLoadout
+	BCS .done_loadout
 
 .no_loadout
 	JSR LoadPresetSafeties
@@ -398,7 +399,7 @@ LoadPreset:
 	REP #$31
 
 	PLB
-	JSR .start_arb
+	JSR LoadPresetWrites
 
 	JSR LoadPresetPersistence
 
@@ -421,7 +422,7 @@ LoadPreset:
 	PHA
 	PLB
 
-	JSL set_link_equips
+	JSL FixLinkEquipment
 
 	JSL ApplyAfterLoading
 
@@ -447,115 +448,41 @@ LoadPreset:
 
 ;===================================================================================================
 
-.write8bit
+LoadPresetWrites:
+	LDA.b [SA1IRAM.preset_reader],Y
 	INY
+	INY
+	BRA .new_command
+
+.next_address
 	INY
 
-	SEP #$20
+.next_address_8
+	INY
+
 	LDA.b [SA1IRAM.preset_reader],Y
-	STA.b (SA1IRAM.preset_writer)
-	REP #$20
 
 	INY
-	LDA.b [SA1IRAM.preset_reader],Y
+	INY
 	CMP.w #$0010
-	BCC .new_command
+	BCC .new_command_pull
 
-.start_8bit
-	STA.b SA1IRAM.preset_writer
-	BRA .write8bit
+#LoadPresetFastAbort:
+.done_arb
+	RTS
 
-.write16bit
-	INY
-	INY
-
-	LDA.b [SA1IRAM.preset_reader],Y
-	STA.b (SA1IRAM.preset_writer)
-
-	INY
-	INY
-	LDA.b [SA1IRAM.preset_reader],Y
-	CMP.w #$0010
-	BCC .new_command
-
-.start_16bit
-	STA.b SA1IRAM.preset_writer
-	BRA .write16bit
-
-.toBank7F
-	SEP #$20
-
-	LDA.b #$7F
-	PHA
-	PLB
-
-	REP #$20
-
-	LDA.b [SA1IRAM.preset_reader],Y
-	CMP.w #$0010
-	BCC .new_command
-
-	CPX.w #!PRESET_WRITE_7F*2
-	BEQ .start_8bit
-	BRA .start_16bit
-
-.start_arb
-	LDA.b [SA1IRAM.preset_reader],Y
+.new_command_pull
+	PLX
 
 .new_command
-	INY
-	INY
-
 	ASL
 	TAX
 	LDA.b [SA1IRAM.preset_reader],Y
-	STA.b SA1IRAM.preset_writer
-
+	INY
+	INY
 	JMP (.commands,X)
 
-.write_deaths
-	SEP #$20
-
-	LDA.b #$7E
-	PHA
-	PLB
-
-	REP #$20
-
-	LDX.w #$FFFE
-
-.next
-	LDA.b [SA1IRAM.preset_reader],Y
-	CMP.w #$0010 : BCC .new_command
-
-	; can only kill 4 rooms worth of sprites
-	INX : INX : CPX.w #$0008
-	INY
-
-	BCS .skip
-
-	PHX
-
-	AND.w #$00FF
-	STA.w $0B80,X
-
-	ASL : TAX
-
-	LDA.b [SA1IRAM.preset_reader],Y
-
-	STA.l $7FFD80,X
-
-	PLX
-
-.skip
-	INY : INY
-
-	BRA .next
-
-.done_arb
-
-#LoadPresetFastAbort:
-	RTS
+;---------------------------------------------------------------------------------------------------
 
 .commands
 	dw .done_arb
@@ -569,7 +496,7 @@ LoadPreset:
 	dw .done_arb
 
 	dw .write_deaths
-	dw .done_arb
+	dw .write_bastard_door
 	dw .done_arb
 	dw .done_arb
 
@@ -577,8 +504,178 @@ LoadPreset:
 	dw .done_arb
 	dw .toBank7F
 	dw .toBank7F
+
 
 ;---------------------------------------------------------------------------------------------------
+
+.write8bit
+	TAX
+
+	SEP #$20
+	LDA.b [SA1IRAM.preset_reader],Y
+	STA.w $0000,X
+	REP #$20
+
+.start_8bit
+	JSR .next_address_8
+	BRA .write8bit
+
+;---------------------------------------------------------------------------------------------------
+
+.toBank7F
+	PEA.w $7F7F
+	PLB
+	PLB
+
+	CPX.w #!PRESET_WRITE_7F*2
+	BEQ .write8bit
+
+;---------------------------------------------------------------------------------------------------
+
+.write16bit
+	TAX
+
+	LDA.b [SA1IRAM.preset_reader],Y
+	STA.w $0000,X
+
+	JSR .next_address
+	BRA .write16bit
+
+;---------------------------------------------------------------------------------------------------
+
+.write_bastard_door
+	PHY
+
+	STA.b SA1IRAM.preset_writer
+
+	LDY.w #$0000
+
+.next_bastard_door
+	LSR.b SA1IRAM.preset_writer
+	BCC .no_bastard
+
+	JSR BastardizeDoor
+
+.no_bastard
+	INY
+	INY
+	CPY.w #$0008
+	BCC .next_bastard_door
+
+	PLY
+	JMP .next_address_8
+
+;---------------------------------------------------------------------------------------------------
+
+.write_deaths
+;	SEP #$20
+;
+;	LDA.b #$7E
+;	PHA
+;	PLB
+;
+;	REP #$20
+;
+;	LDX.w #$FFFE
+;
+;.next
+;	LDA.b [SA1IRAM.preset_reader],Y
+;	CMP.w #$0010 : BCC .new_command
+;
+;	; can only kill 4 rooms worth of sprites
+;	INX : INX : CPX.w #$0008
+;	INY
+;
+;	BCS .skip
+;
+;	PHX
+;
+;	AND.w #$00FF
+;	STA.w $0B80,X
+;
+;	ASL : TAX
+;
+;	LDA.b [SA1IRAM.preset_reader],Y
+;
+;	STA.l $7FFD80,X
+;
+;	PLX
+;
+;.skip
+;	INY : INY
+;
+;	BRA .next
+
+
+;===================================================================================================
+
+BastardizeDoor:
+	LDA.w $19C0,Y
+	AND.w #$0003
+	ASL
+	TAX
+
+	LDA.w $19A0,Y
+	JMP.w (.door_directions,X)
+
+.door_directions
+	dw .north_door
+	dw .south_door
+	dw .west_door
+	dw .east_door
+
+;---------------------------------------------------------------------------------------------------
+
+.west_door
+	LDA.w $19B0,Y
+	BEQ .one_sided_west_door
+
+	JSR .one_east_door
+
+.one_sided_west_door
+	LDA.w $19A0,Y
+
+.one_west_door
+	LSR
+	TAX
+
+	SEP #$20
+
+	LDA.b #$00
+	STA.l $7F2001,X
+	STA.l $7F20C1,X
+
+	REP #$20
+	RTS
+
+;---------------------------------------------------------------------------------------------------
+
+.east_door
+	LDA.w $19B0,Y
+	BEQ .one_sided_east_door
+
+	JSR .one_west_door
+
+.one_sided_east_door
+	LDA.w $19A0,Y
+
+.one_east_door
+	LSR
+	TAX
+
+	SEP #$20
+
+	LDA.b #$00
+	STA.l $7F2002,X
+	STA.l $7F20C2,X
+
+	REP #$20
+
+.south_door
+.north_door
+	RTS
+
+;===================================================================================================
 
 LoadPresetSRAM:
 	SEP #$21
@@ -622,6 +719,7 @@ LoadPresetSRAM:
 .write_16
 	BIT.w #$4000
 	BNE .not_room
+
 	LDA.b [SA1IRAM.preset_prog],Y
 	STA.w $7EF000,X
 	BRA .next_from_room
@@ -638,13 +736,12 @@ LoadPresetSRAM:
 
 LoadPresetPersistence:
 	SEP #$21
-	REP #$10
 
 	LDA.b #$7E
 	PHA
 	PLB
 
-	REP #$20
+	REP #$30
 
 	LDA.b SA1IRAM.preset_pert_end
 	SBC.b SA1IRAM.preset_pert
@@ -685,6 +782,31 @@ LoadPresetPersistence:
 
 	JMP (.vectors,X)
 
+;---------------------------------------------------------------------------------------------------
+
+.vectors
+	dw .save_and_quit
+	dw .write_mirror
+	dw .next
+	dw .next
+
+	dw .next
+	dw .next
+	dw .next
+	dw .next
+
+	dw .next
+	dw .next
+	dw .next
+	dw .next
+
+	dw .next
+	dw .next
+	dw .next
+	dw .next
+
+;---------------------------------------------------------------------------------------------------
+
 .write_mirror
 	SEP #$20
 
@@ -693,28 +815,9 @@ LoadPresetPersistence:
 	LDA.b [SA1IRAM.preset_pert],Y : INY : STA.w $7E1ADF
 	LDA.b [SA1IRAM.preset_pert],Y : INY : STA.w $7E1AEF
 
-	BRA .next
+	JMP .next
 
-.vectors
-	dw .save_and_quit
-	dw .write_mirror
-	dw .nothing
-	dw .nothing
-
-	dw .nothing
-	dw .nothing
-	dw .nothing
-	dw .nothing
-
-	dw .nothing
-	dw .nothing
-	dw .nothing
-	dw .nothing
-
-	dw .nothing
-	dw .nothing
-	dw .nothing
-	dw .nothing
+;---------------------------------------------------------------------------------------------------
 
 	; clear things that may be important that are cleared during save and quit
 .save_and_quit
@@ -730,7 +833,6 @@ LoadPresetPersistence:
 	STZ.w $1ADF
 	STZ.w $1AEF
 
-.nothing
 	JMP .next
 
 ;===================================================================================================
@@ -739,6 +841,8 @@ LoadPresetSafeties:
 	PHB
 	PHK
 	PLB
+
+	REP #$30
 
 	LDA.w !config_preset_category
 	AND.w #$00FF
@@ -973,7 +1077,6 @@ LoadSafeties_hundo:
 
 	LDA.b #$01
 	CPY.w #presetmenu_100nmg_escape_ball_n_chains : BCC .no
-
 	CPY.w #presetmenu_100nmg_ice_palace_zoras_domain : BCC .set_boom
 
 	INC
@@ -1000,7 +1103,7 @@ LoadPresetOverworldData:
 	SEC : SBC.w #$0400 : AND.w #$0F80 : ASL : XBA : STA.w $0088
 	LDA.w $0084 : SEC : SBC.w #$0010 : AND.w #$003E : LSR : STA.w $0086
 
-	; TODO setting these to 0 seems perfectly fine
+	; setting these to 0 seems perfectly fine
 	;LDA.b [SA1IRAM.preset_addr],Y : INY #2 : STA.w $0624
 	;EOR.w #$FFFF : INC : STA.w $0626
 
@@ -1013,10 +1116,7 @@ LoadPresetOverworldData:
 
 	JSR PullALot
 
-	LDA.w #$0009 : STA.w $0010
-
 	SEP #$20
-	STZ.w $0200 : STZ.w $00B0
 
 	RTS
 
@@ -1061,14 +1161,14 @@ LoadPresetUnderworldData:
 	ASL : ROL.w $00AA : ASL.w $00AA
 	ASL : ROL.w $00A9
 
-	; floor
+	; Floor
 	LDA.b SA1IRAM.preset_writer : AND.b #$0F
-	BIT.b #$08 : BEQ ++
+	BIT.b #$08 : BEQ .above_ground
 
 	ORA.b #$F0
 
-	; Floor
-++	STA.w $00A4
+.above_ground
+	STA.w $00A4
 
 	; Door
 	LDA.b [SA1IRAM.preset_addr],Y : INY
@@ -1091,7 +1191,22 @@ LoadPresetUnderworldData:
 
 	JSL PresetLoadArea_UW
 
+	REP #$20
+
+	; TODO find a place to properly handle these
+	LDA.w $00A0
+	CMP.w #$00BB
+
 	SEP #$20
+	BNE .not_hellway
+
+	LDA.b #$01
+	STA.w $0ABD
+
+	LDA.b #$70
+	STA.w $009A
+
+.not_hellway
 
 	LDA.b #$01 : STA.w $4200
 
@@ -1129,11 +1244,12 @@ LoadPresetUnderworldData:
 	REP #$20
 	LDA.w $00A0 : CMP.w #$003E
 	SEP #$20
-	BNE ++
+	BNE .exit
 
 	LDA.w SA1IRAM.randomish : AND.b #$02 : STA.w $041A
 
-++	RTS
+.exit
+	RTS
 
 ;===================================================================================================
 
