@@ -127,13 +127,13 @@ struct SA1IRAM $003000
 
 	.preset_addr: skip 3 ; never share memory with this
 	.preset_type: skip 2 ; never share memory with this
+	.preset_pert: skip 3 ; never share memory with this
+	.preset_prog: skip 3 ; never share memory with this
 
-	.preset_prog: skip 3
-	.preset_prog_end: skip 2
 
 	.draw_text_ptr:
-	.preset_pert: skip 3
 	.preset_pert_end: skip 2
+	.preset_prog_end: skip 2
 
 	.sentry_groups_pointer:
 	.preset_reader: skip 3
