@@ -219,7 +219,15 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 
 <section id="HELPME">
 
-<h2>Common concerns</h2>
+<h2>Concerns</h2>
+
+<h3>Related pages</h3>
+
+<ul>
+	<li><a href="caveats">Caveats of usage</a></li>
+	<li><a href="rejected">Rejected suggestions</a></li>
+</ul>
+
 
 <h3>How accurate is lag compared to the vanilla game?</h3>
 
@@ -234,11 +242,6 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 <p>There are specific routines that get run at the beginning and end of every frame to manage the OAM buffer. These routine aren't coded very efficiently. The practice hack heavily optimizes these routines to allow more CPU time for all of its extra features. Early in the frame, the SNES CPU sends a request to the SA-1 for it to process controller input for shortcuts. If a shortcut is found, a vector pointing to its routine in ROM will be saved in memory. The next frame, the SNES will check for this vector, and respond accordingly.</p>
 <p>For the game HUD, most of its code has been modified to write to memory that is visible to both CPUs. Once the HUD's buffer has been modified by the SNES, it copies a handful of variables into memory that is visible to both the SNES and the SA-1. This is where most of the time saved with OAM optimization is accounted for. After these variables are copied, the SNES sends another interrupt request to the SA-1 to indicate that the coprocessor can do its own changes to the tilemap before it gets drawn to the screen. Some features (such as the hearts) are still written to their original WRAM buffer. This way, they can contribute their normal CPU load without ruining the HUD.</p>
 
-<h3>My system isn't supported! Update the older hacks!</h3>
-
-<p>No.</p>
-<p>The change to SA-1 included a complete overhaul of the backend code. Adding new features to both versions would require maintaining two completely separate codebases and writing almost every feature twice. I simply cannot allow my ability to improve this project be inhibited by inferior applications or devices that do not properly emulate expansion chips. You may think it's not fair that I'm ignoring your system, but what's actually not fair is holding everyone else back from a better practice hack.</p>
-
 <h2>Troubleshooting</h2>
 
 <ul>
@@ -247,25 +250,6 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 	<li>Holding <span class="snesButton snesStart">Start</span> and <span class="snesButton snesSelect">Select</span> during power on will reset all configurations to their defaults. When you do this, you will hear Link screaming as he falls to his death.</li>
 	<li>If something in the menu goes out of range, you will be warned with "BAD VAL". Press X to clear it.</li>
 </ul>
-
-<h3 id="IKnowAboutItAlready">Known issues</h3>
-
-<ul>
-	<li>Lag from mosaics can be inaccurate, depending on what you've already done in your current play session. I'm still investigating the best way to approach this problem.</li>
-<!---<li>If you make a savestate with line sentries then change your sentries and load the original state, the lines will persist. This is a really awkward problem to solve, because just clearing all the lines will mess with the text box. So just don't do this please. If you have a stuck line, set line 4 to something, close the menu, then disable line 4 again.</li>--->
-</ul>
-
-<h2>Caveats</h2>
-
-<p>It's impossible to modify anything this much without sacrificing some behavior. This section details known caveats that should be taken into consideration by the user.</p>
-
-<h3>Overlay corruption and the SA-1</h3>
-
-<p>The memory layout of the SA-1 puts important hardware registers and on-board memory in an area potentially affected by overlay corruption. To prevent corruption to the SA-1, the star tile holes routine will be intercepted if it is about to write too far. This will have some effect on the timing of longer corruptions.</p>
-<p>When cut short, the practice hack will continue reading without writing to see how far the writes would have gone. If they reach too far (<code>$4200</code>), then a blue screen of death will be displayed to explain the intentional lock.</p>
-<p>In addition to the writing, this type of corruption may also read too far. This does not have the potential to corrupt the SA-1, but it does throw the behavior out of sync from vanilla. Normally, corruption that reaches this far is dependent on open bus behavior; however, the SA-1 places registers and memory in this region, effecting a less deterministic sea of values. To coax corruptions into resolving, a large block of memory from <code>$3680</code> to <code>$37FF</code> has been filled with the required terminator value. This solution necessarily means that far-reaching corruption may end much sooner than it normally would, making timings unreliable.</p>
-
-</section>
 
 <section id="features">
 
@@ -876,7 +860,7 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 			<dd>Uses the loadout defined in the preset.</dd>
 			<dt>Current</dt>
 			<dd>Uses your current equipment.</dd>
-			<dt>Custom [1&mdash;5]</dt>
+			<dt>Custom [1&mdash;8]</dt>
 			<dd>Uses the custom loadout selected.</dd>
 		</dl>
 	</dd>
