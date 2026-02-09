@@ -724,6 +724,7 @@ ResetBeforeLoading:
 	LDA.w #$0000 : TCD
 
 	STA.l $7EC011
+	STA.l $7EC005
 
 	STZ.w $011A
 	STZ.w $011C

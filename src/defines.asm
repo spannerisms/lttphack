@@ -318,6 +318,8 @@ struct SA1RAM $402000 ; DO NOT CHANGE THIS
 	.visible_probes: skip 2
 	.light_rooms: skip 2
 
+	.map16cacheindex: skip 2
+
 	.pokey_rng: skip 2
 	.agahnim_rng: skip 2
 	.helmasaur_rng: skip 2

@@ -50,9 +50,9 @@ macro sentry_icon(gfxoffset, props)
 	pullpc
 endmacro
 
-macro set_sentry_raw()
+macro set_sentry_routine(routine)
 	pushpc
-		org sentry_routines+!SENTRY_ID      : dw sentry_raw
+		org sentry_routines+!SENTRY_ID      : dw <routine>
 	pullpc
 endmacro
 

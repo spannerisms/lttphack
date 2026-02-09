@@ -6,6 +6,18 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 
 ## Latest update
 
+### [v15.0.1](https://github.com/spannerisms/lttphack/releases/tag/15.0.1) &mdash; 8 February 2026
+
+- Game state:
+  - Map 16 cache overflow setter
+- HUD Extras:
+  - Line sentries for new map 16 buffer overflow tech
+  - Made sure sentry icons are drawing and correctly
+
+----
+
+## Older updates
+
 ### [v15.0.0](https://github.com/spannerisms/lttphack/releases/tag/15.0.0) &mdash; 16 January 2026
 
 **This version has breaking changes with the save file. Older versions' saves will be deleted automatically. If you have problems loading the hack, try holding START+SELECT on boot.**
@@ -60,11 +72,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
     - Lit rooms
     - Visible probes
     - Loadout overrides
-
-
-----
-
-## Older updates
 
 ### [v14.5.0](https://github.com/spannerisms/lttphack/releases/tag/14.5.0) &mdash; 17 November 2025
 - Sentries:

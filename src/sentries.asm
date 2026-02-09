@@ -55,11 +55,11 @@ InitializeSentries:
 
 	TYA
 	LSR
-	ADC.w #$0004
+	ADC.w #$0005
 	ORA.w sentry_icons,X
 	PHA
 
-	TXA
+	TYA
 	ASL
 	ASL
 	ASL
@@ -204,6 +204,9 @@ Extra_SA1_Transfers:
 
 %line_sentry_group("Major glitches")
 	dw LINE_SENTRY_HOOKSLOTTER
+	dw LINE_SENTRY_MAP16INDEX
+	dw LINE_SENTRY_MAP16INDEXVALS
+	dw LINE_SENTRY_MAP16TILEVALS
 %end_sentry_group()
 
 %line_sentry_group("Ancilla front slots")
@@ -492,13 +495,14 @@ sentry_raw:
 %sentry("Boss HP", "BOSSHP")
 %sentry_var($0E50)
 %sentry_icon($32, !RED_PAL)
-%set_sentry_raw()
+%set_sentry_routine(sentry_raw)
 
 ;===================================================================================================
 
 %sentry("Arc variable", "ARCVAR")
 %sentry_var($0B08)
 %sentry_icon($19, !YELLOW_PAL)
+	STY.b HUDProxy+6,X
 	JMP DrawHex_white_4
 
 ;===================================================================================================
@@ -506,7 +510,7 @@ sentry_raw:
 %sentry("Slot 0 altitude", "ENEMY0ALT")
 %sentry_var($0F70)
 %sentry_icon($1A, !YELLOW_PAL)
-	JMP DrawHex_white_2
+%set_sentry_routine(sentry_raw)
 
 ;===================================================================================================
 
@@ -714,7 +718,7 @@ sentry_raw:
 %sentry("Spooky action", "SPOOKY")
 %sentry_var($02A2)
 %sentry_icon($10, !RED_PAL)
-%set_sentry_raw()
+%set_sentry_routine(sentry_raw)
 
 ;===================================================================================================
 
@@ -755,21 +759,21 @@ sentry_raw:
 %sentry("WEST SOMARIA", "WESTSOM")
 %sentry_var($0690)
 %sentry_icon($31, !RED_PAL)
-%set_sentry_raw()
+%set_sentry_routine(sentry_raw)
 
 ;===================================================================================================
 
 %sentry("Ancilla search index", "ANCINDEX")
 %sentry_var($03C4)
 %sentry_icon($17, !BLUE_PAL)
-%set_sentry_raw()
+%set_sentry_routine(sentry_raw)
 
 ;===================================================================================================
 
 %sentry("Hookslot", "HOOKSLOT")
 %sentry_var($039D)
 %sentry_icon($02, !RED_PAL)
-%set_sentry_raw()
+%set_sentry_routine(sentry_raw)
 
 ;===================================================================================================
 
@@ -1520,4 +1524,149 @@ CollectAncilla:
 ;===================================================================================================
 
 
+%line_sentry("Map16 Cache Overflow", MAP16INDEX)
+%sentry_icon($28, !GREEN_PAL)
+	LDA.w SA1IRAM.LINEVAL+14,Y
+	STA.b HUDProxy,X
 
+	INX
+	INX
+
+	LDA.w SA1IRAM.LINEVAL+0,Y : JSR DrawHexForward_white_4
+
+	LDA.w #$3CA4
+	STA.b HUDProxy+$00,X
+	STA.b HUDProxy+$0E,X
+
+	INX
+	INX
+
+	LDA.w SA1IRAM.LINEVAL+0,Y
+	CLC
+	ADC.w #$F800
+	PHA
+
+	LDA.w #$003F
+	ROL
+
+	JSR DrawHexForward_white_2
+
+	PLA
+	JSR DrawHexForward_white_4
+
+	INX
+	INX
+
+	LDA.w SA1IRAM.LINEVAL+0,Y
+	CLC
+	ADC.w #$FA00
+	PHA
+
+	LDA.w #$003F
+	ROL
+
+	JSR DrawHexForward_white_2
+
+	PLA
+	JSR DrawHexForward_white_4
+
+	RTS
+
+
+%sentry_init()
+	LDA.w $04AC : STA.w SA1IRAM.LINEVAL+0,Y ; INDEX
+
+	RTS
+
+;===================================================================================================
+
+%line_sentry("Map16 Cache Indices", MAP16INDEXVALS)
+%sentry_icon($28, !GREEN_PAL)
+%set_sentry_routine(Map16Lister)
+%sentry_init()
+	LDX.w $04AC
+	LDA.l $7EF800-2,X : STA.w SA1IRAM.LINEVAL+2,Y
+	LDA.l $7EF800-4,X : STA.w SA1IRAM.LINEVAL+4,Y
+	LDA.l $7EF800-6,X : STA.w SA1IRAM.LINEVAL+6,Y
+	LDA.l $7EF800-8,X : STA.w SA1IRAM.LINEVAL+8,Y
+	JMP Map16CacherMerge
+
+%line_sentry("Map16 Cache Objects", MAP16TILEVALS)
+%sentry_icon($28, !GREEN_PAL)
+%set_sentry_routine(Map16Lister)
+%sentry_init()
+	LDX.w $04AC
+	LDA.l $7EFA00-2,X : STA.w SA1IRAM.LINEVAL+2,Y
+	LDA.l $7EFA00-4,X : STA.w SA1IRAM.LINEVAL+4,Y
+	LDA.l $7EFA00-6,X : STA.w SA1IRAM.LINEVAL+6,Y
+	LDA.l $7EFA00-8,X : STA.w SA1IRAM.LINEVAL+8,Y
+	JMP Map16CacherMerge
+
+
+
+
+Map16Lister:
+
+.draw_all
+	LDA.w SA1IRAM.LINEVAL+2,Y : JSR DrawHexForward_white_4
+	INX : INX
+	LDA.w SA1IRAM.LINEVAL+4,Y : JSR DrawHexForward_4digit_color_set
+	INX : INX
+	LDA.w SA1IRAM.LINEVAL+6,Y : JSR DrawHexForward_4digit_color_set
+	INX : INX
+	LDA.w SA1IRAM.LINEVAL+8,Y : JMP DrawHexForward_4digit_color_set
+
+.draw_3
+	LDA.w SA1IRAM.LINEVAL+2,Y : JSR DrawHexForward_white_4
+	INX : INX
+	LDA.w SA1IRAM.LINEVAL+4,Y : JSR DrawHexForward_4digit_color_set
+	INX : INX
+	LDA.w SA1IRAM.LINEVAL+6,Y : JMP DrawHexForward_4digit_color_set
+
+.draw_2
+	LDA.w SA1IRAM.LINEVAL+2,Y : JSR DrawHexForward_white_4
+	INX : INX
+	LDA.w SA1IRAM.LINEVAL+4,Y : JMP DrawHexForward_4digit_color_set
+
+.draw_1
+	LDA.w SA1IRAM.LINEVAL+2,Y : JMP DrawHexForward_white_4
+
+.draw_none
+	LDA.w #$608B
+	STA.b HUDProxy+$00,X
+	STA.b HUDProxy+$02,X
+
+	RTS
+
+
+#Map16CacherMerge:
+	TXA
+	AND.w #$FFFE
+	TAX
+
+	CPX.w #$0008
+	BCC .low
+
+	LDX.w #$0008
+	CLC
+
+.low
+	LDA.l .pointer,X
+	PHA
+
+	TYA
+	LSR
+	LSR
+	LSR
+	TAX
+
+	PLA
+	STA.w SA1IRAM.LINEVECTOR1,X
+	RTS
+
+.pointer
+	dw .draw_none
+	dw .draw_1
+	dw .draw_2
+	dw .draw_3
+	dw .draw_all

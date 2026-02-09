@@ -65,6 +65,36 @@ GAMESTATE_SUBMENU:
 
 ;===================================================================================================
 
+%choicepick("M16 cache index", SA1RAM.map16cacheindex, 4, .func, .list)
+
+.func
+	REP #$30
+
+	LDA.w SA1RAM.map16cacheindex
+	ASL
+	TAX
+
+	LDA.l .addresses,X
+	STA.w $04AC
+
+	RTL
+
+
+.addresses
+	dw $0000
+	dw $7EFE00-$7EF880-$20
+	dw $7F6000-$7EF880-$20
+	dw $7F71C0-$7EF880-$20
+
+.list
+%list_header(4)
+	%list_item("Base")
+	%list_item("Tile props")
+	%list_item("Damage table")
+	%list_item("Messages")
+
+;===================================================================================================
+
 cm_game_state_bosses_submenu:
 %menu_header("BOSSES DEFEATED")
 	%togglebit3_customtext("Armos", $7EF191, bossalivetext)

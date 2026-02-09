@@ -50,6 +50,9 @@ ogdesc: "List of available sentries, with description, in the current version of
   - **OW transition Y** - Transition triggers and target screen IDs for vertical overworld transitions.
 - Major glitches
   - **Hookslot props** - Hookslot plus the properties of X, Y, Direction, Extension for hookslot index.
+  - **Map16 Cache Overflow** - Position of map16 cache overflow writes and corresponding tilemap/tile locations.
+  - **Map16 Cache Indices** - Last 4 tilemap indices written by map16 cacher.
+  - **Map16 Cache Objects** - Last 4 map16 object IDs written by map16 cacher.
 - Ancilla [front/back/indexed] slots *(differentiated with [AncF/AncB/AncX] respectively)*
   - **ID** - Ancilla ID; address: $7E03C4,X (includes coloring for 00 and replacable particles).
   - **X coordinate** - Ancilla X-Coordinate; address: $7E0C04,X
