@@ -2212,6 +2212,7 @@ dw $0000 ; Dead sprites
 ;-----------------------------
 %write_7F_16()
 %write16($7FDFEA, $0240) ; Room $35 sprite deaths
+%write16($7FDFEC, $0031) ; Room $36 sprite deaths
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -2229,6 +2230,7 @@ dw $0000 ; Dead sprites
 ;-----------------------------
 %write_7F_16()
 %write16($7FDFEA, $0240) ; Room $35 sprite deaths
+%write16($7FDFEC, $0031) ; Room $36 sprite deaths
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -2246,6 +2248,7 @@ dw $0000 ; Dead sprites
 ;-----------------------------
 %write_7F_16()
 %write16($7FDFE8, $0001) ; Room $34 sprite deaths
+%write16($7FDFEC, $0031) ; Room $36 sprite deaths
 %write_end()
 
 ;---------------------------------------------------------------------------------------------------
@@ -2259,7 +2262,7 @@ db $00 ; Link direction
 db $25 ; Entrance
 db $CF ; Room layout / Floor
 db $01 ; Door / Peg state / Layer
-dw $0000 ; Dead sprites
+dw $0031 ; Dead sprites
 ;-----------------------------
 %write_end()
 

@@ -729,6 +729,8 @@ ResetBeforeLoading:
 	STZ.w $011A
 	STZ.w $011C
 
+	STZ.w $04AC
+
 	STZ.b $1E
 	STZ.b $95
 	STZ.b $97
