@@ -26,7 +26,7 @@ LoadArbitraryRoom:
 
 	SEP #$30
 
-	LDA.b #$00 : STA.b $13 ; TODO STZ
+	STZ.b $13
 
 	LDA.b $1B : BEQ .no_data_flush
 
@@ -1111,14 +1111,14 @@ SetDungeonEntranceAndProperties:
 ;===================================================================================================
 
 ConfigureCoordinatesToTilemap:
-	PHA ; TODO STA.b $20 since it will be overwritten anyways
+	STA.b $20
 
 	AND.w #$007F
 	ASL : ASL
 	ADC.w #$0008
 	STA.b $22
 
-	PLA
+	LDA.b $20
 	AND.w #$FFF0
 	LSR : LSR : LSR : LSR
 	AND.w #$01FF
@@ -1344,9 +1344,8 @@ HandleOpenShutters:
 
 	LDY.w #$0000
 
-	PHY
-	PLB
-	PLB
+	PEA.w jpeab($00)
+	PLB : PLB
 
 .next
 	LDA.w $19A0,Y
@@ -1693,7 +1692,7 @@ HandleOpenShutters:
 	STA.l $7F2080,X
 
 	LDX.b $02
-	LDA.l jlong($00CEC6),X ; TODO already in bank00 so just .w
+	LDA.w $00CEC6,X
 
 	TAY
 
@@ -1856,7 +1855,6 @@ HandleOverworldLoad:
 	STZ.w $0696
 	STZ.w $0698
 	STZ.w VMADDR
-
 
 	JSL jlong($02EA30)
 	SEP #$20

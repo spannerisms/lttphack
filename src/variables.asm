@@ -7,8 +7,12 @@
 
 if !RANDO
 	function jlong(a) => $80_0000|{a}
+	function jbank(a) => $80|{a}
+	function jpeab(a) => ($80|{a})<<8
 else
 	function jlong(a) => {a}
+	function jbank(a) => {a}
+	function jpeab(a) => {a}<<8
 endif
 
 function char(n) => $2150+{n}

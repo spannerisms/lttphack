@@ -7,14 +7,14 @@ org $008004
 	NOP
 
 org $00802F
-	JML init_hook
+	JML jlong(init_hook)
 	NOP
 init_done:
 
 ; optimize message pointer creation by a lot
 org $1CF37A
 	PEA.w MessagePointers
-	PEA.w $71C0
+	PEA.w $7F71C0
 	PEA.w MessagePointers.size
 	SEC ; bank 7F
 
@@ -49,7 +49,7 @@ DoWRAMBig:
 
 DoWRAM4BPP:
 	PEA.w WRAMGFX
-	PEA.w $9000
+	PEA.w $7E9000
 	PEA.w WRAMGFX:size
 
 	CLC ; bank 7E
@@ -59,10 +59,10 @@ guardpc $1CF3D4
 
 org $0EFCB2
 	PEA.w FiveBeeZeroZero
-	PEA.w $5B00
+	PEA.w $7F5B00
 	PEA.w FiveBeeZeroZero.size
 	SEC ; bank 7F
-	JML DoWRAMBig
+	JML jlong(DoWRAMBig)
 
 pullpc
 
@@ -87,7 +87,7 @@ init_hook:
 
 	LDA.w #$2000
 	STA.w WMADDH
-ZeroLand = !:pc+1 ; TODO MOVE THIS
+
 	LDA.w #$4300
 	TCD
 
@@ -132,11 +132,10 @@ ZeroLand = !:pc+1 ; TODO MOVE THIS
 ; Done doing what ALTTP needs done but faster
 ;===================================================================================================
 
-	SEP #$30
 	; check for reset config combo
+	SEP #$30
 	LDA.b #$01 : STA.w JOYPAD : STZ.w JOYPAD ; pulse controller
 
-	STZ.b $00 : STZ.b $01
 	LDY.b #$10 ; reading 16 bits
 
 .poll_joypad
@@ -147,17 +146,21 @@ ZeroLand = !:pc+1 ; TODO MOVE THIS
 	BNE .poll_joypad
 
 	REP #$20
-	LDA.b $00
-	AND.w #$FF00 : CMP.w #$3000 : BEQ .forcereset
-	LDA.w CONFIG.init_sig : CMP.w #!INIT_SIGNATURE : BEQ .noforcereset
 
-.forcereset
+	LDA.b $00
+	AND.w #$FF00 : CMP.w #$3000 : BEQ .force_reset
+
+;---------------------------------------------------------------------------------------------------
+
+	LDA.w CONFIG.init_sig : CMP.w #!INIT_SIGNATURE : BEQ .no_force_reset
+
+.force_reset
 	JSR ResetConfig
 	BRA .sram_initialized
 
-.noforcereset
+.no_force_reset
 	LDA.w CONFIG.sram_initialized
-	CMP.w #$0031 : BCC .forcereset
+	CMP.w #$0031 : BCC .force_reset
 
 .sram_initialized
 	REP #$10
@@ -166,12 +169,12 @@ ZeroLand = !:pc+1 ; TODO MOVE THIS
 
 	SEP #$20
 	LDA.b #$00
-	BRA ++ ; TODO not necessary to BRA, just go right into loop
 
---	STA.l BWRAM.SETTINGS,X
+.clear_settings
+	STA.l BWRAM.SETTINGS,X
 	INX
-++	CPX.w #$0400
-	BCC --
+	CPX.w #$0400
+	BCC .clear_settings
 
 	SEP #$30
 
@@ -374,6 +377,7 @@ ResetConfig:
 	db %00000000
 	db %01010000
 
+ZeroLand:
 	db %00000000
 	db %00000000
 	db %00000000

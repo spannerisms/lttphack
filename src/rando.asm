@@ -18,7 +18,7 @@ JSL CheckItemReceipt
 
 org argof($05F08F) : db $00 ; no heart pieces
 org argof($0DEDF1) : db $00 ; no heart pieces
-org $05F095 : NOP : NOP ; TODO BRA &
+org $05F095 : LDA.b #$00 ; effectively NOP twice; A gets clobbered anyways
 
 org $05EFC8 : db $00 ; fix grabbing hearts
 

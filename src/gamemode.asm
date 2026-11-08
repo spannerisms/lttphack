@@ -719,12 +719,11 @@ ShowPits:
 	PHB ; rebalanced in redraw
 
 	PEA $7F00
-	PLB
+	PLB : PLB
 
 	LDA.b $9B
 	STZ.b $9B : STA.w HDMAEN
 
-	PLB
 	PHA
 
 	REP #$30
@@ -761,10 +760,9 @@ ShowPits:
 	LSR
 	STA.b $02
 	PLA
-	SEC ; TODO ADC first then SBC to remove the CLC (b/c LSR)
-	SBC.b $02
-	CLC
 	ADC.b $00
+	SEC
+	SBC.b $02
 	LSR
 	STA.l VMADDR
 	LDA.w #!PIT_GFX

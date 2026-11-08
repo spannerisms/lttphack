@@ -385,7 +385,7 @@ LoadPreset:
 	TAX
 	PLA ; get ID back
 
-	PEA.w $7E_80 ; push data banks we wanna use
+	PEA.w jbank($00)][$7E ; push data banks we wanna use
 	PLB
 
 	JSR (.preset_types,X)
@@ -419,6 +419,7 @@ LoadPreset:
 
 	SEP #$30
 
+	LDA.b jbank($00)
 	PHA
 	PLB
 

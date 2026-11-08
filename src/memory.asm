@@ -204,14 +204,9 @@ allocate * :: $0400
 
 ;---------------------------------------------------------------------------------------------------
 
-; TODO SWAP THE LOCATION OF THESE
-
-allocate * :: $0100
-	.spin_ram
-
-
-allocate * :: $0200
-	.corruption_defense :: $180
+allocate * :: $0300
+	.corruption_defense :: $0180
+	.spin_ram           :: $0100
 
 endallocate
 

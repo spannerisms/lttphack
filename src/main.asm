@@ -1,7 +1,7 @@
 ;===================================================================================================
 
 if !BUILD?
-	!VERSION = "15.0.1"
+	!VERSION = "15.1.0"
 	!VERSIONTEXT = "v!VERSION"
 else
 	!VERSION ?= "ALEPH1"
@@ -20,7 +20,7 @@ encoder MenuEncoding
 
 ;===================================================================================================
 
-org $208000 ; TODO move all these to just always be fastrom
+org $A08000
 piling ConfigInitTable :: $0400
 
 incsrc "variables.asm"
@@ -29,7 +29,7 @@ incsrc "hexedits.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($208400)
+org $A08400
 incsrc "init.asm"
 incsrc "sa1main.asm"
 incsrc "nmi.asm"
@@ -45,14 +45,14 @@ printf "Bank end: {0:A}", !:pc
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($218000)
+org $A18000
 incsrc "tiles.asm"
 
 printf "Bank end: {0:A}", !:pc
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($228000)
+org $A28000
 incsrc "cm_macros.asm"
 incsrc "cm_main.asm"
 incsrc "cm_draw.asm"
@@ -77,9 +77,9 @@ printf "Menu bank end: {0:A}", !:pc
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($238000)
+org $A38000
 
-org jlong($268000)
+org $A68000
 
 ;===================================================================================================
 ; GREP FOR "PRESET LIST" WHEN ADDING NEW PRESETS
@@ -105,7 +105,7 @@ endmacro
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($308000)
+org $B08000
 %PresetBank(1)
 incsrc "presets/cm_presets_nmg.asm"
 incsrc "presets/cm_presets_100nmg.asm"
@@ -120,7 +120,7 @@ incsrc "presets/cm_presets_defeatagahnim2.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($318000)
+org $B18000
 %PresetBank(2)
 incsrc "presets/cm_presets_lownmg.asm"
 incsrc "presets/cm_presets_lowleg.asm"
@@ -132,7 +132,7 @@ incsrc "presets/cm_presets_defeatmothula.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($328000)
+org $B28000
 %PresetBank(3)
 incsrc "presets/cm_presets_adold.asm"
 incsrc "presets/cm_presets_ad2020.asm"
@@ -143,7 +143,7 @@ incsrc "presets/cm_presets_defeatblind.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
-org jlong($338000)
+org $B38000
 %PresetBank(4)
 incsrc "presets/cm_presets_alldungeonsmg.asm"
 %PresetBankEnd(4)
@@ -153,7 +153,7 @@ incsrc "presets/cm_presets_alldungeonsmg.asm"
 print
 print bar
 
-org jlong($3E8000)
+org $BE8000
 incsrc "bsod.asm"
 
 ;===================================================================================================

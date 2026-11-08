@@ -116,6 +116,7 @@ pullpc
 ;===================================================================================================
 
 UpdateOnLedgeHop:
+	; perfectly even :)
 	; vanilla
 	; * = ignore because both routines do it
 	; LDA.b #$20       - *
@@ -129,23 +130,20 @@ UpdateOnLedgeHop:
 	; RTS              - 6    24
 
 	; prachack:
-	; JSL              - 6    6
-	; LDA.b #Update    - 2    8
-	; STA.w Flag       - 6    14
+	; JSL              - 8    8
+	; LDA.b #Update    - 2    10
+	; STA.w Flag       - 6    16
 	; LDA.b #$20       - *
 	; STA.w $0CF8      - *
 	; JSL CalcSfx      - *
 	; ORA.w $0CF8      - *
 	; STA.w $012E      - *
-	; RTL              - 6    20
-	; NOP              - 2    22
+	; RTL              - 6    22
+	; NOP              - 2    24
 
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 
-	; JSL + 8 + 6
-	; No JSR - 6 - 6
 	LDA.b #$20
-	XBA : XBA ; TODO remove these and add a NOP
 	STA.w $0CF8
 
 	JSL jlong($8DBB67) ; CalculateLinkSFXPan
@@ -394,9 +392,7 @@ EndMessageIdleCounter:
 
 	REP #$20
 	INC.w IRAM.ROOM_TIME_IDLE
-	SEP #$20
-
-	ORA.b #$00 ; TODO change to    SEP #$22 ; set zero flag for exit
+	SEP #$22 ; set zero flag for exit
 
 .pressed_key
 	RTL

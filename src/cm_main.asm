@@ -164,7 +164,7 @@ CM_Exiting:
 	LDA.b #$15 : STA.w APUIO2
 
 	STZ.b $12
-	INC.b $15 ; trigger a CGRAM update  TODO - make STA
+	STA.b $15
 
 	JSL SNES_DISABLE_CUSTOM_NMI
 

@@ -51,14 +51,14 @@ DoShortCuts:
 
 	JSL UseShortCutSA1
 
-	JML SA1IRQ.exit
+	JML SA1NMI.exit
 
 .forsnes
 	ORA.w #$8000 ; add in bit 7 that was used as a flag in rom table
 	STA.b IRAM.shortcut_used
 
 .nothingused
-	JML SA1IRQ.exit
+	JML SA1NMI.exit
 
 .fail
 	INX

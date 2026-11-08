@@ -487,7 +487,7 @@ GetMod60:
 	INC.b IRAM.TIMER_ADD_SCRATCH
 
 	SBC.w #$0060
-	CMP.w #$0060 ; TODO is this necessary? seems not
+	CMP.w #$0060
 	BCS .adjust
 
 .fine
@@ -629,26 +629,16 @@ SA1IRQ:
 
 	JMP (.irq_type,X)
 
-; TODO use NMI's exit
-.exit
-	REP #$30
-	PLB
-	PLD
-	PLY
-	PLX
-	PLA
-	RTI
-
 .irq_type
-	dw .exit
+	dw SA1NMI.exit
 	dw .irq_shortcuts
 	dw CorruptionWatcher
 	dw .irq_hud
 
-	dw .exit
-	dw .exit
-	dw .exit
-	dw .exit
+	dw SA1NMI.exit
+	dw SA1NMI.exit
+	dw SA1NMI.exit
+	dw SA1NMI.exit
 
 .irq_hud
 	JML DrawHudExtras
@@ -697,7 +687,7 @@ CorruptionWatcher:
 
 	LDA.b #$00 : STA.w SCNT ; disable IRQ from snes
 
-	JMP SA1IRQ.exit
+	JMP SA1NMI.exit
 
 ;===================================================================================================
 

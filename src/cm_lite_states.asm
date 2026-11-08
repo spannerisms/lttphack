@@ -144,6 +144,7 @@ SaveLiteState:
 
 	PEA.w $0000
 	PLD
+
 	JSL jlong($02B87B)
 	PLD
 

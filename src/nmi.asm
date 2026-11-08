@@ -296,15 +296,13 @@ SNES_CUSTOM_NMI:
 
 	PEA.w $0000
 	PLD
-	TDC ; A = 0000
-	TAX ; X = 0000
 
 	PHK
 	PLB
 
-	STA.w HDMAEN ; disable HDMA aggressively
+	STZ.w HDMAEN ; disable HDMA aggressively
 
-	ROR ; A = 80
+	LDA.b #$80
 	STA.w INIDISP
 
 	LDA.b $12
@@ -315,7 +313,7 @@ SNES_CUSTOM_NMI:
 .good_to_go
 	INC.b $12
 
-	JSR.w UploadPracticeMenu
+	JSR UploadPracticeMenu
 
 	PEA.w rtn(.bonus_return)
 

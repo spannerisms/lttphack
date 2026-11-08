@@ -1150,7 +1150,7 @@ LineSentryOWCameras:
 	XBA
 	STA.b IRAM.SCRATCH+12
 
-	PEA.w $0202
+	PEA.w jpeab($02)
 	PLB : PLB
 
 ;---------------------------------------------------------------------------------------------------
@@ -1638,7 +1638,6 @@ Map16Lister:
 	BCC .low
 
 	LDX.w #$0008
-	CLC ; TODO seems pointless?
 
 .low
 	LDA.l .pointer,X
