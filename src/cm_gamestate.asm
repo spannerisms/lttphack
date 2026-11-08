@@ -15,7 +15,7 @@ GAMESTATE_SUBMENU:
 
 	LDA.b #$21 : STA.w $012F
 
-	JML $09C44E
+	JML jlong($09C44E)
 
 ;===================================================================================================
 
@@ -31,7 +31,7 @@ GAMESTATE_SUBMENU:
 
 ;===================================================================================================
 
-%choice_func_here("Follower", $7EF3CC, 15, $00D463)
+%choice_func_here("Follower", $7EF3CC, 15, jlong($00D463))
 	%add_list_item(CMTEXT_NO)
 	%list_item("Zelda") : %ReusableText(CMTEXT_ZELDA)
 	%list_item("Garbage")
@@ -65,12 +65,12 @@ GAMESTATE_SUBMENU:
 
 ;===================================================================================================
 
-%choicepick("M16 cache index", SA1RAM.map16cacheindex, 4, .func, .list)
+%choicepick("M16 cache index", BWRAM.map16cacheindex, 4, .func, .list)
 
 .func
 	REP #$30
 
-	LDA.w SA1RAM.map16cacheindex
+	LDA.w BWRAM.map16cacheindex
 	ASL
 	TAX
 
@@ -100,7 +100,8 @@ cm_game_state_bosses_submenu:
 	%togglebit3_customtext("Armos", $7EF191, bossalivetext)
 	%togglebit3_customtext("Lanmola", $7EF067, bossalivetext)
 	%togglebit3_customtext("Moldorm", $7EF00F, bossalivetext)
-	%togglebit3_func_customtext("Agahnim", $7EF041, toggle_aga1, bossalivetext) : %ReusableText(CMTEXT_AGAHNIM)
+	%togglebit3_func_customtext("Agahnim", $7EF041, toggle_aga1, bossalivetext)
+		%ReusableText(CMTEXT_AGAHNIM)
 	%togglebit3_customtext("Helmasaur", $7EF0B5, bossalivetext)
 	%togglebit3_customtext("Blind", $7EF159, bossalivetext)
 	%togglebit3_customtext("Mothula", $7EF053, bossalivetext)
@@ -154,13 +155,13 @@ toggle_aga1:
 	AND.b #$08
 	ASL
 	ASL
-	STA.b SA1IRAM.cm_writer
+	STA.b IRAM.cm_writer
 	RTS
 
 .set_overlay
 	LDA.l $7EF280,X
 	AND.b #$DF
-	ORA.b SA1IRAM.cm_writer
+	ORA.b IRAM.cm_writer
 	STA.l $7EF280,X
 	RTS
 
@@ -281,7 +282,7 @@ reset_dungeon_func:
 	PHB : PHK : PLB
 	PHD
 
-	LDY.b SA1IRAM.cm_cursor
+	LDY.b IRAM.cm_cursor
 	LDX.w .list,Y
 
 	REP #$30
@@ -295,7 +296,7 @@ reset_dungeon_func:
 --	LDY.w room_to_dungeon_id,X
 	CPY.b $00 : BNE ++
 	STA.l $7EF000,X
-++	DEX #2 : BPL --
+++	DEX : DEX : BPL --
 
 	; check current room
 	INC ; sets accum to #$0001
@@ -346,7 +347,7 @@ draw_prize_pack:
 	ADC.w $0FC7,X
 	TAX
 
-	LDA.l $06FA78,X
+	LDA.l jlong($06FA78),X
 	SBC.b #$D8-1
 
 	CMP.b #$0C

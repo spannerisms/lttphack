@@ -3,13 +3,13 @@ HUDEXTRAS_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Health display", !config_heart_display, 2)
+%choice_here("Health display", CONFIG.heart_display, 2)
 	%list_item("Numerical")
 	%add_list_item(CMTEXT_VANILLA)
 
 ;===================================================================================================
 
-%choice_here("Input display", !config_input_display, 4)
+%choice_here("Input display", CONFIG.input_display, 4)
 	%list_item("Off")
 	%list_item("Graphical")
 	%list_item("Classic")
@@ -17,29 +17,29 @@ HUDEXTRAS_SUBMENU:
 
 ;===================================================================================================
 
-%sentry_picker(1, !config_sentry1)
-%sentry_picker(2, !config_sentry2)
-%sentry_picker(3, !config_sentry3)
-%sentry_picker(4, !config_sentry4)
-%sentry_picker(5, !config_sentry5)
+%sentry_picker(1, CONFIG.sentry1)
+%sentry_picker(2, CONFIG.sentry2)
+%sentry_picker(3, CONFIG.sentry3)
+%sentry_picker(4, CONFIG.sentry4)
+%sentry_picker(5, CONFIG.sentry5)
 
 ;===================================================================================================
 
-%line_sentry_picker(1, !config_linesentry1)
-%line_sentry_picker(2, !config_linesentry2)
-%line_sentry_picker(3, !config_linesentry3)
-%line_sentry_picker(4, !config_linesentry4)
+%line_sentry_picker(1, CONFIG.linesentry1)
+%line_sentry_picker(2, CONFIG.linesentry2)
+%line_sentry_picker(3, CONFIG.linesentry3)
+%line_sentry_picker(4, CONFIG.linesentry4)
 
 ;===================================================================================================
 
-%toggle_onoff("Hide lines", !config_hide_lines)
+%toggle_onoff("Hide lines", CONFIG.hide_lines)
 
-%toggle_onoff("HUD spinner", !config_hudlag_spinner)
+%toggle_onoff("HUD spinner", CONFIG.hudlag_spinner)
 
-%toggle_onoff("State icons", !config_state_icons)
+%toggle_onoff("State icons", CONFIG.state_icons)
 
-%toggle_onoff("Quick warp icon", !config_qw_toggle)
+%toggle_onoff("Quick warp icon", CONFIG.qw_toggle)
 
-%toggle_onoff("Boss cycles", !config_boss_cycles)
+%toggle_onoff("Boss cycles", CONFIG.boss_cycles)
 
 ;===================================================================================================

@@ -18,18 +18,18 @@ cm_mainmenu:
 	%submenu("Lite states", LITESTATES_SUBMENU)
 	%submenu("Room master", ROOMLOAD_SUBMENU)
 	%submenu("Shortcuts", SHORTCUTS_SUBMENU)
-	%submenu("Preset config", PRESET_CONFIG_SUBMENU)
-	%submenu("Configuration", CONFIG_SUBMENU)
+	%submenu("Preset config", PRESETCONFIG_SUBMENU)
+	%submenu("Configuration", CONFIGURATION_SUBMENU)
 
 ;===================================================================================================
 
 CM_Main:
 	PHB : PHK : PLB
 
-	LDA.b #$14 : STA.w $2142
+	LDA.b #$14 : STA.w APUIO2
 
 	PHD
-	PEA.w $3000
+	PEA.w IRAM
 	PLD
 
 	JSL SNES_ENABLE_CUSTOM_NMI
@@ -39,26 +39,26 @@ CM_Main:
 
 	REP #$20
 
-	STZ.b SA1IRAM.SHORTCUT_USED
-	STZ.b SA1IRAM.CONTROLLER_1
-	STZ.b SA1IRAM.CONTROLLER_1_FILTERED
+	STZ.b IRAM.shortcut_used
+	STZ.b IRAM.joy1
+	STZ.b IRAM.joy1_filtered
 
 	LDA.w #15
-	STA.w SA1RAM.cm_input_timer
+	STA.w BWRAM.cm_input_timer
 
-	LDA.b SA1IRAM.cm_submodule
+	LDA.b IRAM.cm_submodule
 	CMP.w #2
 	BEQ .fine
 
 	; assume something went wrong if it's not 2
-	STZ.b SA1IRAM.cm_submodule
+	STZ.b IRAM.cm_submodule
 
 	BRA .loop
 
 .fine
 	SEP #$20
 
-	LDA.w !config_cm_save_place
+	LDA.w CONFIG.cm_save_place
 	BEQ .loop
 
 	JSR EmptyEntireMenu
@@ -69,14 +69,15 @@ CM_Main:
 	SEP #$30
 
 	LDA.b #$81
-	STA.w $4200
+	STA.w NMITIMEN
 
 	STZ.w $0012
 
---	LDA.w $0012
-	BEQ --
+.spin
+	LDA.w $0012
+	BEQ .spin
 
-	LDX.b SA1IRAM.cm_submodule
+	LDX.b IRAM.cm_submodule
 
 	JSR (.submodules,X)
 	BRA .loop
@@ -107,7 +108,7 @@ SelectionColors:
 
 CM_DrawMenu:
 	LDX.b #$04
-	STX.b SA1IRAM.cm_submodule
+	STX.b IRAM.cm_submodule
 
 	JMP DrawCurrentMenu
 
@@ -121,7 +122,7 @@ CM_Return:
 	JSL SetHUDItemGraphics
 	JSL CM_Exiting
 
-	LDA.b #$81 : STA.w $4200
+	LDA.b #$81 : STA.w NMITIMEN
 
 	PLB
 	RTL
@@ -130,21 +131,21 @@ CM_Return:
 
 CM_Exiting:
 	SEP #$30
-	STZ.w $4200
+	STZ.w NMITIMEN
 
 	LDY.b #$80
-	STY.w $2100
-	STY.w $2115
+	STY.w INIDISP
+	STY.w VMAIN
 
 	REP #$30
 
 	LDA.w #$0002
-	STA.w SA1IRAM.cm_submodule
+	STA.w IRAM.cm_submodule
 
 	JSR GetHighestActiveLine
 
 .hide_all
-	CPY.w SA1IRAM.highestline
+	CPY.w IRAM.highestline
 	BCS .no_hide
 
 	JSL ClearLineSentryLine
@@ -160,10 +161,10 @@ CM_Exiting:
 
 	SEP #$30
 
-	LDA.b #$15 : STA.w $2142
+	LDA.b #$15 : STA.w APUIO2
 
 	STZ.b $12
-	INC.b $15 ; trigger a CGRAM update
+	INC.b $15 ; trigger a CGRAM update  TODO - make STA
 
 	JSL SNES_DISABLE_CUSTOM_NMI
 
@@ -178,13 +179,13 @@ ClearLineSentryLine:
 	ASL
 	ASL
 	ADC.w #$60E5
-	STA.w $2116
+	STA.w VMADDR
 
-	LDA.w #$207F
+	LDA.w #!EMPTY
 	LDX.w #26
 
 .clear_vram
-	STA.w $2118
+	STA.w VMDATA
 	DEX
 	BNE .clear_vram
 
@@ -197,7 +198,7 @@ ClearLineSentryLine:
 	ASL
 	TAX
 
-	LDA.l $42C1CA,X
+	LDA.l SaveStateVram+$C1CA,X
 	CMP.w #$28F3
 	BEQ .do_not_clear_savestate
 	CMP.w #$28C8
@@ -205,11 +206,11 @@ ClearLineSentryLine:
 
 	PHY
 
-	LDA.w #$207F
+	LDA.w #!EMPTY
 	LDY.w #26
 
 .clear_savestate
-	STA.l $42C1CA,X
+	STA.l SaveStateVram+$C1CA,X
 	INX
 	INX
 	DEY
@@ -228,32 +229,32 @@ CM_ShortcutConfig:
 	JSR CMDO_SAVE_ADDRESS
 
 	REP #$20
-	LDA.b SA1IRAM.CONTROLLER_1
-	CMP.b [SA1IRAM.cm_writer]
+	LDA.b IRAM.joy1
+	CMP.b [IRAM.cm_writer]
 	BNE .notheld
 
-	INC.b SA1IRAM.preset_scratch
-	LDA.b SA1IRAM.preset_scratch
+	INC.b IRAM.preset_scratch
+	LDA.b IRAM.preset_scratch
 	CMP.w #$0061
 	BCC CM_UpdateHeldOption
 
-	JSL MenuSFX_shortcut_done
+	JSL MenuSFX.shortcut_done
 
 #CM_AbortHeldOption:
 	LDA.w #$0004
-	STA.b SA1IRAM.cm_submodule
+	STA.b IRAM.cm_submodule
 	BRA CM_UpdateHeldOption
 
 .notheld
-	STA.b [SA1IRAM.cm_writer]
-	STZ.b SA1IRAM.preset_scratch
+	STA.b [IRAM.cm_writer]
+	STZ.b IRAM.preset_scratch
 
 ;===================================================================================================
 
 CM_UpdateHeldOption:
 	SEP #$30
 
-	LDY.b SA1IRAM.cm_cursor
+	LDY.b IRAM.cm_cursor
 	JMP DrawCurrentRow_ShiftY
 
 ;===================================================================================================
@@ -261,22 +262,22 @@ CM_UpdateHeldOption:
 CM_SetLiteState:
 	REP #$20
 
-	LDA.b SA1IRAM.CONTROLLER_1
+	LDA.b IRAM.joy1
 	CMP.w #$4000
 	BNE CM_AbortHeldOption
 
-	LDA.b SA1IRAM.preset_scratch
-	CMP.w #60
+	LDA.b IRAM.preset_scratch
+	CMP.w #60 ; 60 seconds
 	BCS .save_litestate
 
 	INC
-	STA.b SA1IRAM.preset_scratch
+	STA.b IRAM.preset_scratch
 	BRA CM_UpdateHeldOption
 
 .save_litestate
-	LDA.w SA1IRAM.litestate_act
+	LDA.w IRAM.litestate_act
 	JSL SaveLiteState
-	JSL MenuSFX_shortcut_done
+	JSL MenuSFX.shortcut_done
 
 	BRA CM_AbortHeldOption
 
@@ -285,22 +286,22 @@ CM_SetLiteState:
 CM_DeleteLiteState:
 	REP #$20
 
-	LDA.b SA1IRAM.CONTROLLER_1
+	LDA.b IRAM.joy1
 	CMP.w #$0040
 	BNE CM_AbortHeldOption
 
-	LDA.b SA1IRAM.preset_scratch
-	CMP.w #60
+	LDA.b IRAM.preset_scratch
+	CMP.w #60 ; 60 seconds
 	BCS .delete_litestate
 
 	INC
-	STA.b SA1IRAM.preset_scratch
+	STA.b IRAM.preset_scratch
 	BRA CM_UpdateHeldOption
 
 .delete_litestate
-	LDA.w SA1IRAM.litestate_act
+	LDA.w IRAM.litestate_act
 	JSL DeleteLiteState
-	JSL MenuSFX_empty
+	JSL MenuSFX.empty
 
 	BRA CM_AbortHeldOption
 
@@ -309,20 +310,20 @@ CM_DeleteLiteState:
 CM_PrepPPU:
 	SEP #$30
 
-	LDA.b #$80 : STA.w $2100
-	STZ.w $4200
+	LDA.b #$80 : STA.w INIDISP
+	STZ.w NMITIMEN
 
 	; transfer menu tileset
 	REP #$10
 
-	LDA.b #$80 : STA.w $2115
+	LDA.b #$80 : STA.w VMAIN
 
-	LDX.w #$7000 : STX.w $2116
-	LDX.w #cm_gfx>>0 : STX.w $4352
-	LDA.b #cm_gfx>>16 : STA.w $4354
-	LDX.w #$2000 : STX.w $4355
-	LDX.w #$1801 : STX.w $4350
-	LDA.b #$20 : STA.w $420B
+	LDX.w #vram($E000) : STX.w VMADDR
+	LDX.w #cm_gfx : STX.w DMA5ADDRL
+	LDA.b #^cm_gfx : STA.w DMA5ADDRB
+	LDX.w #$2000 : STX.w DMA5SIZE
+	LDX.w #$01][VMDATA : STX.w DMAP5
+	LDA.b #$20 : STA.w MDMAEN
 
 	RTS
 
@@ -339,14 +340,14 @@ CM_CacheWRAM:
 	ADC.b #$00
 
 .no_bow
-	STA.w SA1RAM.cm_item_bow
+	STA.w BWRAM.cm_item_bow
 
 	; MaxHP
 	LDA.l $7EF36C
 	LSR
 	LSR
 	LSR
-	STA.w SA1RAM.cm_equipment_maxhp
+	STA.w BWRAM.cm_equipment_maxhp
 
 ;===================================================================================================
 
@@ -354,36 +355,36 @@ ConfigMenuSize:
 	REP #$30
 
 	JSR GetHighestActiveLine
-	STY.w SA1IRAM.highestline
+	STY.w IRAM.highestline
 
 	TYX
 	LDA.l HUD_LineSize,X
-	STA.w SA1IRAM.HUDSIZE
+	STA.w IRAM.hud_size
 
 	RTL
 
 ;===================================================================================================
 
 GetHighestActiveLine:
-	LDY.w !config_hide_lines
+	LDY.w CONFIG.hide_lines
 	BNE .hide
 
-	LDY.w !config_linesentry4 : BEQ .no_line_4
+	LDY.w CONFIG.linesentry4 : BEQ .no_line_4
 	LDY.w #8
 	RTS
 
 .no_line_4
-	LDY.w !config_linesentry3 : BEQ .no_line_3
+	LDY.w CONFIG.linesentry3 : BEQ .no_line_3
 	LDY.w #6
 	RTS
 
 .no_line_3
-	LDY.w !config_linesentry2 : BEQ .no_line_2
+	LDY.w CONFIG.linesentry2 : BEQ .no_line_2
 	LDY.w #4
 	RTS
 
 .no_line_2
-	LDY.w !config_linesentry1 : BEQ .exit
+	LDY.w CONFIG.linesentry1 : BEQ .exit
 
 	LDY.w #2
 	RTS
@@ -403,8 +404,8 @@ CM_Init:
 
 	SEP #$20
 
-	LDA.b #$02 : STA.b SA1IRAM.cm_submodule
-	STZ.w SA1RAM.cm_input_timer
+	LDA.b #$02 : STA.b IRAM.cm_submodule
+	STZ.w BWRAM.cm_input_timer
 
 	RTS
 
@@ -413,56 +414,56 @@ CM_Init:
 ;===================================================================================================
 MenuSFX:
 .beep
-	PEA.w $0C00
+	PEA.w $0C_00
 	BRA .continue
 
 .boop
-	PEA.w $002D
+	PEA.w $00_2D
 	BRA .continue
 
 .bink
-	PEA.w $2000
+	PEA.w $20_00
 	BRA .continue
 
 .fill
-	PEA.w $0A00
+	PEA.w $0A_00
 	BRA .continue
 
 .empty
-	PEA.w $0700
+	PEA.w $07_00
 	BRA .continue
 
 .poof
-	PEA.w $0014
+	PEA.w $00_14
 	BRA .continue
 
 .oof
-	PEA.w $0026
+	PEA.w $00_26
 	BRA .continue
 
 .shortcut_done
-	PEA.w $2F00
+	PEA.w $2F_00
 	BRA .continue
 
 .setshortcut
 .switch
-	PEA.w $2500
+	PEA.w $25_00
 	BRA .continue
 
 .submenu
-	PEA.w $2400
+	PEA.w $24_00
 	BRA .continue
 
 .submenuback
-	PEA.w $1300
+	PEA.w $13_00
 	BRA .continue
 
 .error
-	PEA.w $003C
+	PEA.w $00_3C
 	BRA .continue
 
 .tinkle
-	PEA.w $0031
+	PEA.w $00_31
 	BRA .continue
 
 .continue
@@ -490,7 +491,7 @@ MenuSFX:
 ;===================================================================================================
 
 CM_BackToTipTop:
-	JSL MenuSFX_submenuback
+	JSL MenuSFX.submenuback
 	JSR EmptyCurrentMenu
 	JSR CM_ResetStackAndMenu
 	JMP DrawCurrentMenu
@@ -499,25 +500,25 @@ CM_BackToTipTop:
 
 CM_ExitTime:
 	LDA.b #$06
-	STA.b SA1IRAM.cm_submodule
+	STA.b IRAM.cm_submodule
 	RTS
 
 ;===================================================================================================
 
 CM_Active:
 	SEP #$30
-	LDY.b SA1IRAM.cm_cursor
+	LDY.b IRAM.cm_cursor
 
 	JSR CM_getcontroller
 	BNE .actionable_action
 	BCS CM_GoBack
 
-	BIT.b SA1IRAM.cm_updown
+	BIT.b IRAM.cm_updown
 	BMI .pressed_up
 	BVS .pressed_down
 
 	; start / select is lowest priority
-	LDA.b SA1IRAM.CopyOf_F4
+	LDA.b IRAM.copyof_F4
 	BIT.b #$10
 	BNE CM_ExitTime
 	BIT.b #$20
@@ -525,15 +526,15 @@ CM_Active:
 	RTS
 
 .pressed_up
-	DEC.b SA1IRAM.cm_cursor
+	DEC.b IRAM.cm_cursor
 	BRA CM_AdjustForWrap
 
 .pressed_down
-	INC.b SA1IRAM.cm_cursor
+	INC.b IRAM.cm_cursor
 	BRA CM_AdjustForWrap
 
 .actionable_action
-	LDA.b [SA1IRAM.cm_current_selection]
+	LDA.b [IRAM.cm_current_selection]
 
 	REP #$30
 
@@ -545,24 +546,24 @@ CM_Active:
 
 	LDA.w ActionLengths,X
 	AND.w #$00FF
-	STA.b SA1IRAM.cm_action_length
+	STA.b IRAM.cm_action_length
 
-	PEA.w CM_UpdateHeldOption-1
+	PEA.w rtn(CM_UpdateHeldOption)
 
 	TYX
 	LDA.l ActionDoRoutines,X
-	STA.b SA1IRAM.SCRATCH
+	STA.b IRAM.SCRATCH
 
 	SEP #$30
 	LDY.b #1 ; for when the routine uses it
-	JMP.w (SA1IRAM.SCRATCH)
+	JMP.w (IRAM.SCRATCH)
 
 ;===================================================================================================
 
 CM_AdjustForWrap:
 	PHY
 
-	LDA.b SA1IRAM.cm_cursor
+	LDA.b IRAM.cm_cursor
 	BMI .find_max
 
 	INC
@@ -571,13 +572,13 @@ CM_AdjustForWrap:
 
 	; just check if we hit the end of the headers
 	REP #$20
-	LDA.b [SA1IRAM.cm_current_menu],Y
+	LDA.b [IRAM.cm_current_menu],Y
 	SEP #$20
 	BNE .not_max
 	BRA .reset_too_far ; oops!
 
 #CM_DontGoBack:
-	STZ.b SA1IRAM.cm_cursor
+	STZ.b IRAM.cm_cursor
 	CPY.b #$00 ; are we at the top of the menu
 	BNE .moved_cursor
 	RTS ; just leave if we're already at the top too
@@ -586,7 +587,7 @@ CM_AdjustForWrap:
 	JSR EmptyCurrentMenu
 	JSR CM_PullMenuFromStack
 	JSR DrawCurrentMenu
-	JSL MenuSFX_submenuback
+	JSL MenuSFX.submenuback
 	RTS
 
 .find_max
@@ -597,7 +598,7 @@ CM_AdjustForWrap:
 .next_check
 	INY
 	INY
-	LDA.b [SA1IRAM.cm_current_menu],Y
+	LDA.b [IRAM.cm_current_menu],Y
 	BNE .next_check
 
 	SEP #$20
@@ -607,20 +608,20 @@ CM_AdjustForWrap:
 	DEC
 
 .reset_too_far
-	STA.b SA1IRAM.cm_cursor
+	STA.b IRAM.cm_cursor
 
 .not_max
 	PLY
 
 .moved_cursor
-	JSL MenuSFX_boop
+	JSL MenuSFX.boop
 
 ;===================================================================================================
 
 CM_ReDrawCursorPosition:
 	JSR DrawCurrentRow_ShiftY
 
-	LDY.b SA1IRAM.cm_cursor
+	LDY.b IRAM.cm_cursor
 	JSR DrawCurrentRow_ShiftY
 
 	JMP CM_UpdateCurrentSelection
@@ -633,21 +634,21 @@ CM_ReDrawCursorPosition:
 CM_getcontroller:
 	REP #$20
 	SEP #$10
-	STZ.b SA1IRAM.cm_leftright
-	STZ.b SA1IRAM.cm_ax
-	STZ.b SA1IRAM.cm_y
+	STZ.b IRAM.cm_leftright
+	STZ.b IRAM.cm_ax
+	STZ.b IRAM.cm_y
 
-	LDA.b SA1IRAM.CONTROLLER_1
+	LDA.b IRAM.joy1
 
-	CMP.w SA1RAM.cm_last_input
-	STA.w SA1RAM.cm_last_input
+	CMP.w BWRAM.cm_last_input
+	STA.w BWRAM.cm_last_input
 
 	BEQ .same_as_last_frame
 
 	LDX.b #15
-	STX.w SA1RAM.cm_input_timer
+	STX.w BWRAM.cm_input_timer
 
-	CMP.b SA1IRAM.CONTROLLER_1_FILTERED
+	CMP.b IRAM.joy1_filtered
 	SEP #$20
 	BNE .no_presses
 
@@ -655,20 +656,20 @@ CM_getcontroller:
 	JSR .repeatables ; get udlrLR
 
 	; get A and X, but only new presses
-	LDA.b SA1IRAM.CopyOf_F6
-	STA.b SA1IRAM.cm_ax
+	LDA.b IRAM.copyof_F6
+	STA.b IRAM.cm_ax
 
 	; get new B presses in carry
 	; this also puts Y presses in bit 7
-	LDA.b SA1IRAM.CopyOf_F4
+	LDA.b IRAM.copyof_F4
 	ASL
 	AND.b #$80 ; get rid of other bits
-	STA.b SA1IRAM.cm_y
+	STA.b IRAM.cm_y
 
 	; now combine see if anything actionable was pressed
-	ORA.b SA1IRAM.cm_leftright
-	ORA.b SA1IRAM.cm_ax
-	ORA.b SA1IRAM.cm_shoulder
+	ORA.b IRAM.cm_leftright
+	ORA.b IRAM.cm_ax
+	ORA.b IRAM.cm_shoulder
 	AND.b #$C0
 
 	RTS
@@ -680,11 +681,11 @@ CM_getcontroller:
 	RTS
 
 .holding_buttons
-	LDA.w SA1RAM.cm_input_timer
+	LDA.w BWRAM.cm_input_timer
 	BEQ .continue
 
 	DEC
-	STA.w SA1RAM.cm_input_timer
+	STA.w BWRAM.cm_input_timer
 
 .no_presses
 	LDA.b #$00 ; get 0
@@ -693,31 +694,31 @@ CM_getcontroller:
 
 .continue
 	LDA.b #4
-	STA.w SA1RAM.cm_input_timer
+	STA.w BWRAM.cm_input_timer
 
 .repeatables
 	; get left and right
-	LDA.b SA1IRAM.CopyOf_F0
+	LDA.b IRAM.copyof_F0
 	LSR
-	ROR.b SA1IRAM.cm_leftright
+	ROR.b IRAM.cm_leftright
 	LSR
-	ROR.b SA1IRAM.cm_leftright
+	ROR.b IRAM.cm_leftright
 
 	; get up and down
 	LSR
-	ROR.b SA1IRAM.cm_updown
+	ROR.b IRAM.cm_updown
 	LSR
-	ROR.b SA1IRAM.cm_updown
+	ROR.b IRAM.cm_updown
 
 	; get l and r
-	LDA.b SA1IRAM.CopyOf_F2
+	LDA.b IRAM.copyof_F2
 	ASL
 	ASL
-	STA.b SA1IRAM.cm_shoulder
+	STA.b IRAM.cm_shoulder
 
 	; get actionable presses
-	LDA.b SA1IRAM.cm_leftright
-	ORA.b SA1IRAM.cm_shoulder
+	LDA.b IRAM.cm_leftright
+	ORA.b IRAM.cm_shoulder
 	AND.b #$C0
 	CLC ; no B press
 	RTS
@@ -728,28 +729,28 @@ CM_getcontroller:
 CM_ResetStackAndMenu:
 	REP #$20
 
-	STZ.w SA1RAM.CM_SubMenuIndex
+	STZ.w BWRAM.submenu_index
 
 	LDA.w #cm_mainmenu<<8
-	STA.b SA1IRAM.cm_cursor+0
+	STA.b IRAM.cm_cursor+0
 
-	LDA.w #cm_mainmenu>>8
-	STA.b SA1IRAM.cm_cursor+2
+	LDA.w #>&cm_mainmenu
+	STA.b IRAM.cm_cursor+2
 
 CM_UpdateCurrentSelection:
 	REP #$20
 	SEP #$10
 
-	LDA.b SA1IRAM.cm_cursor
+	LDA.b IRAM.cm_cursor
 	INC
 	ASL
 	TAY
 
-	LDA.b [SA1IRAM.cm_current_menu],Y
-	STA.b SA1IRAM.cm_current_selection+0
+	LDA.b [IRAM.cm_current_menu],Y
+	STA.b IRAM.cm_current_selection+0
 
-	LDY.b SA1IRAM.cm_current_menu+2
-	STY.b SA1IRAM.cm_current_selection+2
+	LDY.b IRAM.cm_current_menu+2
+	STY.b IRAM.cm_current_selection+2
 
 	RTS
 
@@ -763,19 +764,19 @@ CM_PushMenuToStack:
 	REP #$20
 	SEP #$10
 
-	LDX.w SA1RAM.CM_SubMenuIndex
+	LDX.w BWRAM.submenu_index
 
-	LDA.b SA1IRAM.cm_cursor+0
-	STA.w SA1RAM.CM_SubMenuStack,X
-
-	INX
-	INX
-	LDA.b SA1IRAM.cm_cursor+2
-	STA.w SA1RAM.CM_SubMenuStack,X
+	LDA.b IRAM.cm_cursor+0
+	STA.w BWRAM.submenu_stack,X
 
 	INX
 	INX
-	STX.w SA1RAM.CM_SubMenuIndex
+	LDA.b IRAM.cm_cursor+2
+	STA.w BWRAM.submenu_stack,X
+
+	INX
+	INX
+	STX.w BWRAM.submenu_index
 
 	JSR CM_UpdateCurrentSelection
 
@@ -795,7 +796,7 @@ CM_PullMenuFromStack:
 	PHP
 	SEP #$10
 
-	LDX.w SA1RAM.CM_SubMenuIndex
+	LDX.w BWRAM.submenu_index
 	CPX.b #$04
 	BCC .cannot
 
@@ -805,13 +806,13 @@ CM_PullMenuFromStack:
 	DEX
 
 	REP #$20
-	LDA.w SA1RAM.CM_SubMenuStack+0,X
-	STA.b SA1IRAM.cm_cursor+0
+	LDA.w BWRAM.submenu_stack+0,X
+	STA.b IRAM.cm_cursor+0
 
-	LDA.w SA1RAM.CM_SubMenuStack+2,X
-	STA.b SA1IRAM.cm_cursor+2
+	LDA.w BWRAM.submenu_stack+2,X
+	STA.b IRAM.cm_cursor+2
 
-	STX.w SA1RAM.CM_SubMenuIndex
+	STX.w BWRAM.submenu_index
 	JSR CM_UpdateCurrentSelection
 
 	PLP

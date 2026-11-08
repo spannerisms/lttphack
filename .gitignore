@@ -4,6 +4,10 @@
 .*.sw[nop]
 std*.txt
 *.srm
-target/
+target/*
+!target/_test.futaba
+!target/_build.futaba
+!target/_rando.futaba
+!target/_build.bat
 src/resources/movie/*.asm
 *.state

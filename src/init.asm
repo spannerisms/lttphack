@@ -3,9 +3,8 @@ pushpc
 
 org $008004
 	LDA.b #$FF
-	STA.w $2202
+	STA.w SIC
 	NOP
-
 
 org $00802F
 	JML init_hook
@@ -16,7 +15,7 @@ init_done:
 org $1CF37A
 	PEA.w MessagePointers
 	PEA.w $71C0
-	PEA.w 396*2
+	PEA.w MessagePointers.size
 	SEC ; bank 7F
 
 ; push to stack: source, destination, size
@@ -24,44 +23,44 @@ org $1CF37A
 DoWRAMBig:
 	REP #$20
 	PLA
-	STA.w $4305
+	STA.w DMA0SIZE
 
 	PLA
-	STA.w $2181
+	STA.w WMADDL
 
 	PLA
-	STA.w $4302
+	STA.w DMA0ADDRL
 
-	LDA.w #$8000
-	STA.w $4300
+	LDA.w #$00][WMDATA
+	STA.w DMAP0
 
 	SEP #$30
-	LDA.b #MessagePointers>>16
-	STA.w $4304
+	LDA.b #^MessagePointers
+	STA.w DMA0ADDRB
 
 	LDA.b #$00
 	ROL
-	STA.w $2183
+	STA.w WMADDB
 
 	LDA.b #$01
-	STA.w $420B
+	STA.w MDMAEN
 
 	RTL
 
 DoWRAM4BPP:
 	PEA.w WRAMGFX
 	PEA.w $9000
-	PEA.w $2E00
+	PEA.w WRAMGFX:size
 
 	CLC ; bank 7E
 	BRA DoWRAMBig
 
-warnpc $1CF3D4
+guardpc $1CF3D4
 
 org $0EFCB2
 	PEA.w FiveBeeZeroZero
 	PEA.w $5B00
-	PEA.w 1026
+	PEA.w FiveBeeZeroZero.size
 	SEC ; bank 7F
 	JML DoWRAMBig
 
@@ -72,49 +71,48 @@ pullpc
 init_hook:
 	SEP #$30
 
-	LDA.b #$03 : STA.l $002224 ; image 3 for page $60
+	LDA.b #$03 : STA.l BMAPS ; image 3 for page $60
 
-	LDA.l !config_feature_music : BNE ++
+	LDA.l CONFIG.feature_music : BNE ++
 
 	JSL mute_music
 
-++	LDA.b #$22 : STA.l $2143 ; BWOOWOOOWOWOOOOOO
+++	LDA.b #$22 : STA.l APUIO3 ; BWOOWOOOWOWOOOOOO
 
 	JSL InitSA1
 
 	REP #$20
 	SEP #$10
-	STZ.w $2182
+	STZ.w WMADDH
 
 	LDA.w #$2000
-	STA.w $2182
-
-#ZeroLand:
+	STA.w WMADDH
+ZeroLand = !:pc+1 ; TODO MOVE THIS
 	LDA.w #$4300
 	TCD
 
-	LDA.w #ZeroLand+1
-	STA.b $4312
-	STA.b $4302
+	LDA.w #ZeroLand
+	STA.b DMA1ADDRL
+	STA.b DMA0ADDRL
 
-	LDX.b #ZeroLand>>16
-	STX.b $4314
-	STX.b $4304
+	LDX.b #^ZeroLand
+	STX.b DMA1ADDRB
+	STX.b DMA0ADDRB
 
 	LDA.w #$E000 ; this many bytes for WRAM
-	STA.b $4315
+	STA.b DMA1SIZE
 
-	LDA.w #$8008
-	STA.b $4310
-	STA.b $4300
+	LDA.w #$08][WMDATA
+	STA.b DMAP1
+	STA.b DMAP0
 
 	LDX.b #$02
-	STX.w $420B
+	STX.w MDMAEN
 
 	DEX
-	STX.w $2183
-	STZ.w $2181
-	STX.w $420B
+	STX.w WMADDB
+	STZ.w WMADDL
+	STX.w MDMAEN
 
 	REP #$30
 
@@ -122,7 +120,7 @@ init_hook:
 
 	LDX.w #$017E
 
---	STA.l SA1IRAM.SA1CorruptionBuffer,X
+--	STA.l IRAM.corruption_defense,X
 	DEX
 	DEX
 	BPL --
@@ -130,48 +128,47 @@ init_hook:
 	LDA.w #$0000
 	TCD
 
-
-
-
-
 ;===================================================================================================
 ; Done doing what ALTTP needs done but faster
 ;===================================================================================================
 
 	SEP #$30
 	; check for reset config combo
-	LDA.b #$01 : STA.w $4016 : STZ.w $4016 ; pulse controller
+	LDA.b #$01 : STA.w JOYPAD : STZ.w JOYPAD ; pulse controller
 
 	STZ.b $00 : STZ.b $01
 	LDY.b #$10 ; reading 16 bits
---	LDA.w $4016 ; if the last bit is on, carry will be set, otherwise, it won't; A is still 1
+
+.poll_joypad
+	LDA.w JOYPAD ; if the last bit is on, carry will be set, otherwise, it won't; A is still 1
 	LSR
 	ROL.b $00 : ROL.b $01 ; roll carry from A and then from $00
-	DEY : BNE --
+	DEY
+	BNE .poll_joypad
 
 	REP #$20
 	LDA.b $00
 	AND.w #$FF00 : CMP.w #$3000 : BEQ .forcereset
-	LDA.w !config_init_sig : CMP.w #!INIT_SIGNATURE : BEQ .noforcereset
+	LDA.w CONFIG.init_sig : CMP.w #!INIT_SIGNATURE : BEQ .noforcereset
 
 .forcereset
 	JSR ResetConfig
 	BRA .sram_initialized
 
 .noforcereset
-	LDA.w !config_sram_initialized
+	LDA.w CONFIG.sram_initialized
 	CMP.w #$0031 : BCC .forcereset
 
 .sram_initialized
 	REP #$10
 	; clear unused config settings, for when they're used in future updates
-	LDX.w #!last_config
+	LDX.w #!config_size
 
 	SEP #$20
 	LDA.b #$00
-	BRA ++
+	BRA ++ ; TODO not necessary to BRA, just go right into loop
 
---	STA.l SA1RAM.SETTINGS,X
+--	STA.l BWRAM.SETTINGS,X
 	INX
 ++	CPX.w #$0400
 	BCC --
@@ -180,13 +177,13 @@ init_hook:
 
 	STZ.w $037F
 
-
 ;===================================================================================================
 ; everything is done now
 ; back to the game
-	JSL $028000
-	JSL $028022
-	JSL $0EF572
+;===================================================================================================
+	JSL jlong($028000)
+	JSL jlong($028022)
+	JSL jlong($0EF572)
 	JSL DoWRAM4BPP
 
 	JSL InitializeSentries
@@ -206,7 +203,7 @@ init_hook:
 	STA.b $10
 	STA.w $04AA
 
-	LDA.b #$81 : STA.w $4200
+	LDA.b #$81 : STA.w NMITIMEN
 
 	JML init_done
 
@@ -215,11 +212,12 @@ init_hook:
 ResetConfig:
 	SEP #$20
 
-	LDA.b #$1F : STA.w $2143
-	STA.l SA1RAM.old_music_bank
+	LDA.b #$1F : STA.w APUIO3
+	STA.l BWRAM.old_music_bank
 
 	REP #$30
-	LDY.w #VERSIONSTABLE
+
+	LDY.w #ConfigInitTable
 
 	PHB
 	PHK
@@ -233,7 +231,7 @@ ResetConfig:
 	INY
 
 	LDA.w $0000,Y
-	STA.l $400000,X
+	STA.l ^&CONFIG,X
 
 	INY
 	INY
@@ -242,7 +240,6 @@ ResetConfig:
 .done_options
 
 ;---------------------------------------------------------------------------------------------------
-
 
 	SEP #$30
 
@@ -276,8 +273,6 @@ ResetConfig:
 	BCC .next_row
 
 	JSR .get_row
-
-
 
 	LDA.b #$01
 
@@ -385,18 +380,9 @@ ResetConfig:
 	db %00000000
 	db %00000000
 
-
-
-
 ;===================================================================================================
 
-VERSIONSTABLE:
-	!PERM_INIT
-
-	dw $0000, $0000
-
-WRAMGFX:
-incbin "resources/decomped.4bpp"
+incbin [WRAMGFX] "resources/decomped.4bpp"
 
 MessagePointers:
 	dw $8000, $8001, $800E, $801B, $803C, $805C, $806D, $8078
@@ -449,70 +435,42 @@ MessagePointers:
 	dw $EF09, $EF25, $EF45, $EF62, $EFEA, $F039, $F050, $F072
 	dw $F0C1, $F157, $F1E4, $F204, $F233, $F24E, $F29E, $F2C8
 	dw $F2EC, $F310, $F325, $F356
+^.size
+
+;===================================================================================================
 
 FiveBeeZeroZero:
-db $00,$00,$1A,$00,$33,$00,$49,$00,$62,$00,$7E,$00,$99,$00,$B4,$00
-db $D0,$00,$EC,$00,$08,$01,$1E,$01,$3B,$01,$4D,$01,$68,$01,$84,$01
-db $9D,$01,$B8,$01,$D1,$01,$EE,$01,$09,$02,$23,$02,$43,$02,$63,$02
-db $7F,$02,$99,$02,$B4,$02,$C6,$02,$DE,$02,$F6,$02,$15,$03,$2E,$03
-db $4D,$03,$69,$03,$83,$03,$9D,$03,$B7,$03,$D0,$03,$F0,$03,$0E,$04
-db $2D,$04,$49,$04,$63,$04,$7C,$04,$91,$04,$AD,$04,$CD,$04,$ED,$04
-db $0C,$05,$24,$05,$3E,$05,$5A,$05,$74,$05,$8D,$05,$A7,$05,$C4,$05
-db $E2,$05,$FB,$05,$11,$06,$2A,$06,$44,$06,$5C,$06,$7C,$06,$9C,$06
-db $BC,$06,$D9,$06,$F9,$06,$19,$07,$39,$07,$59,$07,$77,$07,$97,$07
-db $A8,$07,$B9,$07,$CB,$07,$DA,$07,$EC,$07,$FC,$07,$0E,$08,$22,$08
-db $35,$08,$4E,$08,$68,$08,$85,$08,$9D,$08,$BA,$08,$D8,$08,$EF,$08
-db $03,$09,$21,$09,$3D,$09,$5B,$09,$76,$09,$89,$09,$A3,$09,$BB,$09
-db $D2,$09,$EF,$09,$09,$0A,$23,$0A,$3E,$0A,$58,$0A,$78,$0A,$98,$0A
-db $B8,$0A,$D6,$0A,$F0,$0A,$0B,$0B,$24,$0B,$3F,$0B,$5C,$0B,$74,$0B
-db $93,$0B,$B0,$0B,$BC,$0B,$D5,$0B,$F2,$0B,$0A,$0C,$29,$0C,$49,$0C
-db $69,$0C,$83,$0C,$9F,$0C,$B7,$0C,$CC,$0C,$EA,$0C,$09,$0D,$29,$0D
-db $49,$0D,$61,$0D,$7B,$0D,$93,$0D,$AD,$0D,$C7,$0D,$E6,$0D,$04,$0E
-db $24,$0E,$3C,$0E,$5A,$0E,$73,$0E,$8C,$0E,$A6,$0E,$C6,$0E,$E6,$0E
-db $02,$0F,$1F,$0F,$3F,$0F,$5F,$0F,$7F,$0F,$9B,$0F,$B9,$0F,$D9,$0F
-db $EB,$0F,$FC,$0F,$0C,$10,$1C,$10,$2C,$10,$3E,$10,$50,$10,$60,$10
-db $72,$10,$8C,$10,$A4,$10,$BE,$10,$D8,$10,$F1,$10,$0B,$11,$25,$11
-db $3F,$11,$59,$11,$73,$11,$8D,$11,$A7,$11,$C1,$11,$DB,$11,$F5,$11
-db $0E,$12,$28,$12,$42,$12,$5A,$12,$74,$12,$8E,$12,$A7,$12,$C1,$12
-db $DB,$12,$F5,$12,$0F,$13,$2A,$13,$44,$13,$5E,$13,$77,$13,$91,$13
-db $AB,$13,$C5,$13,$DF,$13,$F8,$13,$12,$14,$27,$14,$3F,$14,$5C,$14
-db $74,$14,$7C,$14,$83,$14,$A1,$14,$BC,$14,$C7,$14,$D1,$14,$DC,$14
-db $EE,$14,$00,$15,$12,$15,$37,$15,$4E,$15,$60,$15,$72,$15,$84,$15
-db $96,$15,$A0,$15,$AC,$15,$B4,$15,$BC,$15,$C4,$15,$E4,$15,$03,$16
-db $1E,$16,$3B,$16,$56,$16,$70,$16,$8C,$16,$AB,$16,$D1,$16,$F7,$16
-db $0B,$17,$31,$17,$45,$17,$6B,$17,$7F,$17,$91,$17,$A1,$17,$B3,$17
-db $C5,$17,$D7,$17,$E9,$17,$FB,$17,$0D,$18,$1F,$18,$31,$18,$43,$18
-db $55,$18,$67,$18,$79,$18,$8B,$18,$9D,$18,$AF,$18,$C1,$18,$D3,$18
-db $D3,$18,$F3,$18,$13,$19,$32,$19,$55,$19,$73,$19,$93,$19,$AE,$19
-db $CE,$19,$EE,$19,$0E,$1A,$2E,$1A,$4F,$1A,$6F,$1A,$8B,$1A,$AA,$1A
-db $C9,$1A,$E9,$1A,$09,$1B,$29,$1B,$49,$1B,$69,$1B,$89,$1B,$A3,$1B
-db $C1,$1B,$DE,$1B,$FE,$1B,$1E,$1C,$3C,$1C,$5C,$1C,$7C,$1C,$9C,$1C
-db $BC,$1C,$DA,$1C,$F9,$1C,$18,$1D,$34,$1D,$52,$1D,$6C,$1D,$87,$1D
-db $A9,$1D,$CB,$1D,$EB,$1D,$0B,$1E,$2B,$1E,$4C,$1E,$6C,$1E,$8B,$1E
-db $AB,$1E,$C8,$1E,$E8,$1E,$06,$1F,$26,$1F,$46,$1F,$66,$1F,$83,$1F
-db $A0,$1F,$BE,$1F,$DF,$1F,$FC,$1F,$1C,$20,$3B,$20,$57,$20,$75,$20
-db $95,$20,$B5,$20,$D3,$20,$F0,$20,$0F,$21,$2C,$21,$4E,$21,$6C,$21
-db $8C,$21,$AC,$21,$CA,$21,$EA,$21,$0B,$22,$29,$22,$47,$22,$65,$22
-db $85,$22,$A5,$22,$C5,$22,$E3,$22,$05,$23,$21,$23,$40,$23,$60,$23
-db $81,$23,$A1,$23,$C1,$23,$E1,$23,$FE,$23,$1F,$24,$3D,$24,$57,$24
-db $76,$24,$96,$24,$B4,$24,$D4,$24,$F3,$24,$13,$25,$31,$25,$51,$25
-db $70,$25,$8E,$25,$AE,$25,$CC,$25,$E8,$25,$08,$26,$28,$26,$48,$26
-db $66,$26,$86,$26,$A3,$26,$BF,$26,$DE,$26,$FD,$26,$15,$27,$34,$27
-db $54,$27,$73,$27,$93,$27,$B1,$27,$D1,$27,$EF,$27,$0D,$28,$2B,$28
-db $48,$28,$68,$28,$88,$28,$A8,$28,$C8,$28,$E9,$28,$08,$29,$28,$29
-db $47,$29,$67,$29,$87,$29,$A8,$29,$C9,$29,$E7,$29,$05,$2A,$25,$2A
-db $45,$2A,$66,$2A,$86,$2A,$A7,$2A,$C7,$2A,$E3,$2A,$03,$2B,$24,$2B
-db $42,$2B,$62,$2B,$82,$2B,$A4,$2B,$C0,$2B,$DF,$2B,$FF,$2B,$1D,$2C
-db $3E,$2C,$5E,$2C,$7C,$2C,$9B,$2C,$BA,$2C,$D8,$2C,$EA,$2C,$05,$2D
-db $25,$2D,$43,$2D,$64,$2D,$85,$2D,$A5,$2D,$C2,$2D,$E2,$2D,$04,$2E
-db $23,$2E,$44,$2E,$62,$2E,$7F,$2E,$A1,$2E,$C2,$2E,$E4,$2E,$05,$2F
-db $25,$2F,$45,$2F,$66,$2F,$87,$2F,$A8,$2F,$C6,$2F,$E6,$2F,$05,$30
-db $27,$30,$49,$30,$68,$30,$8A,$30,$AB,$30,$CE,$30,$F0,$30,$12,$31
-db $33,$31,$53,$31,$75,$31,$93,$31,$B2,$31,$D5,$31,$F6,$31,$15,$32
-db $33,$32,$54,$32,$76,$32,$93,$32,$B4,$32,$D4,$32,$F4,$32,$16,$33
-db $38,$33,$57,$33,$76,$33,$94,$33,$B4,$33,$D1,$33,$F2,$33,$12,$34
-db $34,$34,$55,$34,$76,$34,$96,$34,$B8,$34,$D8,$34,$F8,$34,$15,$35
-db $36,$35,$57,$35,$74,$35,$95,$35,$B8,$35,$D9,$35,$F9,$35,$1B,$36
-db $3D,$36,$5B,$36,$7B,$36,$9D,$36,$BF,$36,$DF,$36,$FC,$36,$1C,$37
-db $3E,$37,$5E,$37,$7F,$37,$A0,$37,$C2,$37,$E4,$37,$04,$38,$24,$38
-db $44,$38
+raw 00001A003300490062007E009900B400D000EC0008011E013B014D0168018401
+raw 9D01B801D101EE0109022302430263027F029902B402C602DE02F60215032E03
+raw 4D03690383039D03B703D003F0030E042D04490463047C049104AD04CD04ED04
+raw 0C0524053E055A0574058D05A705C405E205FB0511062A0644065C067C069C06
+raw BC06D906F90619073907590777079707A807B907CB07DA07EC07FC070E082208
+raw 35084E08680885089D08BA08D808EF08030921093D095B0976098909A309BB09
+raw D209EF09090A230A3E0A580A780A980AB80AD60AF00A0B0B240B3F0B5C0B740B
+raw 930BB00BBC0BD50BF20B0A0C290C490C690C830C9F0CB70CCC0CEA0C090D290D
+raw 490D610D7B0D930DAD0DC70DE60D040E240E3C0E5A0E730E8C0EA60EC60EE60E
+raw 020F1F0F3F0F5F0F7F0F9B0FB90FD90FEB0FFC0F0C101C102C103E1050106010
+raw 72108C10A410BE10D810F1100B1125113F11591173118D11A711C111DB11F511
+raw 0E12281242125A1274128E12A712C112DB12F5120F132A1344135E1377139113
+raw AB13C513DF13F813121427143F145C1474147C148314A114BC14C714D114DC14
+raw EE140015121537154E156015721584159615A015AC15B415BC15C415E4150316
+raw 1E163B16561670168C16AB16D116F7160B17311745176B177F179117A117B317
+raw C517D717E917FB170D181F18311843185518671879188B189D18AF18C118D318
+raw D318F31813193219551973199319AE19CE19EE190E1A2E1A4F1A6F1A8B1AAA1A
+raw C91AE91A091B291B491B691B891BA31BC11BDE1BFE1B1E1C3C1C5C1C7C1C9C1C
+raw BC1CDA1CF91C181D341D521D6C1D871DA91DCB1DEB1D0B1E2B1E4C1E6C1E8B1E
+raw AB1EC81EE81E061F261F461F661F831FA01FBE1FDF1FFC1F1C203B2057207520
+raw 9520B520D320F0200F212C214E216C218C21AC21CA21EA210B22292247226522
+raw 8522A522C522E32205232123402360238123A123C123E123FE231F243D245724
+raw 76249624B424D424F32413253125512570258E25AE25CC25E825082628264826
+raw 66268626A326BF26DE26FD2615273427542773279327B127D127EF270D282B28
+raw 482868288828A828C828E92808292829472967298729A829C929E729052A252A
+raw 452A662A862AA72AC72AE32A032B242B422B622B822BA42BC02BDF2BFF2B1D2C
+raw 3E2C5E2C7C2C9B2CBA2CD82CEA2C052D252D432D642D852DA52DC22DE22D042E
+raw 232E442E622E7F2EA12EC22EE42E052F252F452F662F872FA82FC62FE62F0530
+raw 2730493068308A30AB30CE30F03012313331533175319331B231D531F6311532
+raw 3332543276329332B432D432F43216333833573376339433B433D133F2331234
+raw 3434553476349634B834D834F83415353635573574359535B835D935F9351B363D
+raw 365B367B369D36BF36DF36FC361C373E375E377F37A037C237E437043824384438
+
+^.size

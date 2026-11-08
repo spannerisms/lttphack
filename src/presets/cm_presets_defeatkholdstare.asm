@@ -639,4 +639,4 @@ presetSRAM_defeatkholdstare:
 ...end
 ;===================================================================================================
 presetend_defeatkholdstare:
-print "defeatkholdstare size: $", hex(presetend_defeatkholdstare-presetheader_defeatkholdstare)
+printf "defeatkholdstare size: ${0:X4}", presetend_defeatkholdstare-presetheader_defeatkholdstare

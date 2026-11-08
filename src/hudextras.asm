@@ -2,10 +2,10 @@ pushpc
 
 org $008B7C
 	; need to calculate a dynamic size for it
-	LDX.w SA1IRAM.HUDSIZE ; make hud bigger
+	LDX.w IRAM.hud_size ; make hud bigger
 
 org $0DFC29
-	JML fire_hud_irq
+	JML FireHudIRQ
 
 ; for boss cycle counters
 org $05A39B
@@ -23,69 +23,68 @@ org $1ED632
 	JSL UpdateAgaCycles
 	NOP
 
-
 if !RANDO
-	org $0DFC26 : JMP ++ : ++
-	org $0DFBDD : JMP ++ : ++
+	org $0DFC26 : JMP &
+	org $0DFBDD : JMP &
 endif
 
 pullpc
 
 ;===================================================================================================
 
-fire_hud_irq:
+FireHudIRQ:
 	JSL CacheSA1Stuff ; cache the big boy stuff we need for hud
 
 	; don't want to be transferring too much
 	; certain things will get designated as slow
-	LDA.w SA1IRAM.highestline
+	LDA.w IRAM.highestline
 	BEQ .noextra
 
-	JSL Extra_SA1_Transfers
+	JSL ExtraSA1Transfers
 	SEP #$30
 
 .noextra
 	LDA.b #$83 ; request a hud update from SA-1
-	STA.w $2200
+	STA.w CCNT
 
 	REP #$30
 
 	LDA.l $7EF37B
-	JML $0DFC2F
+	JML jlong($0DFC2F)
 
 ;===================================================================================================
 
 HUDJumpCallA:
-	STA.w SA1RAM.EasyJMP
+	STA.w BWRAM.fast_jmp
 
 HUDJumpCall:
-	JMP.w (SA1RAM.EasyJMP)
+	JMP.w (BWRAM.fast_jmp)
 
 ;===================================================================================================
 
 HUDJumpCallY:
-	STY.w SA1RAM.EasyJMP
-	JMP.w (SA1RAM.EasyJMP)
+	STY.w BWRAM.fast_jmp
+	JMP.w (BWRAM.fast_jmp)
 
 ;===================================================================================================
 
 UpdateLanmoCycles:
 	INC.w $0D80,X
-	INC.w SA1IRAM.BossCycles,X
+	INC.w IRAM.boss_cycles,X
 	LDA.b #$18
 	RTL
 
 ResetLanmoCycles:
 	STA.l $7FF81E,X
-	STZ.w SA1IRAM.BossCycles,X
+	STZ.w IRAM.boss_cycles,X
 	RTL
 
 ResetAgaCycles:
 	STZ.w $0DC0,X
 
-	STZ.w SA1IRAM.BossCycles+0
-	STZ.w SA1IRAM.BossCycles+1
-	STZ.w SA1IRAM.BossCycles+2
+	STZ.w IRAM.boss_cycles+0
+	STZ.w IRAM.boss_cycles+1
+	STZ.w IRAM.boss_cycles+2
 
 	RTL
 
@@ -93,78 +92,78 @@ UpdateAgaCycles:
 	INC.w $0D80,X
 	LDY.b #$04
 
-	INC.w SA1IRAM.BossCycles,X
+	INC.w IRAM.boss_cycles,X
 	RTL
 
 ;===================================================================================================
 ; A = address
 ; Y = color
 ;===================================================================================================
-Draw:
+DrawNum:
 .all_one
-	STA.b SA1IRAM.SCRATCH+10
-	STY.b SA1IRAM.hud_props
+	STA.b IRAM.SCRATCH+10
+	STY.b IRAM.hud_props
 	BRA .digit1
 
 .all_two
-	STA.b SA1IRAM.SCRATCH+10
-	STY.b SA1IRAM.hud_props
+	STA.b IRAM.SCRATCH+10
+	STY.b IRAM.hud_props
 	BRA .digit10_always
 
 .all_three
-	STA.b SA1IRAM.SCRATCH+10
-	STY.b SA1IRAM.hud_props
+	STA.b IRAM.SCRATCH+10
+	STY.b IRAM.hud_props
 	BRA .digit100_always
 
 ;---------------------------------------------------------------------------------------------------
 
 .short_three
-	STA.b SA1IRAM.SCRATCH+10
-	STY.b SA1IRAM.hud_props
+	STA.b IRAM.SCRATCH+10
+	STY.b IRAM.hud_props
 
-	LDA.b (SA1IRAM.SCRATCH+10)
+	LDA.b (IRAM.SCRATCH+10)
 	CLC
 	ADC.w #$7F00 ; overflow set if digit 3 exists
-	LDA.b (SA1IRAM.SCRATCH+10)
+	LDA.b (IRAM.SCRATCH+10)
 	CMP.w #$0010 ; carry set if digit 2 or 3 exists
 
 .digit100
 	BVC .digit10
 
 .digit100_always
-	LDA.b (SA1IRAM.SCRATCH+10)
+	LDA.b (IRAM.SCRATCH+10)
 	XBA
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.b HUDProxy+10,X
 	BRA .digit10_always
 
 ;---------------------------------------------------------------------------------------------------
 
 .short_two
-	STA.b SA1IRAM.SCRATCH+10
-	STY.b SA1IRAM.hud_props
+	STA.b IRAM.SCRATCH+10
+	STY.b IRAM.hud_props
 
-	LDA.b (SA1IRAM.SCRATCH+10)
+	LDA.b (IRAM.SCRATCH+10)
 	CMP.w #$0010 ; carry set if digit 2 or 3 exists
 
 .digit10
 	BCC .digit1
 
 .digit10_always
-	LDA.b (SA1IRAM.SCRATCH+10)
+	LDA.b (IRAM.SCRATCH+10)
 	AND.w #$00F0
 	LSR
 	LSR
 	LSR
 	LSR
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.b HUDProxy+12,X
 
 .digit1
-	LDA.b (SA1IRAM.SCRATCH+10)
+	LDA.b (IRAM.SCRATCH+10)
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.b HUDProxy+14,X
 
 .done
@@ -177,27 +176,27 @@ PrepHexToDecDraw:
 
 	ASL
 	TAX
-	LDA.w hex_to_dec_fast_table,X
+	LDA.w FastHexToDec.table,X
 	PLX
 
-	STA.b SA1IRAM.SCRATCH
+	STA.b IRAM.SCRATCH
 
-	LDA.w #SA1IRAM.SCRATCH
+	LDA.w #IRAM.SCRATCH
 	RTS
 
 ;===================================================================================================
 
-hex_to_dec_fast:
+FastHexToDec:
 	ASL : TAX
 
-	LDA.w hex_to_dec_fast_table,X
-	TAY : AND.w #$000F : STA.b SA1IRAM.SCRATCH+4
-	TYA : AND.w #$00F0 : LSR : LSR : LSR : LSR : STA.b SA1IRAM.SCRATCH+2
-	TYA : XBA : AND.w #$000F : STA.b SA1IRAM.SCRATCH+0
+	LDA.w .table,X
+	TAY : AND.w #$000F : STA.b IRAM.SCRATCH+4
+	TYA : AND.w #$00F0 : LSR : LSR : LSR : LSR : STA.b IRAM.SCRATCH+2
+	TYA : XBA : AND.w #$000F : STA.b IRAM.SCRATCH+0
 
 	RTS
 
-hex_to_dec_fast_table:
+.table
 	dw $000, $001, $002, $003, $004, $005, $006, $007, $008, $009
 	dw $010, $011, $012, $013, $014, $015, $016, $017, $018, $019
 	dw $020, $021, $022, $023, $024, $025, $026, $027, $028, $029
@@ -312,7 +311,7 @@ HUD_NMI_DMA_SIZE:
 
 ;===================================================================================================
 
-draw_hud_extras:
+DrawHudExtras:
 	PHK
 	PLB
 
@@ -320,11 +319,11 @@ draw_hud_extras:
 	REP #$30
 
 	LDA.w #$0080
-	TRB.b SA1IRAM.TIMER_FLAG
+	TRB.b IRAM.TIMER_FLAG
 
-	LDX.w #$207F
+	LDX.w #!EMPTY
 
-	LDA.w #SA1RAM.HUD+($40*0) : TCD
+	LDA.w #BWRAM.HUD+($40*0) : TCD
 
 	STX.b $26 : STX.b $28 : STX.b $2A : STX.b $2C : STX.b $2E : STX.b $30
 	STX.b $32 : STX.b $34 : STX.b $36 : STX.b $38 : STX.b $3A : STX.b $3C
@@ -341,7 +340,7 @@ draw_hud_extras:
 	STX.b $E6 : STX.b $E8 : STX.b $EA : STX.b $EC : STX.b $EE : STX.b $F0
 	STX.b $F2 : STX.b $F4 : STX.b $F6 : STX.b $F8 : STX.b $FA : STX.b $FC
 
-	LDA.w #SA1RAM.HUD+($40*4) : TCD
+	LDA.w #BWRAM.HUD+($40*4) : TCD
 
 	STX.b $26 : STX.b $28 : STX.b $2A : STX.b $2C : STX.b $2E : STX.b $30
 	STX.b $32 : STX.b $34 : STX.b $36 : STX.b $38 : STX.b $3A : STX.b $3C
@@ -363,7 +362,7 @@ draw_hud_extras:
 	STX.b $F2 : STX.b $F4 : STX.b $F6 : STX.b $F8 : STX.b $FA : STX.b $FC
 	STX.b $FE
 
-	LDA.w #SA1RAM.HUD+($40*8) : TCD
+	LDA.w #BWRAM.HUD+($40*8) : TCD
 	STX.b $00 : STX.b $02 : STX.b $04 : STX.b $06 : STX.b $08 : STX.b $0A
 	STX.b $0C : STX.b $0E : STX.b $10 : STX.b $12 : STX.b $14 : STX.b $16
 	STX.b $18 : STX.b $1A : STX.b $1C : STX.b $1E : STX.b $20 : STX.b $22
@@ -372,21 +371,21 @@ draw_hud_extras:
 	STX.b $3C : STX.b $3E : STX.b $40 : STX.b $42 : STX.b $44 : STX.b $46
 	STX.b $48
 
-	LDA.w #$3000 : TCD
+	LDA.w #IRAM : TCD
 
 ;===================================================================================================
 
-	LDA.w !config_heart_display
+	LDA.w CONFIG.heart_display
 	ASL
 	TAX
-	JSR (draw_hearts_options,X)
+	JSR (DrawLifeOptions,X)
 
 ;===================================================================================================
 
-	LDA.w !config_hudlag_spinner
+	LDA.w CONFIG.hudlag_spinner
 	BNE .dohudlag
 
-	LDA.w #$207F
+	LDA.w #!EMPTY
 	BRA .write_spinner
 
 .char
@@ -396,7 +395,7 @@ draw_hud_extras:
 	dw $2D3F|$8000
 
 .dohudlag
-	LDA.b SA1IRAM.CopyOf_1A
+	LDA.b IRAM.copyof_1A
 	AND.w #$000C
 	LSR
 	TAX
@@ -404,168 +403,171 @@ draw_hud_extras:
 	LDA.w .char,X
 
 .write_spinner
-	STA.w SA1RAM.HUD+$02
+	STA.w BWRAM.HUD+$02
+
+;---------------------------------------------------------------------------------------------------
 
 if !RANDO
-	LDA.w #$207F
-	LDX.w !config_fastrom
+	LDA.w #!EMPTY
+	LDX.w CONFIG.fastrom
 	BEQ .write_fastrom
 
 	LDA.w #$2CA8
 
 .write_fastrom
-	STA.w SA1RAM.HUD+$00
+	STA.w BWRAM.HUD+$00
 
 endif
 
-	LDX.w !config_state_icons : BNE ++
+;---------------------------------------------------------------------------------------------------
 
-	LDA.w #$207F
-	STA.w SA1RAM.HUD+$042
-	STA.w SA1RAM.HUD+$082
-	STA.w SA1RAM.HUD+$0C2
-	STA.w SA1RAM.HUD+$102
-	BRA draw_hud_sentry
+	LDX.w CONFIG.state_icons : BNE ++
+
+	LDA.w #!EMPTY
+	STA.w BWRAM.HUD+$042
+	STA.w BWRAM.HUD+$082
+	STA.w BWRAM.HUD+$0C2
+	STA.w BWRAM.HUD+$102
+	BRA DrawSentries
 
 	; super speed
 ++	SEP #$10
 
 	LDA.w #char($1C)|!RED_PAL
-	LDX.b SA1IRAM.CopyOf_0372 : BNE ++
+	LDX.b IRAM.copyof_0372 : BNE ++
 
 	LDA.w #char($1C)|!GRAY_PAL
 
-++	STA.w SA1RAM.HUD+$042
+++	STA.w BWRAM.HUD+$042
 
 	; water walk
 	LDA.w #char($1D)|!BLUE_PAL
-	LDX.b SA1IRAM.CopyOf_5B : BNE ++
+	LDX.b IRAM.copyof_5B : BNE ++
 
 	LDA.w #char($1D)|!GRAY_PAL
 
-++	STA.w SA1RAM.HUD+$082
+++	STA.w BWRAM.HUD+$082
 
 	; door state
 	LDA.w #char($1A)|!BROWN_PAL
-	LDX.b SA1IRAM.CopyOf_6C : BNE ++
+	LDX.b IRAM.copyof_6C : BNE ++
 
 	LDA.w #char($1A)|!GRAY_PAL
 
-++	STA.w SA1RAM.HUD+$0C2
+++	STA.w BWRAM.HUD+$0C2
 
 	; stair drag
 	LDA.w #char($1B)|!BROWN_PAL
-	LDX.b SA1IRAM.CopyOf_57 : BNE ++
+	LDX.b IRAM.copyof_57 : BNE ++
 
 	LDA.w #char($1B)|!GRAY_PAL
 
-++	STA.w SA1RAM.HUD+$102
+++	STA.w BWRAM.HUD+$102
 
 
 ;===================================================================================================
 
-draw_hud_sentry:
+DrawSentries:
 	REP #$30
 
-	LDA.b SA1IRAM.SNTVAL1 : LDX.w #HUDProxyOffset($002E) : LDY.b SA1IRAM.SENTRYICON1
-	PEA.w .return_1-1 : JMP.w (SA1IRAM.SENTRYVECTOR1) : .return_1
+	LDA.b IRAM.sentry_value_1 : LDX.w #HUDProxyOffset($002E) : LDY.b IRAM.sentry_icon1
+	PEA.w rtn(.return_1) : JMP.w (IRAM.sentry_vector1) : .return_1
 
-	LDA.b SA1IRAM.SNTVAL2 : LDX.w #HUDProxyOffset($006E) : LDY.b SA1IRAM.SENTRYICON2
-	PEA.w .return_2-1 : JMP.w (SA1IRAM.SENTRYVECTOR2) : .return_2
+	LDA.b IRAM.sentry_value_2 : LDX.w #HUDProxyOffset($006E) : LDY.b IRAM.sentry_icon2
+	PEA.w rtn(.return_2) : JMP.w (IRAM.sentry_vector2) : .return_2
 
-	LDA.b SA1IRAM.SNTVAL3 : LDX.w #HUDProxyOffset($00AE) : LDY.b SA1IRAM.SENTRYICON3
-	PEA.w .return_3-1 : JMP.w (SA1IRAM.SENTRYVECTOR3) : .return_3
+	LDA.b IRAM.sentry_value_3 : LDX.w #HUDProxyOffset($00AE) : LDY.b IRAM.sentry_icon3
+	PEA.w rtn(.return_3) : JMP.w (IRAM.sentry_vector3) : .return_3
 
-	LDA.b SA1IRAM.SNTVAL4 : LDX.w #HUDProxyOffset($00EE) : LDY.b SA1IRAM.SENTRYICON4
-	PEA.w .return_4-1 : JMP.w (SA1IRAM.SENTRYVECTOR4) : .return_4
+	LDA.b IRAM.sentry_value_4 : LDX.w #HUDProxyOffset($00EE) : LDY.b IRAM.sentry_icon4
+	PEA.w rtn(.return_4) : JMP.w (IRAM.sentry_vector4) : .return_4
 
-	LDA.b SA1IRAM.SNTVAL5 : LDX.w #HUDProxyOffset($012E) : LDY.b SA1IRAM.SENTRYICON5
-	PEA.w .return_5-1 : JMP.w (SA1IRAM.SENTRYVECTOR5) : .return_5
+	LDA.b IRAM.sentry_value_5 : LDX.w #HUDProxyOffset($012E) : LDY.b IRAM.sentry_icon5
+	PEA.w rtn(.return_5) : JMP.w (IRAM.sentry_vector5) : .return_5
 
 ;===================================================================================================
 
 draw_hud_linesentrys:
-	LDA.w !config_hide_lines : BNE .no_line_sentries
+	LDA.w CONFIG.hide_lines : BNE .no_line_sentries
 
 	LDY.w #16*0 : LDX.w #HUDProxyOffset($014A)
-	PEA.w .return_1-1 : JMP.w (SA1IRAM.LINEVECTOR1) : .return_1
+	PEA.w rtn(.return_1) : JMP.w (IRAM.line_vector1) : .return_1
 
 	LDY.w #16*1 : LDX.w #HUDProxyOffset($018A)
-	PEA.w .return_2-1 : JMP.w (SA1IRAM.LINEVECTOR2) : .return_2
+	PEA.w rtn(.return_2) : JMP.w (IRAM.line_vector2) : .return_2
 
 	LDY.w #16*2 : LDX.w #HUDProxyOffset($01CA)
-	PEA.w .return_3-1 : JMP.w (SA1IRAM.LINEVECTOR3) : .return_3
+	PEA.w rtn(.return_3) : JMP.w (IRAM.line_vector3) : .return_3
 
 	LDY.w #16*3 : LDX.w #HUDProxyOffset($020A)
-	PEA.w .return_4-1 : JMP.w (SA1IRAM.LINEVECTOR4) : .return_4
+	PEA.w rtn(.return_4) : JMP.w (IRAM.line_vector4) : .return_4
 
 .no_line_sentries
 
 ;===================================================================================================
 
 hud_draw_input_display:
-	LDA.w !config_input_display
+	LDA.w CONFIG.input_display
 	AND.w #$0003
 	ASL : TAX
 
-	LDA.b SA1IRAM.CONTROLLER_1
+	LDA.b IRAM.joy1
 	XBA
 
-	JSR (.options,X)
+	JSR (InputDisplayOptions,X)
 
 ;===================================================================================================
 ; clean up the stuff right under items
 ;===================================================================================================
 	REP #$30
 
-	LDA.w #$207F
-	STA.w SA1RAM.HUD+$10A
-	STA.w SA1RAM.HUD+$10C
-	STA.w SA1RAM.HUD+$10E
+	LDA.w #!EMPTY
+	STA.w BWRAM.HUD+$10A
+	STA.w BWRAM.HUD+$10C
+	STA.w BWRAM.HUD+$10E
 
-	LDA.b SA1IRAM.CopyOf_1B
+	LDA.b IRAM.copyof_1B
 	LSR
-	BCC draw_quickwarp
+	BCC DrawQuickwarp
 
-	JSR draw_boss_cycles
+	JSR DrawBossCycles
 
 	BRA .skip
 
 ;===================================================================================================
 
-#draw_quickwarp:
+#DrawQuickwarp:
 	SEP #$30
 
-	LDA.w !config_qw_toggle
+	LDA.w CONFIG.qw_toggle
 	EOR.b #$01
-	ORA.b SA1IRAM.CopyOf_1B
+	ORA.b IRAM.copyof_1B
 	BNE .skip
 
-	LDA.b SA1IRAM.CopyOf_E2 : AND.b #$06 : CMP.b #$06 ; sets carry if 06
+	LDA.b IRAM.copyof_E2 : AND.b #$06 : CMP.b #$06 ; sets carry if 06
 
 	REP #$30
 
 	LDA.w #$300C
-
 	BCC .not_qw
 
 	ORA.w #$3800
 
 .not_qw
-	STA.w SA1RAM.HUD+$10A
+	STA.w BWRAM.HUD+$10A
 	INC
-	STA.w SA1RAM.HUD+$10C
+	STA.w BWRAM.HUD+$10C
 
 .skip
 
 ;===================================================================================================
 
-done_extras:
-	JML SA1IRQ_exit
+DoneExtras:
+	JML SA1IRQ.exit
 
 ;===================================================================================================
 
-draw_hearts_options:
+DrawLifeOptions:
 	dw .practicehack
 	dw .vanilla
 
@@ -573,56 +575,56 @@ draw_hearts_options:
 
 .practicehack
 	SEP #$21
-	LDA.b SA1IRAM.CopyOf_7EF36C
-	SBC.b SA1IRAM.CopyOf_7EF36D
+	LDA.b IRAM.copyof_7EF36C
+	SBC.b IRAM.copyof_7EF36D
 	CMP.b #$04
 
 	REP #$30
 	LDA.w #$24A0
 	ADC.w #$0000
-	STA.w SA1RAM.HUD+$90
+	STA.w BWRAM.HUD+$90
 
-	LDA.b SA1IRAM.CopyOf_7EF36D
+	LDA.b IRAM.copyof_7EF36D
 	AND.w #$00FF
 	LSR
 	LSR
 	LSR
-	JSR hex_to_dec_fast
+	JSR FastHexToDec
 
-	LDA.b SA1IRAM.SCRATCH+2
+	LDA.b IRAM.SCRATCH+2
 	ORA.w #$3C90
-	STA.w SA1RAM.HUD+$92
+	STA.w BWRAM.HUD+$92
 
-	LDA.b SA1IRAM.SCRATCH+4
+	LDA.b IRAM.SCRATCH+4
 	ORA.w #$3C90
-	STA.w SA1RAM.HUD+$94
+	STA.w BWRAM.HUD+$94
 
-	LDA.b SA1IRAM.CopyOf_7EF36D
+	LDA.b IRAM.copyof_7EF36D
 	AND.w #$0007
 	ORA.w #$3490
-	STA.w SA1RAM.HUD+$96
+	STA.w BWRAM.HUD+$96
 
-	LDA.w #$207F
-	STA.w SA1RAM.HUD+$98
+	LDA.w #!EMPTY
+	STA.w BWRAM.HUD+$98
 
 	; containers
 	LDA.w #$24A2
-	STA.w SA1RAM.HUD+$9A
+	STA.w BWRAM.HUD+$9A
 
-	LDA.b SA1IRAM.CopyOf_7EF36C
+	LDA.b IRAM.copyof_7EF36C
 	AND.w #$00FF
 	LSR
 	LSR
 	LSR
-	JSR hex_to_dec_fast
+	JSR FastHexToDec
 
-	LDA.b SA1IRAM.SCRATCH+2
+	LDA.b IRAM.SCRATCH+2
 	ORA.w #$3C90
-	STA.w SA1RAM.HUD+$9C
+	STA.w BWRAM.HUD+$9C
 
-	LDA.b SA1IRAM.SCRATCH+4
+	LDA.b IRAM.SCRATCH+4
 	ORA.w #$3C90
-	STA.w SA1RAM.HUD+$9E
+	STA.w BWRAM.HUD+$9E
 
 	RTS
 
@@ -630,14 +632,14 @@ draw_hearts_options:
 
 .vanilla
 	; --LIFE--
-	LDA.w #$288B : STA.w SA1RAM.HUD+$02C
-	LDA.w #$288F : STA.w SA1RAM.HUD+$02E
-	LDA.w #$24AB : STA.w SA1RAM.HUD+$030
-	LDA.w #$24AC : STA.w SA1RAM.HUD+$032
-	LDA.w #$688F : STA.w SA1RAM.HUD+$034
-	LDA.w #$688B : STA.w SA1RAM.HUD+$036
+	LDA.w #$288B : STA.w BWRAM.HUD+$02C
+	LDA.w #$288F : STA.w BWRAM.HUD+$02E
+	LDA.w #$24AB : STA.w BWRAM.HUD+$030
+	LDA.w #$24AC : STA.w BWRAM.HUD+$032
+	LDA.w #$688F : STA.w BWRAM.HUD+$034
+	LDA.w #$688B : STA.w BWRAM.HUD+$036
 
-	LDA.b SA1IRAM.CopyOf_7EF36C
+	LDA.b IRAM.copyof_7EF36C
 	LSR ; shift both right at once
 	LSR
 	LSR
@@ -649,9 +651,9 @@ draw_hearts_options:
 	XBA
 	TAY ; Y has current health
 
-	LDA.w #SA1RAM.HUD+$068
-	STA.b SA1IRAM.SCRATCH+0
-	STA.b SA1IRAM.SCRATCH+2
+	LDA.w #BWRAM.HUD+$068
+	STA.b IRAM.SCRATCH+0
+	STA.b IRAM.SCRATCH+2
 
 ..next_filled_heart
 	CPX.b #1 ; do we have at least 1 HP?
@@ -665,34 +667,34 @@ draw_hearts_options:
 	LDA.w #$24A2
 
 ..add_heart
-	STA.b (SA1IRAM.SCRATCH+0)
+	STA.b (IRAM.SCRATCH+0)
 
 	DEY
 	DEX
 
-	LDA.b SA1IRAM.SCRATCH+0
+	LDA.b IRAM.SCRATCH+0
 	INC
 	INC
-	CMP.w #SA1RAM.HUD+$07C
+	CMP.w #BWRAM.HUD+$07C
 	BEQ ..nextrow
 
-	CMP.w #SA1RAM.HUD+$0BC
+	CMP.w #BWRAM.HUD+$0BC
 	BNE ..fine
 
 ..nextrow
 	ADC.w #$002B ; +1 carry +2 from inc
 
 ..fine
-	STA.b SA1IRAM.SCRATCH+0
+	STA.b IRAM.SCRATCH+0
 
 	CPY.b #$00
 	BNE ..next_filled_heart ; save pointer when we have 0 hearts left to add
 
-	STA.b SA1IRAM.SCRATCH+2
+	STA.b IRAM.SCRATCH+2
 	BRA ..next_filled_heart
 
 ..done_hearts
-	LDA.b SA1IRAM.CopyOf_7EF36D
+	LDA.b IRAM.copyof_7EF36D
 	AND.w #$0007
 	BEQ ..skip_partial
 
@@ -703,10 +705,10 @@ draw_hearts_options:
 	INC ; 1-4 means half heart
 
 ..more_than_half
-	STA.b (SA1IRAM.SCRATCH+2)
+	STA.b (IRAM.SCRATCH+2)
 
 ..skip_partial
-	LDA.w SA1IRAM.Moved_0209
+	LDA.w IRAM.relocated_0209
 	BIT.w #$FF00
 	BEQ ..done
 
@@ -715,7 +717,7 @@ draw_hearts_options:
 	TAX
 
 	LDA.l $0DFA29,X
-	STA.b (SA1IRAM.SCRATCH+2)
+	STA.b (IRAM.SCRATCH+2)
 
 ..done
 	RTS
@@ -723,7 +725,7 @@ draw_hearts_options:
 ;===================================================================================================
 
 ; wrap at 7A
-hud_draw_input_display_options:
+InputDisplayOptions:
 	dw .off
 	dw .cool
 	dw .classic
@@ -735,42 +737,42 @@ hud_draw_input_display_options:
 ;---------------------------------------------------------------------------------------------------
 
 .cool
-	STA.b SA1IRAM.SCRATCH ; dpad
-	AND.w #$000F : ORA.w #$2D70 : STA.w SA1RAM.HUD+$66+2
+	STA.b IRAM.SCRATCH ; dpad
+	AND.w #$000F : ORA.w #$2D70 : STA.w BWRAM.HUD+$66+2
 
 	; need buttons in this order: xbya
 	SEP #$30
 
-	LDA.b SA1IRAM.SCRATCH+0 : AND.b #$C0
+	LDA.b IRAM.SCRATCH+0 : AND.b #$C0
 	LSR : LSR : LSR : LSR : LSR ; b and y in place
-	STA.b SA1IRAM.SCRATCH+2
+	STA.b IRAM.SCRATCH+2
 
-	LDA.b SA1IRAM.SCRATCH+1 : AND.b #$40
+	LDA.b IRAM.SCRATCH+1 : AND.b #$40
 	LSR : LSR : LSR ; x in place
-	ORA.b SA1IRAM.SCRATCH+2
+	ORA.b IRAM.SCRATCH+2
 	
 	; this ASL takes care of one for figuring out LR inputs
-	ASL.b SA1IRAM.SCRATCH+1 : ADC.b #$70 ; a in place
+	ASL.b IRAM.SCRATCH+1 : ADC.b #$70 ; a in place
 
 	; $70 is the character offset we want
 	; top byte contains $29 from doing dpad, which is what we want
 	REP #$20
-	STA.w SA1RAM.HUD+$66+6
+	STA.w BWRAM.HUD+$66+6
 
 	; start and select
-	LDA.b SA1IRAM.SCRATCH : AND.w #$0030
+	LDA.b IRAM.SCRATCH : AND.w #$0030
 	LSR : LSR : LSR : LSR
 	ORA.w #$2C00
-	STA.w SA1RAM.HUD+$66+4
+	STA.w BWRAM.HUD+$66+4
 
 	; L and R
-	ASL.b SA1IRAM.SCRATCH : ASL.b SA1IRAM.SCRATCH ; L into carry and remember where R is
-	LDA.w #$2C04 : ADC.w #$0000 : STA.w SA1RAM.HUD+$26+2
+	ASL.b IRAM.SCRATCH : ASL.b IRAM.SCRATCH ; L into carry and remember where R is
+	LDA.w #$2C04 : ADC.w #$0000 : STA.w BWRAM.HUD+$26+2
 
-	ASL.b SA1IRAM.SCRATCH ; R into carry
-	LDA.w #$6C04 : ADC.w #$0000 : STA.w SA1RAM.HUD+$26+6
+	ASL.b IRAM.SCRATCH ; R into carry
+	LDA.w #$6C04 : ADC.w #$0000 : STA.w BWRAM.HUD+$26+6
 
-	LDA.w #$2C06 : STA.w SA1RAM.HUD+$26+4
+	LDA.w #$2C06 : STA.w BWRAM.HUD+$26+4
 
 	RTS
 
@@ -785,13 +787,13 @@ hud_draw_input_display_options:
 	SEP #$40 ; set overflow means classic gray
 
 	; Y will hold the current input character
-++	STA.b SA1IRAM.SCRATCH+0
+++	STA.b IRAM.SCRATCH+0
 	XBA
 	LSR
 	LSR
 	LSR
 	LSR
-	STA.b SA1IRAM.SCRATCH+1 ; for high byte
+	STA.b IRAM.SCRATCH+1 ; for high byte
 
 	LDX.w #$0000
 
@@ -801,7 +803,7 @@ hud_draw_input_display_options:
 	TXA
 	LSR
 
-	LSR.b SA1IRAM.SCRATCH
+	LSR.b IRAM.SCRATCH
 	BCC ..nopress
 
 ..press
@@ -810,10 +812,11 @@ hud_draw_input_display_options:
 
 ..nopress
 	BVC ..nochar
+
 	ORA.w #$3170
 
 ..addchr
-	STA.w SA1RAM.HUD,Y
+	STA.w BWRAM.HUD,Y
 
 ..nochar
 	INX
@@ -843,11 +846,11 @@ hud_draw_input_display_options:
 
 ;===================================================================================================
 
-draw_boss_cycles:
-	LDA.w !config_boss_cycles
+DrawBossCycles:
+	LDA.w CONFIG.boss_cycles
 	BEQ .no
 
-	LDA.b SA1IRAM.CopyOf_A0
+	LDA.b IRAM.copyof_A0
 	CMP.w #$0033 : BEQ .three ; lanmo
 	CMP.w #$000D : BEQ .three ; agahnim
 
@@ -863,10 +866,10 @@ draw_boss_cycles:
 	TAY
 
 .next
-	LDA.b SA1IRAM.BossCycles,X
+	LDA.b IRAM.boss_cycles,X
 	AND.w #$00FF
 	ORA.w #$2010
-	STA.w SA1RAM.HUD+$10A,Y
+	STA.w BWRAM.HUD+$10A,Y
 
 	DEY
 	DEY
@@ -881,38 +884,38 @@ draw_boss_cycles:
 DrawHex:
 
 .4digit
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 .4digit_start
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.b HUDProxy+14,X
-	LDA.b SA1IRAM.hud_val
+	LDA.b IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
 
 .3digit
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 .3digit_start
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.b HUDProxy+14,X
-	LDA.b SA1IRAM.hud_val
+	LDA.b IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
 
 .2digit
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 .2digit_start
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.b HUDProxy+14,X
-	LDA.b SA1IRAM.hud_val
+	LDA.b IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
 
 .1digit
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.b HUDProxy+14,X
 	DEX : DEX
 
@@ -924,82 +927,82 @@ DrawHex:
 	LDY.w #!white
 
 .4digit_prepped
-	STY.b SA1IRAM.hud_props
+	STY.b IRAM.hud_props
 	JMP .4digit
 
 .white_3
 	LDY.w #!white
 
 .3digit_prepped
-	STY.b SA1IRAM.hud_props
+	STY.b IRAM.hud_props
 	JMP .3digit
 
 .white_2
 	LDY.w #!white
 
 .2digit_prepped
-	STY.b SA1IRAM.hud_props
+	STY.b IRAM.hud_props
 	JMP .2digit
 
 .white_1
 	LDY.w #!white
 
 .1digit_prepped
-	STY.b SA1IRAM.hud_props
+	STY.b IRAM.hud_props
 	JMP .1digit
 
 ;---------------------------------------------------------------------------------------------------
 
 .red_4
-	LDY.w #!red : STY.b SA1IRAM.hud_props
+	LDY.w #!red : STY.b IRAM.hud_props
 	JMP .4digit
 
 .red_3
-	LDY.w #!red : STY.b SA1IRAM.hud_props
+	LDY.w #!red : STY.b IRAM.hud_props
 	JMP .3digit
 
 .red_2
-	LDY.w #!red : STY.b SA1IRAM.hud_props
+	LDY.w #!red : STY.b IRAM.hud_props
 	JMP .2digit
 
 .red_1
-	LDY.w #!red : STY.b SA1IRAM.hud_props
+	LDY.w #!red : STY.b IRAM.hud_props
 	JMP .1digit
 
 ;---------------------------------------------------------------------------------------------------
 
 .gray_4
-	LDY.w #!gray : STY.b SA1IRAM.hud_props
+	LDY.w #!gray : STY.b IRAM.hud_props
 	JMP .4digit
 
 .gray_3
-	LDY.w #!gray : STY.b SA1IRAM.hud_props
+	LDY.w #!gray : STY.b IRAM.hud_props
 	JMP .3digit
 
 .gray_2
-	LDY.w #!gray : STY.b SA1IRAM.hud_props
+	LDY.w #!gray : STY.b IRAM.hud_props
 	JMP .2digit
 
 .gray_1
-	LDY.w #!gray : STY.b SA1IRAM.hud_props
+	LDY.w #!gray : STY.b IRAM.hud_props
 	JMP .1digit
 
 ;---------------------------------------------------------------------------------------------------
 
 .yellow_4
-	LDY.w #!yellow : STY.b SA1IRAM.hud_props
+	LDY.w #!yellow : STY.b IRAM.hud_props
 	JMP .4digit
 
 .yellow_3
-	LDY.w #!yellow : STY.b SA1IRAM.hud_props
+	LDY.w #!yellow : STY.b IRAM.hud_props
 	JMP .3digit
 
 .yellow_2
-	LDY.w #!yellow : STY.b SA1IRAM.hud_props
+	LDY.w #!yellow : STY.b IRAM.hud_props
 	JMP .2digit
 
 .yellow_1
-	LDY.w #!yellow : STY.b SA1IRAM.hud_props
+	LDY.w #!yellow : STY.b IRAM.hud_props
 	JMP .1digit
 
 ;===================================================================================================
@@ -1007,200 +1010,199 @@ DrawHex:
 DrawHexForward:
 
 .4digit
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 
 .4digit_start
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.w HUDProxy-2,X
-	LDA.b SA1IRAM.hud_val
+	LDA.b IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
 
 
 .3digit
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 
 .3digit_start
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.w HUDProxy-2,X
-	LDA.b SA1IRAM.hud_val
+	LDA.b IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
 
 .2digit
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 
 .2digit_start
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.w HUDProxy-2,X
-	LDA.b SA1IRAM.hud_val
+	LDA.b IRAM.hud_val
 	DEX : DEX
 	LSR : LSR : LSR : LSR
 
 .1digit
 .1digit_start
 	AND.w #$000F
-	ORA.b SA1IRAM.hud_props
+	ORA.b IRAM.hud_props
 	STA.w HUDProxy-2,X
 
-	LDX.b SA1IRAM.hud_val2
+	LDX.b IRAM.hud_val2
 
 	RTS
 
 ;---------------------------------------------------------------------------------------------------
 
 .4digit_color_set
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	BRA .4prepped
 
 .4digit_prep
-	STA.b SA1IRAM.hud_props
+	STA.b IRAM.hud_props
 
 .4prepped
 	TXA : CLC : ADC.w #(4*2)
 	TAX
 
-	STX.b SA1IRAM.hud_val2
-	LDA.b SA1IRAM.hud_val
+	STX.b IRAM.hud_val2
+	LDA.b IRAM.hud_val
 	JMP .4digit_start
 
 ;---------------------------------------------------------------------------------------------------
 
 .3digit_color_set
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	BRA .3prepped
 
 .3digit_prep
-	STA.b SA1IRAM.hud_props
+	STA.b IRAM.hud_props
 
 .3prepped
 	TXA : CLC : ADC.w #(3*2)
 	TAX
 
-	STX.b SA1IRAM.hud_val2
-	LDA.b SA1IRAM.hud_val
+	STX.b IRAM.hud_val2
+	LDA.b IRAM.hud_val
 	JMP .3digit_start
-
 
 ;---------------------------------------------------------------------------------------------------
 
 .2digit_color_set
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	BRA .2prepped
 
 .2digit_prep
-	STA.b SA1IRAM.hud_props
+	STA.b IRAM.hud_props
 
 .2prepped
 	TXA : CLC : ADC.w #(2*2)
 	TAX
 
-	STX.b SA1IRAM.hud_val2
-	LDA.b SA1IRAM.hud_val
+	STX.b IRAM.hud_val2
+	LDA.b IRAM.hud_val
 	JMP .2digit_start
 
 ;---------------------------------------------------------------------------------------------------
 
 .1digit_color_set
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	BRA .1prepped
 
 .1digit_prep
-	STA.b SA1IRAM.hud_props
+	STA.b IRAM.hud_props
 
 .1prepped
-	STX.b SA1IRAM.hud_val2
-	LDA.b SA1IRAM.hud_val
+	STX.b IRAM.hud_val2
+	LDA.b IRAM.hud_val
 	JMP .1digit_start
 
 ;---------------------------------------------------------------------------------------------------
 
 .white_4
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!white
 	JMP .4digit_prep
 
 .white_3
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!white
 	JMP .3digit_prep
 
 .white_2
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!white
 	JMP .2digit_prep
 
 .white_1
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!white
 	JMP .1digit_prep
 
 ;---------------------------------------------------------------------------------------------------
 
 .red_4
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!red
 	JMP .4digit_prep
 
 .red_3
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!red
 	JMP .3digit_prep
 
 .red_2
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!red
 	JMP .2digit_prep
 
 .red_1
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!red
 	JMP .1digit_prep
 
 ;---------------------------------------------------------------------------------------------------
 
 .gray_4
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!gray
 	JMP .4digit_prep
 
 .gray_3
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!gray
 	JMP .3digit_prep
 
 .gray_2
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!gray
 	JMP .2digit_prep
 
 .gray_1
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!gray
 	JMP .1digit_prep
 
 ;---------------------------------------------------------------------------------------------------
 
 .yellow_4
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!yellow
 	JMP .4digit_prep
 
 .yellow_3
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!yellow
 	JMP .3digit_prep
 
 .yellow_2
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!yellow
 	JMP .2digit_prep
 
 .yellow_1
-	STA.b SA1IRAM.hud_val
+	STA.b IRAM.hud_val
 	LDA.w #!yellow
 	JMP .1digit_prep
 

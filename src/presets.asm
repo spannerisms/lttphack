@@ -41,27 +41,27 @@ macro write_deaths_enable()
 endmacro
 
 macro write_deaths(r, k)
-	db <r> : dw <k>
+	db {r} : dw {k}
 endmacro
 
 macro write_bastard_door(flags)
-	dw !PRESET_WRITE_BAST : db <flags>
+	dw !PRESET_WRITE_BAST : db {flags}
 endmacro
 
 macro write8(addr, data)
-	dw <addr> : db <data>
+	dw {addr} : db {data}
 endmacro
 
 macro write16(addr, data)
-	dw <addr> : dw <data>
+	dw {addr} : dw {data}
 endmacro
 
 macro writeroom(room, n)
-	dw <room>*2 : dw <n>
+	dw {room}*2 : dw {n}
 endmacro
 
 macro write16sram(addr, data)
-	dw <addr>&$0FFF|$4000 : dw <data>
+	dw {addr}&$0FFF|$4000 : dw {data}
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ endmacro
 
 macro write_mirror(xl, xh, yl, yh)
 	dw !PERTWRITE_MIRROR
-	db <xl>, <xh>, <yl>, <yh>
+	db {xl}, {xh}, {yl}, {yh}
 endmacro
 
 ;===================================================================================================
@@ -136,7 +136,7 @@ LoadOverworldOverlay:
 
 org $09F253
 CheckForDeathReload:
-	LDA.w !config_death_reload : BEQ GameOver01
+	LDA.w CONFIG.death_reload : BEQ GameOver01
 
 	LDX.b #$03
 	LDA.b #$06
@@ -150,7 +150,7 @@ CheckForDeathReload:
 	JSL LoadLastPreset
 	BRA GameOver01
 
-warnpc $09F270
+guardpc $09F270
 org $09F272 : dw CheckForDeathReload
 
 GameOver01 = $09F2A4
@@ -162,10 +162,10 @@ pullpc
 GetPresetsOffset:
 	SEP #$30
 
-	LDA.w !config_preset_category
+	LDA.w CONFIG.preset_category
 	ASL
 	CLC
-	ADC.w !config_preset_category
+	ADC.w CONFIG.preset_category
 	TAX
 
 	REP #$21
@@ -178,29 +178,29 @@ PRESET_SUBMENU:
 
 	LDA.l .pointers-1,X
 	AND.w #$FF00
-	STA.b SA1IRAM.cm_cursor+0
+	STA.b IRAM.cm_cursor+0
 
 	LDA.l .pointers+1,X
-	STA.b SA1IRAM.cm_cursor+2
+	STA.b IRAM.cm_cursor+2
 
 #SetPresetMenuArea:
 	; put bank in appropriate places
-	STA.b SA1IRAM.preset_prog+1
-	STA.b SA1IRAM.preset_pert+1
-	STA.b SA1IRAM.preset_reader+1
-	STA.b SA1IRAM.preset_reader2+1
+	STA.b IRAM.preset_prog+1
+	STA.b IRAM.preset_pert+1
+	STA.b IRAM.preset_reader+1
+	STA.b IRAM.preset_reader2+1
 
-	LDA.b [SA1IRAM.cm_current_menu] ; save data pointer
-	STA.b SA1IRAM.preset_prog
+	LDA.b [IRAM.cm_current_menu] ; save data pointer
+	STA.b IRAM.preset_prog
 
 	LDY.b #$02
-	LDA.b [SA1IRAM.cm_current_menu],Y ; save data pointer
-	STA.b SA1IRAM.preset_pert
+	LDA.b [IRAM.cm_current_menu],Y ; save data pointer
+	STA.b IRAM.preset_pert
 
 	; adjust the pointer to be in the correct spot for the menu
-	LDA.b SA1IRAM.cm_current_menu
+	LDA.b IRAM.cm_current_menu
 	ADC.w #$0004
-	STA.b SA1IRAM.cm_current_menu
+	STA.b IRAM.cm_current_menu
 
 	RTL
 
@@ -257,10 +257,10 @@ emptybg3:
 LoadLastPreset:
 	REP #$20
 
-	LDA.w SA1IRAM.preset_addr
+	LDA.w IRAM.preset_addr
 	BMI LoadPreset
 
-	LDA.w SA1IRAM.litestate_last
+	LDA.w IRAM.litestate_last
 	AND.w #$00FF
 	CMP.w #$0010 : BCS .exit
 
@@ -276,10 +276,10 @@ LoadPreset:
 	JSL ResetBeforeLoading
 
 	; clear sram mirror
-	STZ.b $2182 ; bank 7E now
-	LDA.w #$F000 : STA.b $2181
-	LDA.w #$0500 : STA.w $4355
-	STX.w $420B
+	STZ.b WMADDH ; bank 7E now
+	LDA.w #$F000 : STA.b WMADDL
+	LDA.w #$0500 : STA.w DMA5SIZE
+	STX.w MDMAEN
 
 	; reset more stuff before preset goes
 	STZ.w $0CF9
@@ -288,9 +288,9 @@ LoadPreset:
 	STZ.w $0FFC
 
 	; start loading preset data
-	LDA.w #$3000 : TCD
+	LDA.w #IRAM : TCD
 
-	LDA.w #$FFFF : STA.w SA1IRAM.litestate_last
+	LDA.w #$FFFF : STA.w IRAM.litestate_last
 
 	SEP #$20
 	LDA.b #$7E
@@ -314,49 +314,49 @@ LoadPreset:
 
 	SEP #$20
 	; make the banks match just in case
-	LDA.b SA1IRAM.preset_addr+2
-	STA.b SA1IRAM.preset_prog+2
-	STA.b SA1IRAM.preset_pert+2
-	STA.b SA1IRAM.preset_reader+2
-	STA.b SA1IRAM.preset_reader2+2
+	LDA.b IRAM.preset_addr+2
+	STA.b IRAM.preset_prog+2
+	STA.b IRAM.preset_pert+2
+	STA.b IRAM.preset_reader+2
+	STA.b IRAM.preset_reader2+2
 
 	; fill up addresses from preset header
 	REP #$31
-	LDA.b SA1IRAM.preset_addr
-	STA.b SA1IRAM.preset_reader
+	LDA.b IRAM.preset_addr
+	STA.b IRAM.preset_reader
 
 	LDY.w #$0002 ; start getting data for the preset
 
-	LDA.b [SA1IRAM.preset_addr]
-	STA.b SA1IRAM.preset_pert_end
+	LDA.b [IRAM.preset_addr]
+	STA.b IRAM.preset_pert_end
 
-	LDA.b [SA1IRAM.preset_addr],Y
-	STA.b SA1IRAM.preset_prog_end
+	LDA.b [IRAM.preset_addr],Y
+	STA.b IRAM.preset_prog_end
 	INY : INY
 
 	; get stuff every preset has
 
 	; Room/Screen ID
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : PHA ; save this
+	LDA.b [IRAM.preset_addr],Y : INY : INY : PHA ; save this
 
 	; Link X and Y
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : STA.w $0022
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : STA.w $0020
+	LDA.b [IRAM.preset_addr],Y : INY : INY : STA.w $0022
+	LDA.b [IRAM.preset_addr],Y : INY : INY : STA.w $0020
 
 	; Camera H and V
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
+	LDA.b [IRAM.preset_addr],Y : INY : INY
 	STA.w $00E0 : STA.w $0120 : STA.w $00E2 : STA.w $011E
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
+	LDA.b [IRAM.preset_addr],Y : INY : INY
 	STA.w $00E6 : STA.w $0124 : STA.w $00E8 : STA.w $0122
 
 	SEP #$20
 
 	; Item
-	LDA.b [SA1IRAM.preset_addr],Y : INY : STA.w $0303
+	LDA.b [IRAM.preset_addr],Y : INY : STA.w $0303
 
 	; Link's direction
-	LDA.b [SA1IRAM.preset_addr],Y : INY : STA.w $002F
+	LDA.b [IRAM.preset_addr],Y : INY : STA.w $002F
 
 	PHY : PHB
 
@@ -369,7 +369,7 @@ LoadPreset:
 	JSR LoadPresetSafeties
 
 .done_loadout
-	JSL $00FC62
+	JSL jlong($00FC62)
 
 	; prevent NMI from flashing screen
 	SEP #$20
@@ -380,12 +380,12 @@ LoadPreset:
 
 	PLB : PLY
 
-	LDA.b SA1IRAM.preset_type
+	LDA.b IRAM.preset_type
 	AND.w #$00FF
 	TAX
 	PLA ; get ID back
 
-	PEA.w $7E80 ; push data banks we wanna use
+	PEA.w $7E_80 ; push data banks we wanna use
 	PLB
 
 	JSR (.preset_types,X)
@@ -393,7 +393,7 @@ LoadPreset:
 	; prevent NMI again
 	SEP #$20
 
-	LDA.b #$01 : STA.w $4200
+	LDA.b #$01 : STA.w NMITIMEN
 
 	; do the arbitrary writes
 	REP #$31
@@ -428,11 +428,11 @@ LoadPreset:
 
 	SEP #$30
 
-	LDA.w SA1RAM.ganon_bats
+	LDA.w BWRAM.ganon_bats
 	BEQ ++
 
 	REP #$20
-	LDA.w SA1IRAM.randomish : STA.w $0B08
+	LDA.w IRAM.randomish : STA.w $0B08
 	SEP #$20
 
 ++	JSL Rerandomize
@@ -449,7 +449,7 @@ LoadPreset:
 ;===================================================================================================
 
 LoadPresetWrites:
-	LDA.b [SA1IRAM.preset_reader],Y
+	LDA.b [IRAM.preset_reader],Y
 	INY
 	INY
 	BRA .new_command
@@ -460,7 +460,7 @@ LoadPresetWrites:
 .next_address_8
 	INY
 
-	LDA.b [SA1IRAM.preset_reader],Y
+	LDA.b [IRAM.preset_reader],Y
 
 	INY
 	INY
@@ -477,7 +477,7 @@ LoadPresetWrites:
 .new_command
 	ASL
 	TAX
-	LDA.b [SA1IRAM.preset_reader],Y
+	LDA.b [IRAM.preset_reader],Y
 	INY
 	INY
 	JMP (.commands,X)
@@ -512,7 +512,7 @@ LoadPresetWrites:
 	TAX
 
 	SEP #$20
-	LDA.b [SA1IRAM.preset_reader],Y
+	LDA.b [IRAM.preset_reader],Y
 	STA.w $0000,X
 	REP #$20
 
@@ -535,7 +535,7 @@ LoadPresetWrites:
 .write16bit
 	TAX
 
-	LDA.b [SA1IRAM.preset_reader],Y
+	LDA.b [IRAM.preset_reader],Y
 	STA.w $0000,X
 
 	JSR .next_address
@@ -546,12 +546,12 @@ LoadPresetWrites:
 .write_bastard_door
 	PHY
 
-	STA.b SA1IRAM.preset_writer
+	STA.b IRAM.preset_writer
 
 	LDY.w #$0000
 
 .next_bastard_door
-	LSR.b SA1IRAM.preset_writer
+	LSR.b IRAM.preset_writer
 	BCC .no_bastard
 
 	JSR BastardizeDoor
@@ -579,7 +579,7 @@ LoadPresetWrites:
 ;	LDX.w #$FFFE
 ;
 ;.next
-;	LDA.b [SA1IRAM.preset_reader],Y
+;	LDA.b [IRAM.preset_reader],Y
 ;	CMP.w #$0010 : BCC .new_command
 ;
 ;	; can only kill 4 rooms worth of sprites
@@ -595,7 +595,7 @@ LoadPresetWrites:
 ;
 ;	ASL : TAX
 ;
-;	LDA.b [SA1IRAM.preset_reader],Y
+;	LDA.b [IRAM.preset_reader],Y
 ;
 ;	STA.l $7FFD80,X
 ;
@@ -686,9 +686,9 @@ LoadPresetSRAM:
 
 	REP #$20
 
-	LDA.b SA1IRAM.preset_prog_end
-	SBC.b SA1IRAM.preset_prog
-	STA.b SA1IRAM.preset_writer
+	LDA.b IRAM.preset_prog_end
+	SBC.b IRAM.preset_prog
+	STA.b IRAM.preset_writer
 
 	LDY.w #$0000
 	BRA .start
@@ -700,18 +700,18 @@ LoadPresetSRAM:
 	INY
 
 .start
-	LDA.b [SA1IRAM.preset_prog],Y
+	LDA.b [IRAM.preset_prog],Y
 
 	INY
 	INY
-	CPY.b SA1IRAM.preset_writer
+	CPY.b IRAM.preset_writer
 	BCS .done
 
 	TAX
 	BPL .write_16
 
 	SEP #$20
-	LDA.b [SA1IRAM.preset_prog],Y
+	LDA.b [IRAM.preset_prog],Y
 	STA.w $7E0000,X
 	REP #$20
 	BRA .next
@@ -720,12 +720,12 @@ LoadPresetSRAM:
 	BIT.w #$4000
 	BNE .not_room
 
-	LDA.b [SA1IRAM.preset_prog],Y
+	LDA.b [IRAM.preset_prog],Y
 	STA.w $7EF000,X
 	BRA .next_from_room
 
 .not_room
-	LDA.b [SA1IRAM.preset_prog],Y
+	LDA.b [IRAM.preset_prog],Y
 	STA.w $7EB000,X
 	BRA .next_from_room
 
@@ -743,16 +743,16 @@ LoadPresetPersistence:
 
 	REP #$30
 
-	LDA.b SA1IRAM.preset_pert_end
-	SBC.b SA1IRAM.preset_pert
-	STA.b SA1IRAM.preset_writer
+	LDA.b IRAM.preset_pert_end
+	SBC.b IRAM.preset_pert
+	STA.b IRAM.preset_writer
 
 	LDY.w #$0000
 
 .next
 	REP #$20
 
-	LDA.b [SA1IRAM.preset_pert],Y
+	LDA.b [IRAM.preset_pert],Y
 
 	INY
 	INY
@@ -760,14 +760,14 @@ LoadPresetPersistence:
 	CMP.w #$0010
 	BCC .command
 
-	CPY.b SA1IRAM.preset_writer
+	CPY.b IRAM.preset_writer
 	BCS .done
 
 	TAX
 
 	SEP #$20
 
-	LDA.b [SA1IRAM.preset_pert],Y
+	LDA.b [IRAM.preset_pert],Y
 	STA.w $7E0000,X
 
 	INY
@@ -810,10 +810,10 @@ LoadPresetPersistence:
 .write_mirror
 	SEP #$20
 
-	LDA.b [SA1IRAM.preset_pert],Y : INY : STA.w $7E1ABF
-	LDA.b [SA1IRAM.preset_pert],Y : INY : STA.w $7E1ACF
-	LDA.b [SA1IRAM.preset_pert],Y : INY : STA.w $7E1ADF
-	LDA.b [SA1IRAM.preset_pert],Y : INY : STA.w $7E1AEF
+	LDA.b [IRAM.preset_pert],Y : INY : STA.w $7E1ABF
+	LDA.b [IRAM.preset_pert],Y : INY : STA.w $7E1ACF
+	LDA.b [IRAM.preset_pert],Y : INY : STA.w $7E1ADF
+	LDA.b [IRAM.preset_pert],Y : INY : STA.w $7E1AEF
 
 	JMP .next
 
@@ -844,14 +844,14 @@ LoadPresetSafeties:
 
 	REP #$30
 
-	LDA.w !config_preset_category
+	LDA.w CONFIG.preset_category
 	AND.w #$00FF
 	ASL
 	TAX
 
 	SEP #$20
 
-	LDY.b SA1IRAM.preset_addr
+	LDY.b IRAM.preset_addr
 
 	JSR.w (.vectors,X)
 
@@ -885,7 +885,7 @@ LoadSafeties_nmg:
 	; sanc heart
 	CPY.w #presetmenu_nmg_eastern_octorok : BCC --
 
-	LDA.w !config_safeties_nmg_sanc_heart : BEQ .no_sanc
+	LDA.w CONFIG.safeties_nmg_sanc_heart : BEQ .no_sanc
 
 	REP #$21
 
@@ -898,7 +898,7 @@ LoadSafeties_nmg:
 
 .no_sanc
 	; mushroom / powder / half magic
-	LDA.w !config_safeties_nmg_powder
+	LDA.w CONFIG.safeties_nmg_powder
 	BEQ .no_powder
 
 	CPY.w #presetmenu_nmg_aga_after_lost_woods : BCC .no_powder
@@ -946,7 +946,7 @@ LoadSafeties_nmg:
 
 .no_powder
 	; bottles
-	LDA.w !config_safeties_nmg_bottles : BEQ .no_bottles
+	LDA.w CONFIG.safeties_nmg_bottles : BEQ .no_bottles
 
 	CMP.b #$01 : BEQ .early
 
@@ -978,7 +978,7 @@ LoadSafeties_nmg:
 
 .no_bottles
 	; red mail
-	LDA.w !config_safeties_nmg_red_mail : BEQ .no_red_mail
+	LDA.w CONFIG.safeties_nmg_red_mail : BEQ .no_red_mail
 	CPY.w #presetmenu_nmg_gtower_floor_3 : BCC .no_red_mail
 
 	LDA.b #$02 : STA.l $7EF35B
@@ -990,7 +990,7 @@ LoadSafeties_nmg:
 
 .no_red_mail
 	; gold/silvers
-	LDA.w !config_safeties_nmg_gs : BEQ .no_gs
+	LDA.w CONFIG.safeties_nmg_gs : BEQ .no_gs
 	CPY.w #presetmenu_nmg_trock_icerod_overworld : BCC .no_gs
 	CMP.b #$01 : BEQ .silvers_only
 
@@ -1014,7 +1014,7 @@ LoadSafeties_nmg:
 
 LoadSafeties_ad2020:
 	CPY.w #presetmenu_ad2020_pod_kiki_skip : BCC .no
-	LDA.w !config_safeties_ad2020_silvers : BEQ .no
+	LDA.w CONFIG.safeties_ad2020_silvers : BEQ .no
 
 	LDA.b #$03 : STA.l $7EF340
 
@@ -1032,7 +1032,7 @@ LoadSafeties_ad2020:
 
 LoadSafeties_adold:
 	CPY.w #presetmenu_adold_pod_kiki_skip : BCC .no
-	LDA.w !config_safeties_adold_silvers : BEQ .no
+	LDA.w CONFIG.safeties_adold_silvers : BEQ .no
 
 	LDA.b #$03 : STA.l $7EF340
 
@@ -1050,7 +1050,7 @@ LoadSafeties_adold:
 
 LoadSafeties_anyrmg:
 	CPY.w #presetmenu_anyrmg_tempered_frog_dmd : BCC .no
-	LDA.w !config_safeties_anyrmg_hook : BEQ .no
+	LDA.w CONFIG.safeties_anyrmg_hook : BEQ .no
 
 	LDA.b #$01 : STA.l $7EF342
 
@@ -1068,7 +1068,7 @@ LoadSafeties_anyrmg:
 ;===================================================================================================
 
 LoadSafeties_hundo:
-	LDA.w !config_safeties_100nmg_trinexx_boom : BEQ .no
+	LDA.w CONFIG.safeties_100nmg_trinexx_boom : BEQ .no
 
 	; flag boom chest
 	REP #$20
@@ -1093,21 +1093,21 @@ LoadPresetOverworldData:
 	; preloaded with screen ID
 	STA.w $008A : STA.w $040A
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
+	LDA.b [IRAM.preset_addr],Y : INY : INY
 	STA.w $061C : DEC : DEC : STA.w $061E
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
+	LDA.b [IRAM.preset_addr],Y : INY : INY
 	STA.w $0618 : DEC : DEC : STA.w $061A
 
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY : STA.w $0084
+	LDA.b [IRAM.preset_addr],Y : INY : INY : STA.w $0084
 	SEC : SBC.w #$0400 : AND.w #$0F80 : ASL : XBA : STA.w $0088
 	LDA.w $0084 : SEC : SBC.w #$0010 : AND.w #$003E : LSR : STA.w $0086
 
 	; setting these to 0 seems perfectly fine
-	;LDA.b [SA1IRAM.preset_addr],Y : INY #2 : STA.w $0624
+	;LDA.b [IRAM.preset_addr],Y : INY #2 : STA.w $0624
 	;EOR.w #$FFFF : INC : STA.w $0626
 
-	;LDA.b [SA1IRAM.preset_addr],Y : INY #2 : STA.w $0628
+	;LDA.b [IRAM.preset_addr],Y : INY #2 : STA.w $0628
 	;EOR.w #$FFFF : INC : STA.w $062A
 
 	JSR SaveALot
@@ -1128,7 +1128,7 @@ LoadPresetUnderworldData:
 
 	; entrance
 	SEP #$20
-	LDA.b [SA1IRAM.preset_addr],Y : INY
+	LDA.b [IRAM.preset_addr],Y : INY
 
 	JSL SetDungeonEntranceAndProperties
 
@@ -1152,9 +1152,9 @@ LoadPresetUnderworldData:
 	; b bit that goes in $A7
 	; c bit that goes in $A9
 	; d bit that goes in $AA
-	LDA.b [SA1IRAM.preset_addr],Y
+	LDA.b [IRAM.preset_addr],Y
 	INY
-	STA.b SA1IRAM.preset_writer
+	STA.b IRAM.preset_writer
 
 	ASL : ROL.w $00A6 : ASL.w $00A6
 	ASL : ROL.w $00A7 : ASL.w $00A7
@@ -1162,7 +1162,7 @@ LoadPresetUnderworldData:
 	ASL : ROL.w $00A9
 
 	; Floor
-	LDA.b SA1IRAM.preset_writer : AND.b #$0F
+	LDA.b IRAM.preset_writer : AND.b #$0F
 	BIT.b #$08 : BEQ .above_ground
 
 	ORA.b #$F0
@@ -1171,7 +1171,7 @@ LoadPresetUnderworldData:
 	STA.w $00A4
 
 	; Door
-	LDA.b [SA1IRAM.preset_addr],Y : INY
+	LDA.b [IRAM.preset_addr],Y : INY
 	PHA ; save for shutter and peg state later
 	AND.b #$03 : STA.w $006C
 
@@ -1208,7 +1208,7 @@ LoadPresetUnderworldData:
 
 .not_hellway
 
-	LDA.b #$01 : STA.w $4200
+	LDA.b #$01 : STA.w NMITIMEN
 
 	; get shutter door state
 	LDA 10,S : AND.b #$80 : EOR.b #$80 : ASL : ROL
@@ -1229,7 +1229,7 @@ LoadPresetUnderworldData:
 	LDA.w #$0007 : STA.w $0010
 
 	; kill sprites that shouldn't be alive
-	LDA.b [SA1IRAM.preset_addr],Y : INY : INY
+	LDA.b [IRAM.preset_addr],Y : INY : INY
 
 	JSL KillSpritesInRoom
 
@@ -1246,7 +1246,7 @@ LoadPresetUnderworldData:
 	SEP #$20
 	BNE .exit
 
-	LDA.w SA1IRAM.randomish : AND.b #$02 : STA.w $041A
+	LDA.w IRAM.randomish : AND.b #$02 : STA.w $041A
 
 .exit
 	RTS

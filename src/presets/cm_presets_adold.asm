@@ -4184,4 +4184,4 @@ presetSRAM_adold:
 .boss
 ;===================================================================================================
 presetend_adold:
-print "adold size: $", hex(presetend_adold-presetheader_adold)
+printf "adold size: ${0:X4}", presetend_adold-presetheader_adold

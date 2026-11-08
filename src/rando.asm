@@ -1,3 +1,11 @@
+;===================================================================================================
+
+incsrc "fastrom.asm"
+
+org $00FFD5 : db $23
+
+;===================================================================================================
+
 ; change small magic to E
 org $0984DB : db $24
 org $08C4F1 : LDA.l $7EF373
@@ -8,9 +16,9 @@ org $098605
 PHX ; move the PHX since we're gonna use X too
 JSL CheckItemReceipt
 
-org $05F08F+1 : db #$00 ; no heart pieces
-org $0DEDF1+1 : db #$00 ; no heart pieces
-org $05F095 : NOP : NOP
+org argof($05F08F) : db $00 ; no heart pieces
+org argof($0DEDF1) : db $00 ; no heart pieces
+org $05F095 : NOP : NOP ; TODO BRA &
 
 org $05EFC8 : db $00 ; fix grabbing hearts
 
@@ -53,8 +61,8 @@ org $02A451 : JSL QuickSwap
 ; Remove bottle submenu
 ;===================================================================================================
 org $0DDF9A : JSL BottleMenuButtonPress : NOP
-org $0DDE3D : db $80 ; BRA
-org $0DDE9D : db $80 ; BRA
+org $0DDE3D : BRA *
+org $0DDE9D : BRA *
 
 
 ;===================================================================================================
@@ -62,21 +70,13 @@ org $0DDE9D : db $80 ; BRA
 ; No dying priest
 org $05DD04 : dw $05DDE5
 
-
-
-
-
-
-
-
-
 ;===================================================================================================
 ; Text fixes
 ;===================================================================================================
 ; TODO remove escape cutscene
 ; no text for items
-org $08C5D5 : db $80 ; BRA
-org $08C5EB : db $80 ; BRA
+org $08C5D5 : BRA *
+org $08C5EB : BRA *
 
 ;; don't decompress attract graphics all the time
 ;org $0EEE58 : db $08
@@ -204,7 +204,7 @@ org $08C5EB : db $80 ; BRA
 ;
 ;org $05E052 ; unreachable code
 ;FixMessageTest:
-;	STY.w SA1RAM.MessageHighScratch
+;	STY.w BWRAM.message_high_scratch
 ;
 ;	TYA
 ;	AND.b #$7F
@@ -227,7 +227,7 @@ org $08C5EB : db $80 ; BRA
 ;;===================================================================================================
 ;
 ;MaybeNoMessage:
-;	BIT.w SA1RAM.MessageHighScratch
+;	BIT.w BWRAM.message_high_scratch
 ;	BPL .show
 ;
 ;	STZ.w $1CE8
@@ -240,9 +240,9 @@ org $08C5EB : db $80 ; BRA
 ;	BCS NoMessageNPC
 ;
 ;.show
-;	JML $85E219
+;	JML jlong($05E219)
 ;
-;warnpc $85E0FE
+;guardpc $85E0FE
 
 
 ;muffins notes:

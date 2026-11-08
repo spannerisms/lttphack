@@ -3,13 +3,13 @@ ITEMS_SUBMENU:
 
 ;===================================================================================================
 
-%choice_func_here("Bow", SA1RAM.cm_item_bow, 3, cm_set_bow)
+%choice_func_here("Bow", BWRAM.cm_item_bow, 3, cm_set_bow)
 	%add_list_item(CMTEXT_NO)
 	%list_item("Normal")
 	%list_item("Silver")
 
 cm_set_bow:
-	LDA.w SA1RAM.cm_item_bow
+	LDA.w BWRAM.cm_item_bow
 	ASL
 	BEQ .set
 

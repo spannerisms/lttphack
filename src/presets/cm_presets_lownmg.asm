@@ -5138,4 +5138,4 @@ presetSRAM_lownmg:
 ...end
 ;===================================================================================================
 presetend_lownmg:
-print "lownmg size: $", hex(presetend_lownmg-presetheader_lownmg)
+printf "lownmg size: ${0:X4}", presetend_lownmg-presetheader_lownmg

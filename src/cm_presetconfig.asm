@@ -1,10 +1,10 @@
-PRESET_CONFIG_SUBMENU:
+PRESETCONFIG_SUBMENU:
 %menu_header("PRESET CONFIGURATION")
 
 ;===================================================================================================
 ; PRESET LIST
 ;===================================================================================================
-%choice_here("Preset category", !config_preset_category, 8)
+%choice_here("Preset category", CONFIG.preset_category, 8)
 	%list_item("Any% NMG")
 	%list_item("100% NMG")
 	%list_item("Low%")
@@ -22,15 +22,12 @@ PRESET_CONFIG_SUBMENU:
 
 ;===================================================================================================
 
-%toggle_onoff("Death reload", !config_death_reload)
+%toggle_onoff("Death reload", CONFIG.death_reload)
+%toggle("Random bats", BWRAM.ganon_bats)
 
 ;===================================================================================================
 
-%toggle("Random bats", SA1RAM.ganon_bats)
-
-;===================================================================================================
-
-%choice_prgtext("Preset loadout", SA1RAM.loadout_to_use, 2+!CUSTOM_LOADOUTS, this)
+%choice_prgtext("Preset loadout", BWRAM.loadout_to_use, !CUSTOM_LOADOUTS+2, this)
 	CMP.b #$01
 
 	REP #$20
@@ -42,7 +39,7 @@ PRESET_CONFIG_SUBMENU:
 #DrawCustomX:
 	PHA
 
-	LDA.l #.custom_text
+	LDA.w #.custom_text
 	JSR CMDRAW_WORD
 
 	REP #$20
@@ -67,7 +64,7 @@ PRESET_CONFIG_SUBMENU:
 
 ;===================================================================================================
 
-%choicepick_loadout("Manage loadout", SA1RAM.loadout_to_save, !CUSTOM_LOADOUTS, .func, this)
+%choicepick_loadout("Manage loadout", BWRAM.loadout_to_save, !CUSTOM_LOADOUTS, .func, this)
 	REP #$20
 	INC
 	JMP DrawCustomX
@@ -75,13 +72,13 @@ PRESET_CONFIG_SUBMENU:
 .func
 	SEP #$30
 
-	LDA.w SA1RAM.loadout_to_save
+	LDA.w BWRAM.loadout_to_save
 	INC
 
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BMI .save
 
-	BIT.b SA1IRAM.cm_y
+	BIT.b IRAM.cm_y
 	BPL .exit
 
 	JSL LoadCustomLoadout
@@ -94,7 +91,6 @@ PRESET_CONFIG_SUBMENU:
 .save
 	JML SaveCustomLoadout
 
-
 ;===================================================================================================
 ;===================================================================================================
 ;===================================================================================================
@@ -104,10 +100,10 @@ SAFETIES_SUBMENU:
 
 	LDA.l .pointers-1,X
 	AND.w #$FF00
-	STA.b SA1IRAM.cm_cursor
+	STA.b IRAM.cm_cursor
 
 	LDA.l .pointers+1,X
-	STA.b SA1IRAM.cm_cursor+2
+	STA.b IRAM.cm_cursor+2
 
 	RTL
 
@@ -129,26 +125,26 @@ SAFETIES_SUBMENU:
 presetsafeties_nmg:
 %menu_header("NMG SAFETIES")
 
-%toggle_onoff("Sanc heart", !config_safeties_nmg_sanc_heart)
+%toggle_onoff("Sanc heart", CONFIG.safeties_nmg_sanc_heart)
 
-%choice_here("Powder", !config_safeties_nmg_powder, 5)
+%choice_here("Powder", CONFIG.safeties_nmg_powder, 5)
 	%add_list_item(CMTEXT_NO)
 	%add_list_item(CMTEXT_MUSHROOM)
 	%add_list_item(CMTEXT_POWDER)
 	%list_item("Late powder")
 	%list_item("Half magic")
 
-%choice_here("Gold; Silvers", !config_safeties_nmg_gs, 3)
+%choice_here("Gold; Silvers", CONFIG.safeties_nmg_gs, 3)
 	%add_list_item(CMTEXT_NO)
 	%list_item("Silvers")
 	%list_item("Both")
 
-%choice_here("Bottles", !config_safeties_nmg_bottles, 3)
+%choice_here("Bottles", CONFIG.safeties_nmg_bottles, 3)
 	%add_list_item(CMTEXT_NO)
 	%list_item("Early")
 	%list_item("Late")
 
-%toggle_onoff("Red mail", !config_safeties_nmg_red_mail)
+%toggle_onoff("Red mail", CONFIG.safeties_nmg_red_mail)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
@@ -156,14 +152,13 @@ presetsafeties_nmg:
 presetsafeties_100nmg:
 %menu_header("100% NMG SAFETIES")
 
-%toggle_onoff("Blue boom", !config_safeties_100nmg_trinexx_boom)
+%toggle_onoff("Blue boom", CONFIG.safeties_100nmg_trinexx_boom)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetsafeties_lownmg:
 %menu_header("LOW% NMG SAFETIES")
-
 %add_menu_item(NO_SAFETIES)
 
 ;===================================================================================================
@@ -178,24 +173,21 @@ presetsafeties_lowleg:
 ;===================================================================================================
 presetsafeties_ad2020:
 %menu_header("ALL DUNGEONS SAFETIES")
-
-%toggle_onoff("Silvers", !config_safeties_ad2020_silvers)
+%toggle_onoff("Silvers", CONFIG.safeties_ad2020_silvers)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetsafeties_adold:
 %menu_header("ALL DUNGEONS (OLD) SAFETIES")
-
-%toggle_onoff("Silvers", !config_safeties_adold_silvers)
+%toggle_onoff("Silvers", CONFIG.safeties_adold_silvers)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetsafeties_anyrmg:
 %menu_header("ANY% RMG SAFETIES")
-
-%toggle_onoff("Hookshot", !config_safeties_anyrmg_hook)
+%toggle_onoff("Hookshot", CONFIG.safeties_anyrmg_hook)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
@@ -228,10 +220,10 @@ BOSSRTA_SUBMENU:
 %submenu_variable("Agahnim 2", BOSSPRESET_SUBMENU)
 
 BOSSPRESET_SUBMENU:
-	LDA.b SA1IRAM.cm_cursor
+	LDA.b IRAM.cm_cursor
 	ASL
 	CLC
-	ADC.w SA1IRAM.cm_cursor
+	ADC.w IRAM.cm_cursor
 
 	REP #$21
 	AND.w #$00FF
@@ -239,10 +231,10 @@ BOSSPRESET_SUBMENU:
 
 	LDA.l .pointers-1,X
 	AND.w #$FF00
-	STA.b SA1IRAM.cm_cursor+0
+	STA.b IRAM.cm_cursor+0
 
 	LDA.l .pointers+1,X
-	STA.b SA1IRAM.cm_cursor+2
+	STA.b IRAM.cm_cursor+2
 
 	JSL SetPresetMenuArea
 
@@ -261,7 +253,6 @@ BOSSPRESET_SUBMENU:
 	dl presetheader_defeatvitreous
 	dl presetheader_defeattrinexx
 	dl presetheader_defeatagahnim2
-
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------

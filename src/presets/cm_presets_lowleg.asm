@@ -5139,4 +5139,4 @@ presetSRAM_lowleg:
 ...end
 ;===================================================================================================
 presetend_lowleg:
-print "lowleg size: $", hex(presetend_lowleg-presetheader_lowleg)
+printf "lowleg size: ${0:X4}", presetend_lowleg-presetheader_lowleg

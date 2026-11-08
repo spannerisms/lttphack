@@ -322,4 +322,4 @@ presetSRAM_defeatmothula:
 ...end
 ;===================================================================================================
 presetend_defeatmothula:
-print "defeatmothula size: $", hex(presetend_defeatmothula-presetheader_defeatmothula)
+printf "defeatmothula size: ${0:X4}", presetend_defeatmothula-presetheader_defeatmothula

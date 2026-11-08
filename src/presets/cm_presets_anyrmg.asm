@@ -1566,4 +1566,4 @@ presetSRAM_anyrmg:
 ...end
 ;===================================================================================================
 presetend_anyrmg:
-print "anyrmg size: $", hex(presetend_anyrmg-presetheader_anyrmg)
+printf "anyrmg size: ${0:X4}", presetend_anyrmg-presetheader_anyrmg

@@ -25,8 +25,8 @@ pullpc
 ;===================================================================================================
 
 GetLitRoom:
-	LDA.w SA1RAM.light_rooms : BNE ++
-	LDA.l $02A0DC,X
+	LDA.w BWRAM.light_rooms : BNE ++
+	LDA.l jlong($02A0DC),X
 	RTL
 
 ++	LDA.b #$00
@@ -35,20 +35,20 @@ GetLitRoom:
 ;===================================================================================================
 
 triforce_transition:
-	LDA.w !config_skip_triforce : BNE .skip_triforce
+	LDA.w CONFIG.skip_triforce : BNE .skip_triforce
 
-	JSL $02A0BE
-	JML $02B797
+	JSL jlong($02A0BE)
+	JML jlong($02B797)
 
 .skip_triforce
-	JML $02B7A1
+	JML jlong($02B7A1)
 
 ;===================================================================================================
 
 OverrideDropLuck:
-	LDA.w SA1RAM.drop_rng : BNE .overwrite
+	LDA.w BWRAM.drop_rng : BNE .overwrite
 
-	JML $0DBA71
+	JML jlong($0DBA71)
 
 .overwrite
 	DEC
@@ -57,19 +57,18 @@ OverrideDropLuck:
 ;===================================================================================================
 
 swordbeams:
-	LDY.w SA1RAM.disable_beams : BNE .nobeams
+	LDY.w BWRAM.disable_beams : BNE .nobeams
 
-	JML $099D04
+	JML jlong($099D04)
 
 .nobeams
 	SEC ; indicates failed to add an ancilla
-
 	RTL
 
 ;===================================================================================================
 
 set_moving_wall_speed:
-	LDA.w !config_fast_moving_walls : BNE .fast
+	LDA.w CONFIG.fast_moving_walls : BNE .fast
 
 .vanilla
 	LDA.w #$2200 : CLC : ADC.w $041C : STA.w $041C
@@ -85,7 +84,7 @@ set_moving_wall_speed:
 ;===================================================================================================
 
 probe_draw:
-	LDA.w SA1RAM.visible_probes : BNE .draw
+	LDA.w BWRAM.visible_probes : BNE .draw
 
 	; not duplicated to save a cycle when vanilla
 .vanilla
@@ -96,6 +95,7 @@ probe_draw:
 	LDA.b $00 : STA.b ($90),Y
 	LDA.b $01 : CMP.b #$01
 	LDA.b #$01 : ROL : STA.b ($92)
+
 	REP #$21
 	LDA.b $02 : INY
 	ADC.w #$0010 : CMP.w #$0100 : SEP #$20 : BCS .skip
@@ -186,7 +186,7 @@ RoomHasPitDamage:
 CheckItemReceipt:
 	STY.w $02E4
 
-	LDA.w !config_vanillaitems
+	LDA.w CONFIG.vanillaitems
 	BNE .return
 
 	LDX.w $02D8
@@ -197,7 +197,10 @@ CheckItemReceipt:
 .return
 	RTL
 
+;===================================================================================================
+
 jnk = $45
+
 ReplaceVanilla:
 	db jnk ; 00 - FIGHTER SWORD
 	db jnk ; 01 - MASTER SWORD

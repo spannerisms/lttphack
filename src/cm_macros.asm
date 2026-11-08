@@ -1,126 +1,92 @@
 !NUMBER_OF_COMMANDS = 100
 !COMMAND_ID = -1
 
-!CM_HEADER_ID = 0
-
-!LIST_ITEM = -1
-
-!LAST_HEADER_SIZE = 0
 !MENU_ITEM = 0
 !LAST_HEADER = "OOPS"
 
-!CM_LAST_NAMES_PTR = ""
+!CM_LAST_NAMES_PTR = $FF_FFFF
 
-!NOPARAMS #= 0
-!HASADDR #= 3
-!HASPTEXT #= 0
-!HASFUNC #= 3
-!HASPTR #= 2
-!HASID #= 1
-!HASINDEX #= 1
-!HASNUMFIELD #= 3
-!HAS16NUMFIELD #= 6
-!HASMAX #= 1
-!HASMIN #= 1
-!HASLIST #= 3
-
-
-
-
+!NOPARAMS          = 0
+!HASADDR           = 3
+!HASPTEXT          = 0
+!HASFUNC           = 3
+!HASPTR            = 2
+!HASID             = 1
+!HASINDEX          = 1
+!HASNUMFIELD       = 3
+!HAS16NUMFIELD     = 6
+!HASMAX            = 1
+!HASMIN            = 1
+!HASLIST           = 3
 
 ;===================================================================================================
 
 macro cmstr(text)
-------------
-	db "<text>", $00
+	------------
+	db "{text}"
+	db $00
 endmacro
 
 macro ReusableText(lbl)
-pushpc
-	org ------------
-	#<lbl>:
-pullpc
+	{lbl} = ------------
 endmacro
 
 ;===================================================================================================
 
 this = 0
 macro menu_header(name)
-	!MENU_ITEM #= 0
+	!MENU_ITEM = 0
 .name_pointers
-#CM_MENU_!{CM_HEADER_ID}:
 	dw .header_text
-	fillword 0 : fill 24*2
+	fill word count 24 :: $0000
 	dw 0
 
+!CM_LAST_NAMES_PTR = .name_pointers
+
 .header_text
-	%cmstr("<name>")
-
-	!CM_LAST_NAMES_PTR := CM_MENU_!{CM_HEADER_ID}
-
-	!CM_HEADER_ID #= !CM_HEADER_ID+1
-	!LAST_HEADER = "<name>"
-
+	%cmstr("{name}")
+	!LAST_HEADER = "{name}"
 endmacro
 
 macro add_self()
-	%add_menu_item(++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++)
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	%add_menu_item(!:here)
 endmacro
 
 macro add_menu_item(label)
-	!MENU_ITEM #= !MENU_ITEM+1
+	!MENU_ITEM += 1
 
-	if !MENU_ITEM > 250
+	if !MENU_ITEM > 24
 		error "!LAST_HEADER has too many items\! !MENU_ITEM"
 	endif
 
-	pushpc
-	org !{CM_LAST_NAMES_PTR}+(!MENU_ITEM*2) : dw <label>
-	pullpc
+	plop !CM_LAST_NAMES_PTR+(!MENU_ITEM*2) :: dw {label}
 
-CM_ITEM_!{CM_HEADER_ID}_!{MENU_ITEM}:
-
+CM_ITEM_{?}:
 endmacro
 
 ;===================================================================================================
 
-!LIST_HEADER_ID = 0
-!LAST_LIST_SIZE = 0
 macro list_header(size)
-.LIST_HEADER!LIST_HEADER_ID
-	!LIST_ITEM = 0
-..list_table
-	fillword $0000 : fill <size>*2
-
-	!LIST_HEADER_ID #= !LIST_HEADER_ID+1
-	!LAST_LIST_SIZE = <size>
+.LIST_HEADER_{?}
+	piling ..list_table :: {size}*2
+	fill word count {size} :: 0
 endmacro
 
-macro add_list_item(l)
-	!LIST_ITEM #= !LIST_ITEM+1
-	if !LIST_ITEM > !LAST_LIST_SIZE
-		error "Too many items\! !LIST_ITEM > !LAST_LIST_SIZE"
-	endif
-
-	pushpc
-	org ..list_table-2+(!LIST_ITEM*2) : dw <l>
-	pullpc
+macro add_list_item(item)
+	pile ..list_table :: dw {item}
 endmacro
 
 macro list_item(text)
-	%add_list_item(++++)
-
-++++
-	%cmstr("<text>")
+	%add_list_item(!:here)
+	%cmstr("{text}")
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
 
 macro toggletext(offtext, ontext)
 	%list_header(2)
-		%list_item("<offtext>")
-		%list_item("<ontext>")
+		%list_item("{offtext}")
+		%list_item("{ontext}")
 endmacro
 
 ;===================================================================================================
@@ -131,32 +97,30 @@ endmacro
 ;===================================================================================================
 
 ActionLengths:
-	fillbyte 0 : fill !NUMBER_OF_COMMANDS
+	fill byte count !NUMBER_OF_COMMANDS :: 0
 
 ActionIcons:
-	fillbyte 0 : fill !NUMBER_OF_COMMANDS
+	fill byte count !NUMBER_OF_COMMANDS :: 0
 
 ActionDoRoutines:
-	fillword ACTION_EXIT : fill !NUMBER_OF_COMMANDS*2
+	fill word count !NUMBER_OF_COMMANDS :: ACTION_EXIT
 
 ActionDrawRoutines:
-	fillword ACTION_EXIT-1 : fill !NUMBER_OF_COMMANDS*2
+	fill word count !NUMBER_OF_COMMANDS :: rtn(ACTION_EXIT)
 
 macro MenuAction(name, icon, args)
-	!COMMAND_ID #= !COMMAND_ID+1
-	!CM_<name> := !COMMAND_ID
+	!COMMAND_ID += 1
+	!CM_{name} = !COMMAND_ID
 
-	if greaterequal(!COMMAND_ID,!NUMBER_OF_COMMANDS)
+	if !COMMAND_ID >= !NUMBER_OF_COMMANDS
 		error "Too many commands\! !COMMAND_ID >= !NUMBER_OF_COMMANDS"
 	endif
 
-	org ActionLengths+!COMMAND_ID : db 1+<args> ; 1 for ID
-	org ActionIcons+!COMMAND_ID : db <icon>
-	org ActionDoRoutines+(2*!COMMAND_ID) : dw CMDO_<name>
-	org ActionDrawRoutines+(2*!COMMAND_ID) : dw CMDRAW_<name>
+	plop ActionLengths+!COMMAND_ID          :: db {args}+1 ; 1 for ID
+	plop ActionIcons+!COMMAND_ID            :: db {icon}
+	plop ActionDoRoutines+(2*!COMMAND_ID)   :: dw CMDO_{name}
+	plop ActionDrawRoutines+(2*!COMMAND_ID) :: dw CMDRAW_{name}
 endmacro
-
-pushpc
 
 ;---------------------------------------------------------------------------------------------------
 %MenuAction("HEADER", $3F, -1)
@@ -165,28 +129,29 @@ pushpc
 ; leave UW after header, so it can go right to preset type
 %MenuAction("PRESET_UW", $09, !HASPTR)
 macro preset_UW(name, category, segment, scene)
-	%preset("UW", "<name>", "<category>", "<segment>", "<scene>")
+	%preset("UW", "{name}", "{category}", "{segment}", "{scene}")
 endmacro
 
 %MenuAction("PRESET_OW", $09, !HASPTR)
 macro preset_OW(name, category, segment, scene)
-	%preset("OW", "<name>", "<category>", "<segment>", "<scene>")
+	%preset("OW", "{name}", "{category}", "{segment}", "{scene}")
 endmacro
 
+; TODO make these all use category.segment.scene consistently
 macro preset(type, name, category, segment, scene)
-#presetmenu_<category>_<segment>_<scene>:
+#presetmenu_{category}_{segment}_{scene}:
 	%add_self()
-	db !CM_PRESET_<type>
-	dw presetdata_<category>_<segment>_<scene>
-	%cmstr("<name>")
+	db !CM_PRESET_{type}
+	dw presetdata_{category}_{segment}_{scene}
+	%cmstr("{name}")
 
-#presetdata_<category>_<segment>_<scene>:
-	dw presetpersistent_<category>_<segment>_<scene>_end
-	dw presetSRAM_<category>_<segment>_<scene>_end
+#presetdata_{category}_{segment}_{scene}:
+	dw presetpersistent_{category}_{segment}.{scene}.end
+	dw presetSRAM_{category}.{segment}.{scene}.end
 endmacro
 
 macro existing_preset(category, segment, scene)
-	%add_menu_item(presetmenu_<category>_<segment>_<scene>)
+	%add_menu_item(presetmenu_{category}_{segment}_{scene})
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -194,8 +159,8 @@ endmacro
 macro litestate(name, id)
 	%add_self()
 	db !CM_LITESTATE
-	db <id>
-	%cmstr("<name>")
+	db {id}
+	%cmstr("{name}")
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -203,7 +168,7 @@ endmacro
 macro label(name)
 	%add_self()
 	db !CM_LABEL
-	%cmstr("<name>")
+	%cmstr("{name}")
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -211,47 +176,46 @@ endmacro
 macro toggle(name, addr)
 	%add_self()
 	db !CM_TOGGLE
-	dl <addr>
-	%cmstr("<name>")
+	dl {addr}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("TOGGLE_FUNC", $06, !HASADDR+!HASFUNC)
 macro toggle_func(name, addr, pfunc)
 	%add_self()
 	db !CM_TOGGLE_FUNC
-	dl <addr>
-	dl select(equal(<pfunc>,this), ?here, <pfunc>)
-	%cmstr("<name>")
+	dl {addr}
+	dl select(streq("{pfunc}", "this"), {?}here, {pfunc})
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("TOGGLE_CUSTOMTEXT", $06, !HASADDR+!HASPTEXT)
 macro toggle_customtext(name, addr, ptext)
 	%add_self()
 	db !CM_TOGGLE_CUSTOMTEXT
-	dl <addr>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("TOGGLE_FUNC_CUSTOMTEXT", $06, !HASADDR+!HASFUNC+!HASPTEXT)
 macro toggle_func_customtext(name, addr, pfunc, ptext)
 	%add_self()
 	db !CM_TOGGLE_FUNC_CUSTOMTEXT
-	dl <addr>
-	dl <pfunc>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	dl {pfunc}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
-
+#{?}here:
 endmacro
 
 macro toggle_func_customtext_here(name, addr, pfunc)
-	%toggle_func_customtext(<name>, <addr>, <pfunc>, this)
+	%toggle_func_customtext({name}, {addr}, {pfunc}, this)
 	%list_header(2)
 endmacro
 
@@ -259,27 +223,27 @@ endmacro
 macro toggle_roomflag(name, bit)
 	%add_self()
 	db !CM_TOGGLE_ROOMFLAG
-	db <bit>
-	%cmstr("<name>")
+	db {bit}
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
 macro toggle_onoff(name, addr)
-;	%toggle_customtext(<name>, <addr>, CMDRAW_ONOFF)
-	%toggle(<name>, <addr>)
+;	%toggle_customtext("{name}", "{addr}", CMDRAW_ONOFF)
+	%toggle({name}, {addr})
 endmacro
 
 macro toggle_func_onoff(name, addr, pfunc)
-;	%toggle_func_customtext(<name>, <addr>, <pfunc>, CMDRAW_ONOFF)
-	%toggle_func(<name>, <addr>, <pfunc>)
+;	%toggle_func_customtext("{name}", "{addr}", "{pfunc}", CMDRAW_ONOFF)
+	%toggle_func("{name}", "{addr}", "{pfunc}")
 endmacro
 
 macro toggle_func_onoff_here(name, addr)
-;	%toggle_func_customtext(<name>, <addr>, ?here, CMDRAW_ONOFF)
-	%toggle_func(<name>, <addr>, ?here)
-#?here:
+;	%toggle_func_customtext("{name}", "{addr}", {?}here, CMDRAW_ONOFF)
+	%toggle_func("{name}", "{addr}", {?}here)
+#{?}here:
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -287,18 +251,18 @@ endmacro
 macro submenu(name, addr)
 	%add_self()
 	db !CM_SUBMENU
-	dl <addr>
-	%cmstr("<name>")
+	dl {addr}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("SUBMENU_VARIABLE", $04, !HASADDR)
 macro submenu_variable(name, addr)
 	%add_self()
 	db !CM_SUBMENU_VARIABLE
-	dl select(equal(<addr>,this), ?here, <addr>)
-	%cmstr("<name>")
+	dl select(streq("{addr}", "this"), {?}here, {addr})
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -307,116 +271,120 @@ endmacro
 macro numfield(name, addr, start, end, increment)
 	%add_self()
 	db !CM_NUMFIELD
-	dl <addr>
-	db <start>, <end>, <increment>
-	%cmstr("<name>")
+	dl {addr}
+	db {start}, {end}, {increment}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("NUMFIELD_HEX", $08, !HASADDR+!HASNUMFIELD)
 macro numfield_hex(name, addr, start, end, increment)
 	%add_self()
 	db !CM_NUMFIELD_HEX
-	dl <addr>
-	db <start>, <end>, <increment>
-	%cmstr("<name>")
+	dl {addr}
+	db {start}, {end}, {increment}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("NUMFIELD_HEX_UPDATEWHOLEMENU", $08, !HASADDR+!HASNUMFIELD)
 macro numfield_hex_update(name, addr, start, end, increment)
 	%add_self()
 	db !CM_NUMFIELD_HEX_UPDATEWHOLEMENU
-	dl <addr>
-	db <start>, <end>, <increment>
-	%cmstr("<name>")
+	dl {addr}
+	db {start}, {end}, {increment}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("NUMFIELD16", $08, !HASADDR+!HAS16NUMFIELD)
 macro numfield16(name, addr, start, end, increment)
 	%add_self()
 	db !CM_NUMFIELD16
-	dl <addr>
-	dw <start>, <end>, <increment>
-	%cmstr("<name>")
+	dl {addr}
+	dw {start}, {end}, {increment}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("NUMFIELD_2DIGITS", $08, !HASADDR+!HASNUMFIELD)
 macro numfield_2digits(name, addr, start, end, increment)
 	%add_self()
 	db !CM_NUMFIELD_2DIGITS
-	dl <addr>
-	db <start>, <end>, <increment>
-	%cmstr("<name>")
+	dl {addr}
+	db {start}, {end}, {increment}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("NUMFIELD_FUNC", $08, !HASADDR+!HASNUMFIELD+!HASFUNC)
 macro numfield_func(name, addr, start, end, increment, pfunc)
 	%add_self()
 	db !CM_NUMFIELD_FUNC
-	dl <addr>
-	db <start>, <end>, <increment>
-	dl select(equal(<pfunc>,this), ?here, <pfunc>)
-	%cmstr("<name>")
-#?here:
+	dl {addr}
+	db {start}, {end}, {increment}
+	dl select(streq("{pfunc}", "this"), {?}here, {pfunc})
+	%cmstr("{name}")
+
+#{?}here:
 endmacro
 
 %MenuAction("NUMFIELD_FUNC_HEX", $08, !HASADDR+!HASNUMFIELD+!HASFUNC)
 macro numfield_func_hex(name, addr, start, end, increment, pfunc)
 	%add_self()
 	db !CM_NUMFIELD_FUNC_HEX
-	dl <addr>
-	db <start>, <end>, <increment>
-	dl select(equal(<pfunc>,this), ?here, <pfunc>)
-	%cmstr("<name>")
-#?here:
+	dl {addr}
+	db {start}, {end}, {increment}
+	dl select(streq("{pfunc}", "this"), {?}here, {pfunc})
+	%cmstr("{name}")
+
+#{?}here:
 endmacro
 
 %MenuAction("NUMFIELD_FUNC_PRGTEXT", $08, !HASADDR+!HASNUMFIELD+!HASFUNC+!HASPTEXT)
 macro numfield_func_prgtext(name, addr, start, end, increment, pfunc, ptext)
 	%add_self()
 	db !CM_NUMFIELD_FUNC_PRGTEXT
-	dl <addr>
-	db <start>, <end>, <increment>
-	dl select(equal(<pfunc>,this), ?here, <pfunc>)
-	%cmstr("<name>")
-	dl <ptext>
+	dl {addr}
+	db {start}, {end}, {increment}
+	dl select(streq("{pfunc}", "this"), {?}here, {pfunc})
+	%cmstr("{name}")
+	dl {ptext}
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("NUMFIELD16_FUNC", $08, !HASADDR+!HAS16NUMFIELD+!HASFUNC+!HASPTEXT)
 macro numfield16_func(name, addr, start, end, increment, pfunc)
 	%add_self()
 	db !CM_NUMFIELD16_FUNC
-	dl <addr>
-	dw <start>, <end>, <increment>
-	dl select(equal(<pfunc>,this), ?here, <pfunc>)
-	%cmstr("<name>")
-#?here:
+	dl {addr}
+	dw {start}, {end}, {increment}
+	dl select(streq("{pfunc}", "this"), {?}here, {pfunc})
+	%cmstr("{name}")
+
+#{?}here:
 endmacro
 
 %MenuAction("NUMFIELD_PRGTEXT", $08, !HASADDR+!HASNUMFIELD+!HASPTEXT)
 macro numfield_prgtext(name, addr, start, end, increment, ptext)
 	%add_self()
 	db !CM_NUMFIELD_PRGTEXT
-	dl <addr>
-	db <start>, <end>, <increment>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	db {start}, {end}, {increment}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("NUMFIELD_CAPACITY", $08, !HASADDR)
 macro numfield_capacity(name, addr)
 	%add_self()
 	db !CM_NUMFIELD_CAPACITY
-	dl <addr>
-	%cmstr("<name>")
+	dl {addr}
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
+; TODO make these nested macros
 %MenuAction("TOGGLEBIT0", $06, !HASADDR)
 %MenuAction("TOGGLEBIT1", $06, !HASADDR)
 %MenuAction("TOGGLEBIT2", $06, !HASADDR)
@@ -427,34 +395,34 @@ endmacro
 %MenuAction("TOGGLEBIT7", $06, !HASADDR)
 macro ___togglebit(name, addr, bitx)
 	%add_self()
-	db !CM_TOGGLEBIT<bitx>
-	dl <addr>
-	%cmstr("<name>")
+	db !CM_TOGGLEBIT{bitx}
+	dl {addr}
+	%cmstr("{name}")
 endmacro
 
 macro togglebit0(name, addr)
-	%___togglebit(<name>, <addr>, 0)
+	%___togglebit("{name}", "{addr}", 0)
 endmacro
 macro togglebit1(name, addr)
-	%___togglebit(<name>, <addr>, 1)
+	%___togglebit("{name}", "{addr}", 1)
 endmacro
 macro togglebit2(name, addr)
-	%___togglebit(<name>, <addr>, 2)
+	%___togglebit("{name}", "{addr}", 2)
 endmacro
 macro togglebit3(name, addr)
-	%___togglebit(<name>, <addr>, 3)
+	%___togglebit("{name}", "{addr}", 3)
 endmacro
 macro togglebit4(name, addr)
-	%___togglebit(<name>, <addr>, 4)
+	%___togglebit("{name}", "{addr}", 4)
 endmacro
 macro togglebit5(name, addr)
-	%___togglebit(<name>, <addr>, 5)
+	%___togglebit("{name}", "{addr}", 5)
 endmacro
 macro togglebit6(name, addr)
-	%___togglebit(<name>, <addr>, 6)
+	%___togglebit("{name}", "{addr}", 6)
 endmacro
 macro togglebit7(name, addr)
-	%___togglebit(<name>, <addr>, 7)
+	%___togglebit("{name}", "{addr}", 7)
 endmacro
 
 
@@ -468,37 +436,37 @@ endmacro
 %MenuAction("TOGGLEBIT7_CUSTOMTEXT", $06, !HASADDR+!HASPTEXT)
 macro ___togglebit_customtext(name, addr, bitx, ptext)
 	%add_self()
-	db !CM_TOGGLEBIT<bitx>_CUSTOMTEXT
-	dl <addr>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	db !CM_TOGGLEBIT{bitx}_CUSTOMTEXT
+	dl {addr}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 macro togglebit0_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 0, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 0, "{ptext}")
 endmacro
 macro togglebit1_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 1, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 1, "{ptext}")
 endmacro
 macro togglebit2_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 2, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 2, "{ptext}")
 endmacro
 macro togglebit3_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 3, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 3, "{ptext}")
 endmacro
 macro togglebit4_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 4, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 4, "{ptext}")
 endmacro
 macro togglebit5_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 5, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 5, "{ptext}")
 endmacro
 macro togglebit6_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 6, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 6, "{ptext}")
 endmacro
 macro togglebit7_customtext(name, addr, ptext)
-	%___togglebit_customtext(<name>, <addr>, 7, <ptext>)
+	%___togglebit_customtext("{name}", "{addr}", 7, "{ptext}")
 endmacro
 
 %MenuAction("TOGGLEBIT0_FUNC", $06, !HASADDR+!HASFUNC)
@@ -511,37 +479,37 @@ endmacro
 %MenuAction("TOGGLEBIT7_FUNC", $06, !HASADDR+!HASFUNC)
 macro ___togglebit_func(name, addr, bitx, pfunc)
 	%add_self()
-	db !CM_TOGGLEBIT<bitx>_FUNC
-	dl <addr>
-	dl select(equal(<pfunc>,this), ?here, <pfunc>)
-	%cmstr("<name>")
+	db !CM_TOGGLEBIT{bitx}_FUNC
+	dl {addr}
+	dl select(streq("{pfunc}", "this"), {?}here, {pfunc})
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 macro togglebit0_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 0, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 0, "{pfunc}")
 endmacro
 macro togglebit1_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 1, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 1, "{pfunc}")
 endmacro
 macro togglebit2_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 2, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 2, "{pfunc}")
 endmacro
 macro togglebit3_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 3, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 3, "{pfunc}")
 endmacro
 macro togglebit4_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 4, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 4, "{pfunc}")
 endmacro
 macro togglebit5_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 5, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 5, "{pfunc}")
 endmacro
 macro togglebit6_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 6, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 6, "{pfunc}")
 endmacro
 macro togglebit7_func(name, addr, pfunc)
-	%___togglebit_func(<name>, <addr>, 7, <pfunc>)
+	%___togglebit_func("{name}", "{addr}", 7, "{pfunc}")
 endmacro
 
 %MenuAction("TOGGLEBIT0_FUNC_CUSTOMTEXT", $06, !HASADDR+!HASFUNC+!HASPTEXT)
@@ -554,52 +522,49 @@ endmacro
 %MenuAction("TOGGLEBIT7_FUNC_CUSTOMTEXT", $06, !HASADDR+!HASFUNC+!HASPTEXT)
 macro ___togglebit_func_customtext(name, addr, bitx, pfunc, ptext)
 	%add_self()
-	db !CM_TOGGLEBIT<bitx>_FUNC_CUSTOMTEXT
-	dl <addr>
-	dl <pfunc>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	db !CM_TOGGLEBIT{bitx}_FUNC_CUSTOMTEXT
+	dl {addr}
+	dl {pfunc}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 macro togglebit0_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 0, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 0, "{pfunc}", "{ptext}")
 endmacro
 macro togglebit1_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 1, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 1, "{pfunc}", "{ptext}")
 endmacro
 macro togglebit2_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 2, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 2, "{pfunc}", "{ptext}")
 endmacro
 macro togglebit3_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 3, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 3, "{pfunc}", "{ptext}")
 endmacro
 macro togglebit4_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 4, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 4, "{pfunc}", "{ptext}")
 endmacro
 macro togglebit5_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 5, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 5, "{pfunc}", "{ptext}")
 endmacro
 macro togglebit6_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 6, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 6, "{pfunc}", "{ptext}")
 endmacro
 macro togglebit7_func_customtext(name, addr, pfunc, ptext)
-	%___togglebit_func_customtext(<name>, <addr>, 7, <pfunc>, <ptext>)
+	%___togglebit_func_customtext("{name}", "{addr}", 7, "{pfunc}", "{ptext}")
 endmacro
-
-
-
 
 ;---------------------------------------------------------------------------------------------------
 %MenuAction("FUNC", $05, !HASFUNC)
 macro func(name, addr)
 	%add_self()
 	db !CM_FUNC
-	dl select(equal(<addr>,this), ?here, <addr>)
-	%cmstr("<name>")
+	dl select(streq("{addr}", "this"), {?}here, {addr})
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 ; this one is a bit more special and does some register fixing before going
@@ -607,10 +572,10 @@ endmacro
 macro func_filtered(name, addr)
 	%add_self()
 	db !CM_FUNC_FILTERED
-	dl select(equal(<addr>,this), ?here, <addr>)
-	%cmstr("<name>")
+	dl select(streq("{addr}", "this"), {?}here, {addr})
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -618,8 +583,8 @@ endmacro
 macro ctrl_shortcut(name, addr)
 	%add_self()
 	db !CM_CTRL_SHORTCUT
-	dl <addr>
-	%cmstr("<name>")
+	dl {addr}
+	%cmstr("{name}")
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -627,29 +592,29 @@ endmacro
 macro choice(name, addr, max, listptr)
 	%add_self()
 	db !CM_CHOICE
-	dl <addr>
-	db <max>
-	dl select(equal(<listptr>,this), ?here, <listptr>)
-	%cmstr("<name>")
+	dl {addr}
+	db {max}
+	dl select(streq("{listptr}", "this"), {?}here, {listptr})
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 macro choice_here(name, addr, max)
-	%choice(<name>, <addr>, <max>, this)
-	%list_header(<max>)
+	%choice("{name}", "{addr}", "{max}", this)
+	%list_header("{max}")
 endmacro
 
 %MenuAction("CHOICE_PRGTEXT", $07, !HASADDR+!HASMAX+!HASPTEXT)
 macro choice_prgtext(name, addr, max, ptext)
 	%add_self()
 	db !CM_CHOICE_PRGTEXT
-	dl <addr>
-	db <max>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	db {max}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -657,101 +622,101 @@ endmacro
 macro choice_func(name, addr, max, pfunc, listptr)
 	%add_self()
 	db !CM_CHOICE_FUNC
-	dl <addr>
-	db <max>
-	dl select(equal(<listptr>,this), ?here, <listptr>)
-	dl <pfunc>
-	%cmstr("<name>")
+	dl {addr}
+	db {max}
+	dl select(streq("{listptr}", "this"), {?}here, {listptr})
+	dl {pfunc}
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 macro choice_func_here(name, addr, max, pfunc)
-	%choice_func(<name>, <addr>, <max>, <pfunc>, this)
-	%list_header(<max>)
+	%choice_func({name}, {addr}, {max}, {pfunc}, this)
+	%list_header({max})
 endmacro
 
 %MenuAction("CHOICE_FUNC_FILTERED", $07, !HASADDR+!HASMAX+!HASLIST+!HASFUNC)
 macro choice_func_filtered(name, addr, max, pfunc, listptr)
 	%add_self()
 	db !CM_CHOICE_FUNC_FILTERED
-	dl <addr>
-	db <max>
-	dl select(equal(<listptr>,this), ?here, <listptr>)
-	dl <pfunc>
-	%cmstr("<name>")
+	dl {addr}
+	db {max}
+	dl select(streq("{listptr}", "this"), {?}here, {listptr})
+	dl {pfunc}
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 macro choice_func_filtered_here(name, addr, max, pfunc)
-	%choice_func_filtered(<name>, <addr>, <max>, <pfunc>, this)
-	%list_header(<max>)
+	%choice_func_filtered({name}, {addr}, {max}, {pfunc}, this)
+	%list_header({max})
 endmacro
 
 %MenuAction("CHOICE_FUNC_PRGTEXT", $07, !HASADDR+!HASMAX+!HASPTEXT+!HASFUNC)
 macro choice_func_prgtext(name, addr, max, pfunc, ptext)
 	%add_self()
 	db !CM_CHOICE_FUNC_PRGTEXT
-	dl <addr>
-	db <max>
-	dl <pfunc>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	db {max}
+	dl {pfunc}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("CHOICE_FUNC_FILTERED_PRGTEXT", $07, !HASADDR+!HASMAX+!HASPTEXT+!HASFUNC)
 macro choice_func_filtered_prgtext(name, addr,  max, pfunc, ptext)
 	%add_self()
 	db !CM_CHOICE_FUNC_FILTERED_PRGTEXT
-	dl <addr>
-	db <max>
-	dl <pfunc>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	db {max}
+	dl {pfunc}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("CHOICEPICK", $07, !HASADDR+!HASMAX+!HASLIST+!HASFUNC)
 macro choicepick(name, addr, max, pfunc, listptr)
 	%add_self()
 	db !CM_CHOICEPICK
-	dl <addr>
-	db <max>
-	dl select(equal(<listptr>,this), ?here, <listptr>)
-	dl <pfunc>
-	%cmstr("<name>")
+	dl {addr}
+	db {max}
+	dl select(streq("{listptr}", "this"), {?}here, {listptr})
+	dl {pfunc}
+	%cmstr("{name}")
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("CHOICEPICK_PRGTEXT", $07, !HASADDR+!HASMAX+!HASPTEXT+!HASFUNC)
 macro choicepick_prgtext(name, addr, max, pfunc, ptext)
 	%add_self()
 	db !CM_CHOICEPICK_PRGTEXT
-	dl <addr>
-	db <max>
-	dl <pfunc>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	db {max}
+	dl {pfunc}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 %MenuAction("CHOICEPICK_LOADOUT", $02, !HASADDR+!HASMAX+!HASPTEXT+!HASFUNC)
 macro choicepick_loadout(name, addr, max, pfunc, ptext)
 	%add_self()
 	db !CM_CHOICEPICK_LOADOUT
-	dl <addr>
-	db <max>
-	dl <pfunc>
-	%cmstr("<name>")
-	dl select(equal(<ptext>,this), ?here, <ptext>)
+	dl {addr}
+	db {max}
+	dl {pfunc}
+	%cmstr("{name}")
+	dl select(streq("{ptext}", "this"), {?}here, {ptext})
 
-#?here:
+#{?}here:
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -759,16 +724,16 @@ endmacro
 macro info1d(name, addr)
 	%add_self()
 	db !CM_INFO_1DIGIT
-	dl <addr>
-	%cmstr("<name>")
+	dl {addr}
+	%cmstr("{name}")
 endmacro
 
 %MenuAction("INFO_4HEX", $03, !HASADDR)
 macro info4h(name, addr)
 	%add_self()
 	db !CM_INFO_4HEX
-	dl <addr>
-	%cmstr("<name>")
+	dl {addr}
+	%cmstr("{name}")
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
@@ -777,24 +742,26 @@ endmacro
 macro sentry_picker(index, addr)
 	%add_self()
 	db !CM_SENTRY_PICKER
-	dl <addr>
-	db <index>
-	%cmstr("Sentry <index>:")
+	dl {addr}
+	db {index}
+	%cmstr("Sentry {index}:")
 endmacro
 
 %MenuAction("LINE_SENTRY_PICKER", $02, !HASADDR+!HASINDEX)
 macro line_sentry_picker(index, addr)
 	%add_self()
 	db !CM_LINE_SENTRY_PICKER
-	dl <addr>
-	db <index>
-	%cmstr("Line <index>:")
+	dl {addr}
+	db {index}
+	%cmstr("Line {index}:")
 endmacro
 
 ;===================================================================================================
 ; END OF COMMAND DEFINITIONS
 ;===================================================================================================
 
-print "MENU COMMANDS: $", hex(!COMMAND_ID)
+if !COMMAND_ID > 250
+	error "Too many commands!!!"
+endif
 
-pullpc
+printf "Menu commands: ${0:X}", !COMMAND_ID

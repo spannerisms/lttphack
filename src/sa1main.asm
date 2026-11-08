@@ -17,12 +17,12 @@ SNES_CUSTOM_NMI_BOUNCE:
 
 SNES_CORRUPTION_IRQ_BOUNCE:
 	JML SNES_CORRUPTION_IRQ
-warnpc $00F800
+guardpc $00F800
 
 org $00FFB7 ; this barely fits
 ReadJoyPad_long:
---	LSR.w $4212
-	BCS --
+	LSR.w HVBJOY
+	BCS ReadJoyPad_long
 	JSR.w $0083D1
 	RTL
 
@@ -37,14 +37,13 @@ org $01F7EC
 org $01FEAA
 CorruptionSave:
 	STY.b $0C
-	STY.w SA1IRAM.corruption_watcher
+	STY.w IRAM.corruption_watcher
 	RTS
 
 org $028B07
 	JSL UWOverlayWrapper
 
-incsrc sa1hud.asm
-incsrc sa1sram.asm
+incsrc "sa1hud.asm", "sa1sram.asm"
 
 pullpc
 
@@ -166,17 +165,18 @@ pullpc
 
 ; all together: 474 master cycles fast
 ;===================================================================================================
+
 WasteTimeAsNeeded:
-	LSR.w SA1IRAM.CachedThisFrame
+	LSR.w IRAM.cached_this_frame
 	BCS ++
 
 	JSL CacheSA1Stuff
-	STZ.w SA1IRAM.CachedThisFrame ; ack
+	STZ.w IRAM.cached_this_frame ; ack
 
 ++	; waste any time that needs to be wasted here
 
 	; skip entirely if these are on
-	LDA.w SA1IRAM.highestline
+	LDA.w IRAM.highestline
 	BNE .skip
 
 	; timer triggers are 154 master cycles (JSL+LDA+STA.w+RTL) TODO compensate?
@@ -197,54 +197,53 @@ WasteTimeAsNeeded:
 .skip
 	STZ.b $12
 
-	JML $008034
+	JML jlong($008034)
 
 ;===================================================================================================
 
 CacheSA1Stuff:
 	REP #$30 ; 16 bit first
 
-	LDA.w #$3000
+	LDA.w #IRAM
 	TCD
 
-	LDA.w $001A : STA.b SA1IRAM.CopyOf_1A
-	LDA.w $0020 : STA.b SA1IRAM.CopyOf_20
-	LDA.w $0022 : STA.b SA1IRAM.CopyOf_22
-	LDA.w $00A0 : STA.b SA1IRAM.CopyOf_A0
-	LDA.l $7EF36C : STA.b SA1IRAM.CopyOf_7EF36C
+	LDA.w $001A : STA.b IRAM.copyof_1A
+	LDA.w $0020 : STA.b IRAM.copyof_20
+	LDA.w $0022 : STA.b IRAM.copyof_22
+	LDA.w $00A0 : STA.b IRAM.copyof_A0
+	LDA.l $7EF36C : STA.b IRAM.copyof_7EF36C
 
-	LDX.b SA1IRAM.SNTADD1 : LDA.l $7E0000,X : STA.b SA1IRAM.SNTVAL1
-	LDX.b SA1IRAM.SNTADD2 : LDA.l $7E0000,X : STA.b SA1IRAM.SNTVAL2
-	LDX.b SA1IRAM.SNTADD3 : LDA.l $7E0000,X : STA.b SA1IRAM.SNTVAL3
-	LDX.b SA1IRAM.SNTADD4 : LDA.l $7E0000,X : STA.b SA1IRAM.SNTVAL4
-	LDX.b SA1IRAM.SNTADD5 : LDA.l $7E0000,X : STA.b SA1IRAM.SNTVAL5
+	LDX.b IRAM.sentry_address_1 : LDA.l $7E0000,X : STA.b IRAM.sentry_value_1
+	LDX.b IRAM.sentry_address_2 : LDA.l $7E0000,X : STA.b IRAM.sentry_value_2
+	LDX.b IRAM.sentry_address_3 : LDA.l $7E0000,X : STA.b IRAM.sentry_value_3
+	LDX.b IRAM.sentry_address_4 : LDA.l $7E0000,X : STA.b IRAM.sentry_value_4
+	LDX.b IRAM.sentry_address_5 : LDA.l $7E0000,X : STA.b IRAM.sentry_value_5
 
 	LDA.w #$0001 ; top byte 0x00
 
-	; 8 bit stuff
-	SEP #$30
+	SEP #$30 ; 8 bit stuff
 
-	STA.b SA1IRAM.CachedThisFrame ; flag this with that 01
+	STA.b IRAM.cached_this_frame ; flag this with that 01
 
-	LDA.w $00E2 : STA.b SA1IRAM.CopyOf_E2
-	LDA.w $0057 : STA.b SA1IRAM.CopyOf_57
-	LDA.w $005B : STA.b SA1IRAM.CopyOf_5B
-	LDA.w $006C : STA.b SA1IRAM.CopyOf_6C
-	LDA.w $00A4 : STA.b SA1IRAM.CopyOf_A4
-	LDA.w $0372 : STA.b SA1IRAM.CopyOf_0372
+	LDA.w $00E2 : STA.b IRAM.copyof_E2
+	LDA.w $0057 : STA.b IRAM.copyof_57
+	LDA.w $005B : STA.b IRAM.copyof_5B
+	LDA.w $006C : STA.b IRAM.copyof_6C
+	LDA.w $00A4 : STA.b IRAM.copyof_A4
+	LDA.w $0372 : STA.b IRAM.copyof_0372
 
 	LDA.b #$00 : TCD
 
 if !RANDO
 	REP #$20
 
-	LDA.b $10 : STA.w SA1RAM.gamemode2
-	LDA.w $0FFF : STA.w SA1RAM.world2
+	LDA.b $10 : STA.w BWRAM.mfn_cache.gamemode
+	LDA.w $0FFF : STA.w BWRAM.mfn_cache.world
 
 	LDX.b #$2E
 
 .next_equip
-	LDA.l $7EF340,X : STA.w SA1RAM.equipment2,X
+	LDA.l $7EF340,X : STA.w BWRAM.mfn_cache.equipment,X
 
 	DEX
 	DEX
@@ -261,62 +260,62 @@ InitSA1:
 	REP #$20
 
 	LDA.w #$0020
-	STA.w $2200
+	STA.w CCNT
 
 	LDA.w #SA1Reset00
-	STA.w $2203
+	STA.w CRV
 
 	LDA.w #SA1NMI00
-	STA.w $2205
+	STA.w CNV
 
 	LDA.w #SA1IRQ00
-	STA.w $2207
+	STA.w CIV
 
 	LDA.w #$8180
-	STA.w $2220
-	STA.w $2222
+	STA.w CXB
+	STA.w EXB
 
 	SEP #$20
 	LDA.b #$80
-	STA.w $2226
+	STA.w SBWE
 
 	LDA.b #$03
-	STA.w $2224
+	STA.w BMAPS
 
 	LDA.b #$FF
-	STA.w $2202
-	STA.w $2229
-	STZ.w $2228
+	STA.w SIC
+	STA.w SIWP
+	STZ.w BWPA
 
 	REP #$20
 
 	LDA.w #$FFFF
-	STA.w SA1IRAM.litestate_last
-	STA.w SA1IRAM.litestate_act
+	STA.w IRAM.litestate_last
+	STA.w IRAM.litestate_act
 
 	STZ.b $F0
 	STZ.b $F2
 	STZ.b $F4
 	STZ.b $F6
 
-	STZ.w SA1IRAM.CopyOf_F0
-	STZ.w SA1IRAM.CopyOf_F2
-	STZ.w SA1IRAM.CopyOf_F4
-	STZ.w SA1IRAM.CopyOf_F6
+	STZ.w IRAM.copyof_F0
+	STZ.w IRAM.copyof_F2
+	STZ.w IRAM.copyof_F4
+	STZ.w IRAM.copyof_F6
 
-	STZ.w SA1IRAM.cm_submodule
-	STZ.w SA1IRAM.preset_addr
-	STZ.w SA1IRAM.TIMER_FLAG
+	STZ.w IRAM.cm_submodule
+	STZ.w IRAM.preset_addr
+	STZ.w IRAM.TIMER_FLAG
 
-	STZ.w SA1IRAM.SEG_TIME_F
-	STZ.w SA1IRAM.SEG_TIME_S
-	STZ.w SA1IRAM.SEG_TIME_M
-	STZ.w SA1IRAM.SEG_TIME_F_DISPLAY
-	STZ.w SA1IRAM.SEG_TIME_S_DISPLAY
-	STZ.w SA1IRAM.SEG_TIME_M_DISPLAY
+	STZ.w IRAM.SEG_TIME_F
+	STZ.w IRAM.SEG_TIME_S
+	STZ.w IRAM.SEG_TIME_M
+	STZ.w IRAM.SEG_TIME_F_DISPLAY
+	STZ.w IRAM.SEG_TIME_S_DISPLAY
+	STZ.w IRAM.SEG_TIME_M_DISPLAY
 
-	STZ.w SA1IRAM.SHORTCUT_USED
-	STZ.w $2200
+	STZ.w IRAM.shortcut_used
+	STZ.w CCNT
 
 	SEP #$30
 	RTL
@@ -340,38 +339,59 @@ SA1Reset:
 	PLB
 
 	LDA.w #SNES_CUSTOM_NMI_BOUNCE ; set up custom NMI vector
-	STA.w $220C
+	STA.w SNV
 
 	SEP #$30
-	STZ.w $2209 ; but don't use it
-	STZ.w $2210
+	STZ.w SCNT ; but don't use it
+	STZ.w TMC
 
-	STZ.w $2230
-	STZ.w $2231
+	STZ.w DCNT
+	STZ.w CDMA
 
 	LDA.b #$80
-	STA.w $2227
+	STA.w CBWE
 
 	LDA.b #$03
-	STA.w $2225 ; image 3 for page $60
+	STA.w BMAP ; image 3 for page $60
 
 	LDA.b #$FF
-	STA.w $222A
+	STA.w CIWP
 
 	LDA.b #$F0
-	STA.w $220B
+	STA.w CIC
 
 	LDA.b #$90
-	STA.w $220A
+	STA.w CIE
 
 	REP #$34
-	LDX.w #(SA1RAM.end_of_clearable_sa1ram-SA1RAM.clearable_sa1ram)-2
+	LDX.w #ClearableSRAMSize-2
 
---	STZ.w SA1RAM.clearable_sa1ram,X
+.clear_init
+	STZ.w BWRAM.clearable_sa1ram,X
 	DEX
 	DEX
-	BPL --
+	BPL .clear_init
 
+;===================================================================================================
+; SA-1 should spin in IRAM
+;===================================================================================================
+if !RANDO
+	LDX.w #SA1Spin.size+2
+
+.copy_spin
+	LDA.l SA1Spin,X
+	STA.w IRAM.spin_ram,X
+
+	DEX
+	DEX
+	BPL .copy_spin
+
+	JML IRAM.spin_ram
+endif
+
+;===================================================================================================
+
+SA1Spin:
 	CLC
 
 .reset_rng
@@ -379,18 +399,22 @@ SA1Reset:
 	BCC .start
 
 .loop
-	STA.b SA1IRAM.randomish
+	STA.b IRAM.randomish
 
 .start
-	ROL.b SA1IRAM.randomish
+	ROL.b IRAM.randomish
 	ROR
-	ADC.b SA1IRAM.randomish
+	ADC.b IRAM.randomish
 	BNE .loop
 
 	SEC
 	BRA .reset_rng
 
-; SA1IRAM.TIMER_FLAG bitfield:
+^.size
+
+;===================================================================================================
+
+; IRAM.TIMER_FLAG bitfield:
 ; 7 - timers have been set and are awaiting a hud update
 ; 6 - reset timer
 ; 5
@@ -413,19 +437,19 @@ SA1NMI:
 	SEP #$30
 
 	LDA.b #$10
-	STA.l $00220B
+	STA.l CIC
 
 	PHK
 	PLB
 
-	LDA.w $2301
+	LDA.w CFR
 	AND.b #$03
 	ASL
 	TAX
 
 	JSR.w (.nmis,X)
 
-#SA1NMI_EXIT:
+.exit
 	REP #$30
 	PLB
 	PLD
@@ -441,30 +465,29 @@ SA1NMI:
 	dw .nothing_at_all
 
 .disable_custom_nmi
-	STZ.w $2209
+	STZ.w SCNT
 
 .nothing_at_all
 	RTS
 
 .enable_custom_nmi
 	LDA.b #$10
-	STA.w $2209
+	STA.w SCNT
 	RTS
 
 ;---------------------------------------------------------------------------------------------------
 
 GetMod60:
-	STZ.b SA1IRAM.TIMER_ADD_SCRATCH
+	STZ.b IRAM.TIMER_ADD_SCRATCH
 
 	CMP.w #$0060
 	BCC .fine
 
 .adjust
-	INC.b SA1IRAM.TIMER_ADD_SCRATCH
+	INC.b IRAM.TIMER_ADD_SCRATCH
 
 	SBC.w #$0060
-
-	CMP.w #$0060
+	CMP.w #$0060 ; TODO is this necessary? seems not
 	BCS .adjust
 
 .fine
@@ -484,98 +507,98 @@ SA1NMI_SENTRIES:
 
 	; if $12 = 1, then we weren't done with game code
 	; that means we're in a lag frame
-	LDA.b SA1IRAM.CopyOf_12
+	LDA.b IRAM.copyof_12
 	CMP.b #$01
 
 	REP #$20
 
-	LDA.b SA1IRAM.ROOM_TIME_LAG : ADC.w #$0000
-	STA.b SA1IRAM.ROOM_TIME_LAG
+	LDA.b IRAM.ROOM_TIME_LAG : ADC.w #$0000
+	STA.b IRAM.ROOM_TIME_LAG
 
 	; ROOM TIMER
-	LDX.b SA1IRAM.TIMER_ADD_INDEX
+	LDX.b IRAM.TIMER_ADD_INDEX
 
 	LDA.w TimerAddAdjustments,X
-	STA.b SA1IRAM.TIMER_ADD_SSFF
+	STA.b IRAM.TIMER_ADD_SSFF
 
 	AND.w #$00FF
-	STA.b SA1IRAM.TIMER_ADD_SCRATCH
+	STA.b IRAM.TIMER_ADD_SCRATCH
 
-	LDA.b SA1IRAM.ROOM_TIME_F
+	LDA.b IRAM.ROOM_TIME_F
 	AND.w #$00FF
 	SEC
-	ADC.b SA1IRAM.TIMER_ADD_SCRATCH
+	ADC.b IRAM.TIMER_ADD_SCRATCH
 	JSR GetMod60
-	STA.b SA1IRAM.ROOM_TIME_F
+	STA.b IRAM.ROOM_TIME_F
 
-	LDA.b SA1IRAM.TIMER_ADD_SSFF+1
+	LDA.b IRAM.TIMER_ADD_SSFF+1
 	AND.w #$00FF
-	ADC.b SA1IRAM.TIMER_ADD_SCRATCH
-	ADC.b SA1IRAM.ROOM_TIME_S
-	STA.b SA1IRAM.ROOM_TIME_S
+	ADC.b IRAM.TIMER_ADD_SCRATCH
+	ADC.b IRAM.ROOM_TIME_S
+	STA.b IRAM.ROOM_TIME_S
 
 	; SEGMENT TIMER
-	LDA.b SA1IRAM.TIMER_ADD_SSFF
+	LDA.b IRAM.TIMER_ADD_SSFF
 	AND.w #$00FF
-	STA.b SA1IRAM.TIMER_ADD_SCRATCH
+	STA.b IRAM.TIMER_ADD_SCRATCH
 
-	LDA.b SA1IRAM.SEG_TIME_F
+	LDA.b IRAM.SEG_TIME_F
 	AND.w #$00FF
 	SEC
-	ADC.b SA1IRAM.TIMER_ADD_SCRATCH
+	ADC.b IRAM.TIMER_ADD_SCRATCH
 	JSR GetMod60
-	STA.b SA1IRAM.SEG_TIME_F
+	STA.b IRAM.SEG_TIME_F
 
-	LDA.b SA1IRAM.TIMER_ADD_SSFF+1
+	LDA.b IRAM.TIMER_ADD_SSFF+1
 	AND.w #$00FF
-	ADC.b SA1IRAM.TIMER_ADD_SCRATCH
-	ADC.b SA1IRAM.SEG_TIME_S
+	ADC.b IRAM.TIMER_ADD_SCRATCH
+	ADC.b IRAM.SEG_TIME_S
 	JSR GetMod60
-	STA.b SA1IRAM.SEG_TIME_S
+	STA.b IRAM.SEG_TIME_S
 
-	LDA.b SA1IRAM.TIMER_ADD_SCRATCH
-	ADC.b SA1IRAM.SEG_TIME_M
-	STA.b SA1IRAM.SEG_TIME_M
+	LDA.b IRAM.TIMER_ADD_SCRATCH
+	ADC.b IRAM.SEG_TIME_M
+	STA.b IRAM.SEG_TIME_M
 
-	STZ.b SA1IRAM.TIMER_ADD_SSFF
-	STZ.b SA1IRAM.TIMER_ADD_INDEX
+	STZ.b IRAM.TIMER_ADD_SSFF
+	STZ.b IRAM.TIMER_ADD_INDEX
 
 	; FLUSH
 	REP #$18
 	SEP #$20
 
-	LDA.b SA1IRAM.TIMER_FLAG 
+	LDA.b IRAM.TIMER_FLAG 
 	BMI .donothing
 	BEQ .donothing
 
-	BIT.b SA1IRAM.TIMER_FLAG
+	BIT.b IRAM.TIMER_FLAG
 
-	LDX.b SA1IRAM.ROOM_TIME_F    : STX.b SA1IRAM.ROOM_TIME_F_DISPLAY
-	LDX.b SA1IRAM.ROOM_TIME_S    : STX.b SA1IRAM.ROOM_TIME_S_DISPLAY
-	LDX.b SA1IRAM.ROOM_TIME_LAG  : STX.b SA1IRAM.ROOM_TIME_LAG_DISPLAY
-	LDX.b SA1IRAM.ROOM_TIME_IDLE : STX.b SA1IRAM.ROOM_TIME_IDLE_DISPLAY
+	LDX.b IRAM.ROOM_TIME_F    : STX.b IRAM.ROOM_TIME_F_DISPLAY
+	LDX.b IRAM.ROOM_TIME_S    : STX.b IRAM.ROOM_TIME_S_DISPLAY
+	LDX.b IRAM.ROOM_TIME_LAG  : STX.b IRAM.ROOM_TIME_LAG_DISPLAY
+	LDX.b IRAM.ROOM_TIME_IDLE : STX.b IRAM.ROOM_TIME_IDLE_DISPLAY
 
-	LDX.b SA1IRAM.SEG_TIME_F     : STX.b SA1IRAM.SEG_TIME_F_DISPLAY
-	LDX.b SA1IRAM.SEG_TIME_S     : STX.b SA1IRAM.SEG_TIME_S_DISPLAY
-	LDX.b SA1IRAM.SEG_TIME_M     : STX.b SA1IRAM.SEG_TIME_M_DISPLAY
+	LDX.b IRAM.SEG_TIME_F     : STX.b IRAM.SEG_TIME_F_DISPLAY
+	LDX.b IRAM.SEG_TIME_S     : STX.b IRAM.SEG_TIME_S_DISPLAY
+	LDX.b IRAM.SEG_TIME_M     : STX.b IRAM.SEG_TIME_M_DISPLAY
 
 	BVC .dontreset
 
 	LDX.w #$0000
-	STX.b SA1IRAM.ROOM_TIME_F+0
-	STX.b SA1IRAM.ROOM_TIME_F+2
-	STX.b SA1IRAM.ROOM_TIME_F+4
-	STX.b SA1IRAM.ROOM_TIME_F+6
+	STX.b IRAM.ROOM_TIME_F+0
+	STX.b IRAM.ROOM_TIME_F+2
+	STX.b IRAM.ROOM_TIME_F+4
+	STX.b IRAM.ROOM_TIME_F+6
 
 .dontreset
 	LDA.b #$80
-	STA.b SA1IRAM.TIMER_FLAG
+	STA.b IRAM.TIMER_FLAG
 
 .donothing
 	REP #$20
 
-	LDA.b SA1IRAM.CopyOf_20 : STA.w SA1RAM.coords2+0
-	LDA.b SA1IRAM.CopyOf_22 : STA.w SA1RAM.coords2+2
+	LDA.b IRAM.copyof_20 : STA.w BWRAM.mfn_cache.coords+0
+	LDA.b IRAM.copyof_22 : STA.w BWRAM.mfn_cache.coords+2
 
 	RTS
 
@@ -592,20 +615,21 @@ SA1IRQ:
 	PHD
 	PHB
 
-	LDA.w #$3000 : TCD
+	LDA.w #IRAM : TCD
 
 	SEP #$30
 
 	LDA.b #$80
-	STA.l $220B
+	STA.l CIC
 
-	LDA.l $2301 ; get IRQ type
+	LDA.l CFR ; get IRQ type
 	AND.b #$03
 	ASL
 	TAX
 
 	JMP (.irq_type,X)
 
+; TODO use NMI's exit
 .exit
 	REP #$30
 	PLB
@@ -627,7 +651,7 @@ SA1IRQ:
 	dw .exit
 
 .irq_hud
-	JML draw_hud_extras
+	JML DrawHudExtras
 
 .irq_shortcuts
 	JML DoShortCuts
@@ -641,17 +665,17 @@ CorruptionWatcher:
 	PLB
 
 	SEP #$20
-	LDA.b #$40 : STA.w $2209 ; irq vector
+	LDA.b #$40 : STA.w SCNT ; irq vector
 
 	REP #$30
 
-	STZ.b SA1IRAM.corruption_watcher
+	STZ.b IRAM.corruption_watcher
 
 	LDA.w #SNES_CORRUPTION_IRQ_BOUNCE
-	STA.w $220E ; snes IRQ vector
+	STA.w SIV ; snes IRQ vector
 
 .watch
-	LDA.b SA1IRAM.corruption_watcher
+	LDA.b IRAM.corruption_watcher
 	CMP.w #$FFFF
 	BEQ .done
 
@@ -659,26 +683,27 @@ CorruptionWatcher:
 	BCC .watch
 
 	SEP #$20
-	LDA.b #$C0 : STA.w $2209 ; trigger irq
+	LDA.b #$C0 : STA.w SCNT ; trigger irq
 
 	REP #$20
 	LDA.w #$FFFF
 
---	CMP.b SA1IRAM.corruption_watcher
-	BNE --
+.wait
+	CMP.b IRAM.corruption_watcher
+	BNE .wait
 
 .done
 	SEP #$20
 
-	LDA.b #$00 : STA.w $2209 ; disable IRQ from snes
+	LDA.b #$00 : STA.w SCNT ; disable IRQ from snes
 
-	JMP SA1IRQ_exit
+	JMP SA1IRQ.exit
 
 ;===================================================================================================
 
 SNES_CORRUPTION_IRQ:
 	SEP #$30 ; we don't need to preserve A, so it's fine
-	LDA.b #$80 : STA.l $2202 ; acknowledge IRQ
+	LDA.b #$80 : STA.l SIC ; acknowledge IRQ
 
 	JSL RecoverFromCorruption
 
@@ -689,48 +714,53 @@ SNES_CORRUPTION_IRQ:
 	PLA ; remove bank of interrupted location
 	PLA ; remove routine that makes holes
 
-	JML $01B897 ; return to exit of the loop
+	JML jlong($01B897) ; return to exit of the loop
 
 ;===================================================================================================
 
 UWOverlayWrapper:
 	SEP #$20
 
-	LDA.b #$80 : STA.w $2201 ; enable IRQ from here
-	LDA.b #$82 : STA.w $2200
+	LDA.b #$80 : STA.w SIE ; enable IRQ from here
+	LDA.b #$82 : STA.w CCNT
 
-	JSL $01B83E ; Underworld_ApplyRoomOverlay
+	JSL jlong($01B83E) ; Underworld_ApplyRoomOverlay
+
+;---------------------------------------------------------------------------------------------------
 
 DisableCorruptionWatcher:
 	SEP #$20
 
-	STZ.w $2201
+	STZ.w SIE
 
 	REP #$30
 
-	LDA.w #$FFFF : STA.w SA1IRAM.corruption_watcher
+	LDA.w #$FFFF : STA.w IRAM.corruption_watcher
 
 	SEP #$30
 
-	LDA.w !config_somaria_pits : BEQ ++
+	LDA.w CONFIG.somaria_pits : BEQ .exit
 
 	STZ.b $12
 
 	; wait for NMI once for the main vram transfers
---	LDA.b $12 : BEQ --
+.spin
+	LDA.b $12
+	BEQ .spin
 
 	JSL Shortcut_ShowPits
 
 	SEP #$30
 
-++	RTL
+.exit
+	RTL
 
 ;===================================================================================================
 
 RecoverFromCorruption:
 	REP #$30
 
-	LDX.w SA1IRAM.corruption_watcher
+	LDX.w IRAM.corruption_watcher
 	LDY.b $BA
 
 .next
@@ -782,7 +812,7 @@ RecoverFromCorruption:
 
 	PLA
 	ADC.w #$0030
-	CMP.w #$4200-$1100
+	CMP.w #NMITIMEN-$1100
 	BCS .really_bad
 
 	TAX
@@ -791,8 +821,12 @@ RecoverFromCorruption:
 .end
 	RTL
 
+;---------------------------------------------------------------------------------------------------
+
 .really_bad
 	JML CorruptionCrash
+
+;---------------------------------------------------------------------------------------------------
 
 .check_one_pit
 	PHX
@@ -814,7 +848,7 @@ RecoverFromCorruption:
 	BEQ .floor
 
 	LDA.w #$2000 ; put value in high byte, so it's XBA'd
-	; which makes the whole thing easier
+	             ; which makes the whole thing easier
 
 .floor
 	SEP #$20

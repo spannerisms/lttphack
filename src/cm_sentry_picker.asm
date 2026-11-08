@@ -1,140 +1,125 @@
-!SENTRY_ID #= -2
-!SENTRY_GROUP_ID #= -1
-!LINE_SENTRY_GROUP_ID #= -1
+!SENTRY_ID = -2
+!SENTRY_GROUP_ID = -1
+!LINE_SENTRY_GROUP_ID = -1
+
+!MAX_SENTRIES = 100
+
+;===================================================================================================
 
 macro defsentry(name, varname)
-	!SENTRY_ID #= !SENTRY_ID+2
-	<varname> = !SENTRY_ID
+	!SENTRY_ID += 2
+	{varname} = !SENTRY_ID
 
-	pushpc
-		org sentry_routines+!SENTRY_ID      : dw ?code
-		org sentry_name_pointers+!SENTRY_ID : dw ?name
-	pullpc
+	plop sentry_name_pointers+!SENTRY_ID :: dw !:here
+		%cmstr("{name}")
 
-__SENTRY_CODE_<varname>:
-
-?name:
-	%cmstr("<name>")
-
-?code:
-
+	plop sentry_routines+!SENTRY_ID      :: dw !:here
+	__SENTRY_CODE_{varname}:
 endmacro
+
+;---------------------------------------------------------------------------------------------------
 
 macro sentry(name, varname)
-	%defsentry("<name>", "SENTRY_<varname>")
+	%defsentry("{name}", "SENTRY_{varname}")
 endmacro
+
+;---------------------------------------------------------------------------------------------------
 
 macro sentry_var(var)
-	pushpc
-		org sentry_inits+!SENTRY_ID         : dw <var>
-	pullpc
+	plop sentry_inits+!SENTRY_ID :: dw {var}
 endmacro
+
+;---------------------------------------------------------------------------------------------------
 
 macro sentry_init()
-	pushpc
-		org sentry_inits+!SENTRY_ID         : dw ?here
-	pullpc
-
-?here:
-
+	plop sentry_inits+!SENTRY_ID :: dw !:here
 endmacro
+
+;---------------------------------------------------------------------------------------------------
 
 macro line_sentry(name, varname)
-	%defsentry("<name>", "LINE_SENTRY_<varname>")
+	%defsentry("{name}", "LINE_SENTRY_{varname}")
 endmacro
+
+;---------------------------------------------------------------------------------------------------
 
 macro sentry_icon(gfxoffset, props)
-	pushpc
-		org sentry_icons+!SENTRY_ID        : dw <props>|$2020
-		org sentry_icongfx+!SENTRY_ID      : dw hud_sentryicons+(<gfxoffset>*$10)
-	pullpc
+	plop sentry_icons+!SENTRY_ID        :: dw {props}|$2020
+	plop sentry_icongfx+!SENTRY_ID      :: dw hud_sentryicons+{gfxoffset}*$10
 endmacro
 
+;---------------------------------------------------------------------------------------------------
+
 macro set_sentry_routine(routine)
-	pushpc
-		org sentry_routines+!SENTRY_ID      : dw <routine>
-	pullpc
+	plop sentry_routines+!SENTRY_ID      :: dw {routine}
 endmacro
 
 ;===================================================================================================
 
 macro sentry_group(name)
-	!SENTRY_GROUP_ID #= !SENTRY_GROUP_ID+1
+	!SENTRY_GROUP_ID += 1
 
-	pushpc
-		org sentry_groups+(!SENTRY_GROUP_ID*8) : dw ?name, ?list
-		-------------------------------------------------- ; big backwards label for easy access
-		org SentryGroupCounts+0 : dw !SENTRY_GROUP_ID+1
-	pullpc
+{?}name:
+	%cmstr("{name}")
 
-?name:
-	%cmstr("<name>")
+{?}list:
 
-?list:
-
-SentryGroup_!SENTRY_GROUP_ID:
-.top
+SentryGroup_{?}:
+	plop sentry_groups+(!SENTRY_GROUP_ID*8) :: dw {?}name, {?}list, .size/2
+	plop SentryGroupCounts+0 :: dw !SENTRY_GROUP_ID+1
 
 endmacro
 
 ;===================================================================================================
 
 macro line_sentry_group(name)
-	!LINE_SENTRY_GROUP_ID #= !LINE_SENTRY_GROUP_ID+1
+	!LINE_SENTRY_GROUP_ID += 1
 
-	pushpc
-		org line_sentry_groups+(!LINE_SENTRY_GROUP_ID*8) : dw ?name, ?list
-		-------------------------------------------------- ; big backwards label for easy access
-		org SentryGroupCounts+2 : dw !LINE_SENTRY_GROUP_ID+1
-	pullpc
 
-?name:
-	%cmstr("<name>")
+{?}name:
+	%cmstr("{name}")
 
-?list:
+{?}list:
 
-LineSentryGroup_!LINE_SENTRY_GROUP_ID:
-.top
+LineSentryGroup_{?}:
+	plop line_sentry_groups+(!LINE_SENTRY_GROUP_ID*8) :: dw {?}name, {?}list, .size/2
+	plop SentryGroupCounts+2 :: dw !LINE_SENTRY_GROUP_ID+1
 
 endmacro
 
 ;---------------------------------------------------------------------------------------------------
 
 macro end_sentry_group()
-.end
+^.size
 	dw $FFFF
-
-	pushpc
-		org -------------------------------------------------- : db (.end-.top)/2
-	pullpc
 endmacro
 
 ;===================================================================================================
 
 sentry_groups:
 	; dw <name pointer>, <list pointer> : db <size> ; 3 bytes free
-	fillword $0000 : fill 50*8
+	fill double count !MAX_SENTRIES :: $0000
 
 line_sentry_groups:
-	fillword $0000 : fill 50*8
+	fill double count !MAX_SENTRIES :: $0000
 
 ;===================================================================================================
 
 GO_TO_SENTRY_PICKER:
 	LDA.b #$C0
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BEQ .nothing
 
 	JSR CMDO_SAVE_ADDRESS
 
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BMI .setting
 
 .clearing
 	LDA.b #$00
-	STA.b [SA1IRAM.cm_writer]
+	STA.b [IRAM.cm_writer]
 
-	JSL MenuSFX_empty
+	JSL MenuSFX.empty
 
 .nothing
 	RTS
@@ -142,27 +127,27 @@ GO_TO_SENTRY_PICKER:
 .setting
 	REP #$30
 
-	STX.w SA1RAM.sentry_type
+	STX.w BWRAM.sentry_type
 
-	LDA.b SA1IRAM.cm_writer
-	STA.b SA1IRAM.sentry_selected_address
+	LDA.b IRAM.cm_writer
+	STA.b IRAM.sentry_selected_address
 
-	LDA.b (SA1IRAM.sentry_selected_address)
-	STA.w SA1RAM.sentry_id
+	LDA.b (IRAM.sentry_selected_address)
+	STA.w BWRAM.sentry_id
 
-	STZ.w SA1RAM.sentry_submodule
+	STZ.w BWRAM.sentry_submodule
 
-	LDA.b [SA1IRAM.cm_current_selection],Y
+	LDA.b [IRAM.cm_current_selection],Y
 	AND.w #$00FF
-	STA.w SA1RAM.sentry_index
+	STA.w BWRAM.sentry_index
 
 	LDA.w #$000E
-	STA.b SA1IRAM.cm_submodule
+	STA.b IRAM.cm_submodule
 
 	JSR GetSentryGroups
 	JSR FindSentryMenuItem
 
-	JSL MenuSFX_submenu
+	JSL MenuSFX.submenu
 
 	RTS
 
@@ -173,36 +158,36 @@ FindSentryMenuItem:
 
 	REP #$30
 
-	LDY.w SA1RAM.sentry_type
+	LDY.w BWRAM.sentry_type
 	LDA.w SentryGroupsList,Y
-	STA.b SA1IRAM.SCRATCH+0
+	STA.b IRAM.SCRATCH+0
 
 	LDY.w #$0000
 
 .next_group
-	LDA.b (SA1IRAM.SCRATCH+0),Y
+	LDA.b (IRAM.SCRATCH+0),Y
 	BEQ .failed
 
 	PHY
 
 	INY
 	INY
-	LDA.b (SA1IRAM.SCRATCH+0),Y
-	STA.b SA1IRAM.SCRATCH+2
+	LDA.b (IRAM.SCRATCH+0),Y
+	STA.b IRAM.SCRATCH+2
 
 	INY
 	INY
-	LDA.b (SA1IRAM.SCRATCH+0),Y ; get menu item count
+	LDA.b (IRAM.SCRATCH+0),Y ; get menu item count
 	AND.w #$001F
-	STA.w SA1RAM.sentry_category_size
+	STA.w BWRAM.sentry_category_size
 	DEC
 	ASL
 	TAY
 
-	LDA.w SA1RAM.sentry_id
+	LDA.w BWRAM.sentry_id
 
 .next_item
-	CMP.b (SA1IRAM.SCRATCH+2),Y
+	CMP.b (IRAM.SCRATCH+2),Y
 	BEQ .found_item
 
 	DEY
@@ -216,7 +201,7 @@ FindSentryMenuItem:
 	BRA .next_group
 
 .set_category
-	STA.w SA1RAM.sentry_category
+	STA.w BWRAM.sentry_category
 	JSR GetSentryCategoryInfo
 
 .exit
@@ -224,8 +209,8 @@ FindSentryMenuItem:
 	RTS
 
 .failed
-	STZ.w SA1RAM.sentry_id
-	STZ.w SA1RAM.sentry_item
+	STZ.w BWRAM.sentry_id
+	STZ.w BWRAM.sentry_item
 
 	LDA.w #$0000
 	BRA .set_category
@@ -233,7 +218,7 @@ FindSentryMenuItem:
 .found_item
 	TYA
 	LSR
-	STA.w SA1RAM.sentry_item
+	STA.w BWRAM.sentry_item
 
 	PLA ; get category from stack
 	LSR
@@ -249,26 +234,26 @@ GetSentryCategoryInfo:
 	REP #$30
 	PHY
 
-	LDA.w SA1RAM.sentry_category
+	LDA.w BWRAM.sentry_category
 	ASL
 	ASL
 	ASL
-	STA.w SA1RAM.sentry_category_index
+	STA.w BWRAM.sentry_category_index
 	TAY
 
-	LDA.b (SA1IRAM.sentry_groups_pointer),Y
-	STA.b SA1IRAM.sentry_cat_name_pointer
+	LDA.b (IRAM.sentry_groups_pointer),Y
+	STA.b IRAM.sentry_cat_name_pointer
 
 	INY
 	INY
-	LDA.b (SA1IRAM.sentry_groups_pointer),Y
-	STA.b SA1IRAM.sentry_cat_list_pointer
+	LDA.b (IRAM.sentry_groups_pointer),Y
+	STA.b IRAM.sentry_cat_list_pointer
 
 	INY
 	INY
-	LDA.b (SA1IRAM.sentry_groups_pointer),Y
+	LDA.b (IRAM.sentry_groups_pointer),Y
 	AND.w #$00FF
-	STA.w SA1RAM.sentry_category_size
+	STA.w BWRAM.sentry_category_size
 
 	PLY
 	PLP
@@ -282,9 +267,9 @@ GetSentryGroups:
 	REP #$30
 	PHY
 
-	LDY.w SA1RAM.sentry_type
+	LDY.w BWRAM.sentry_type
 	LDA.w SentryGroupsList,Y
-	STA.b SA1IRAM.sentry_groups_pointer
+	STA.b IRAM.sentry_groups_pointer
 
 	PLY
 	PLP
@@ -315,7 +300,7 @@ SentryGroupNames:
 CM_SetSentry:
 	JSR GetSentryGroups
 
-	LDX.w SA1RAM.sentry_submodule
+	LDX.w BWRAM.sentry_submodule
 	JMP (.submods,X)
 
 .submods
@@ -328,7 +313,7 @@ CM_SetSentry:
 SetSentry_Init:
 	INX
 	INX
-	STX.w SA1RAM.sentry_submodule
+	STX.w BWRAM.sentry_submodule
 
 	JSR CM_PushMenuToStack
 
@@ -340,7 +325,7 @@ SetSentry_Exit:
 	REP #$30
 
 	LDX.w #$0004
-	STX.b SA1IRAM.cm_submodule
+	STX.b IRAM.cm_submodule
 
 	JMP CM_GoBack
 
@@ -354,7 +339,7 @@ SetSentry_CloseMenu:
 
 SetSentry_Choose:
 	JSR CM_getcontroller
-	LDA.b SA1IRAM.cm_ax
+	LDA.b IRAM.cm_ax
 	BPL .no_a_press
 
 	JMP .pressed_a
@@ -362,47 +347,47 @@ SetSentry_Choose:
 .no_a_press
 	BCS SetSentry_Exit
 
-	LDA.b SA1IRAM.cm_leftright
-	ORA.b SA1IRAM.cm_shoulder
+	LDA.b IRAM.cm_leftright
+	ORA.b IRAM.cm_shoulder
 	AND.b #$C0
 	BNE .change_category
 
-	LDA.w SA1RAM.sentry_item
+	LDA.w BWRAM.sentry_item
 
-	BIT.b SA1IRAM.cm_updown
+	BIT.b IRAM.cm_updown
 	BMI .pressed_up
 	BVS .pressed_down
 
-	LDA.b SA1IRAM.CopyOf_F4
+	LDA.b IRAM.copyof_F4
 	BIT.b #$10
 	BNE SetSentry_CloseMenu
 
 	RTS
 
 .pressed_up
-	DEC.w SA1RAM.sentry_item
+	DEC.w BWRAM.sentry_item
 	BRA .check_wrap
 
 .pressed_down
-	INC.w SA1RAM.sentry_item
+	INC.w BWRAM.sentry_item
 
 .check_wrap
-	LDA.w SA1RAM.sentry_item
+	LDA.w BWRAM.sentry_item
 	BMI .set_to_max
 
-	CMP.w SA1RAM.sentry_category_size
+	CMP.w BWRAM.sentry_category_size
 	BCC .cursor_fine
 
-	STZ.w SA1RAM.sentry_item
+	STZ.w BWRAM.sentry_item
 	BRA .cursor_fine
 
 .set_to_max
-	LDA.w SA1RAM.sentry_category_size
+	LDA.w BWRAM.sentry_category_size
 	DEC
-	STA.w SA1RAM.sentry_item
+	STA.w BWRAM.sentry_item
 
 .cursor_fine
-	JSL MenuSFX_boop
+	JSL MenuSFX.boop
 	JMP RedrawSentryMenu
 
 ;---------------------------------------------------------------------------------------------------
@@ -410,9 +395,9 @@ SetSentry_Choose:
 .change_category
 	ASL
 
-	LDX.w SA1RAM.sentry_type
+	LDX.w BWRAM.sentry_type
 
-	LDA.w SA1RAM.sentry_category
+	LDA.w BWRAM.sentry_category
 	BCS .pressed_left
 
 .pressed_right
@@ -435,12 +420,12 @@ SetSentry_Choose:
 	DEC
 
 .set_category
-	STA.w SA1RAM.sentry_category
-	STZ.w SA1RAM.sentry_item
+	STA.w BWRAM.sentry_category
+	STZ.w BWRAM.sentry_item
 
 	JSR GetSentryCategoryInfo
 
-	JSL MenuSFX_bink
+	JSL MenuSFX.bink
 	JMP RedrawSentryMenu
 
 ;---------------------------------------------------------------------------------------------------
@@ -448,13 +433,13 @@ SetSentry_Choose:
 .pressed_a
 	REP #$30
 
-	LDA.w SA1RAM.sentry_item
+	LDA.w BWRAM.sentry_item
 	ASL
 	TAY
-	LDA.b (SA1IRAM.sentry_cat_list_pointer),Y
-	STA.b (SA1IRAM.sentry_selected_address)
+	LDA.b (IRAM.sentry_cat_list_pointer),Y
+	STA.b (IRAM.sentry_selected_address)
 
-	JSL MenuSFX_tinkle
+	JSL MenuSFX.tinkle
 	JMP RedrawSentryMenu
 
 ;===================================================================================================
@@ -464,7 +449,7 @@ RedrawSentryMenu:
 
 	REP #$30
 
-	LDY.w SA1RAM.sentry_type
+	LDY.w BWRAM.sentry_type
 	LDA.w SentryGroupNames,Y
 	JSR SetTextPointer
 
@@ -473,13 +458,13 @@ RedrawSentryMenu:
 	LDX.w YRowToXOffset,Y
 
 	LDA.w #!HEADER
-	STA.b SA1IRAM.cm_draw_color
+	STA.b IRAM.cm_draw_color
 
 	JSR DrawEmptyCharacter
 
 	JSR DrawRowText
 
-	LDA.w SA1RAM.sentry_index
+	LDA.w BWRAM.sentry_index
 	AND.w #$000F
 	ORA.w #$0010
 	JSR DrawSingleCharacter
@@ -495,7 +480,7 @@ RedrawSentryMenu:
 	LDA.w #$007C ; left arrow
 	JSR DrawSingleCharacter
 
-	LDA.w SA1IRAM.sentry_cat_name_pointer
+	LDA.w IRAM.sentry_cat_name_pointer
 	JSR SetTextPointer
 
 	JSR DrawRowText
@@ -509,7 +494,7 @@ RedrawSentryMenu:
 	LDY.w #$0000
 
 .next_option
-	LDA.b (SA1IRAM.sentry_cat_list_pointer),Y
+	LDA.b (IRAM.sentry_cat_list_pointer),Y
 	CMP.w #$FFFF
 	BEQ .done
 
@@ -520,13 +505,13 @@ RedrawSentryMenu:
 
 	TYA
 	LSR
-	CMP.w SA1RAM.sentry_item
+	CMP.w BWRAM.sentry_item
 	BNE .not_selected
 
 	LDX.w #!SELECTED
 
 .not_selected
-	STX.b SA1IRAM.cm_draw_color
+	STX.b IRAM.cm_draw_color
 
 	INY
 	INY
@@ -540,7 +525,7 @@ RedrawSentryMenu:
 	LDA 1,S
 
 	LDY.w #$0064 ; checkmark for selected
-	CMP.b (SA1IRAM.sentry_selected_address)
+	CMP.b (IRAM.sentry_selected_address)
 	BEQ .active_sentry
 
 	LDY.w #' '

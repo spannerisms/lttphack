@@ -449,4 +449,4 @@ presetSRAM_defeatarmos:
 ...end
 ;===================================================================================================
 presetend_defeatarmos:
-print "defeatarmos size: $", hex(presetend_defeatarmos-presetheader_defeatarmos)
+printf "defeatarmos size: ${0:X4}", presetend_defeatarmos-presetheader_defeatarmos

@@ -1,4 +1,4 @@
-CONFIG_SUBMENU:
+CONFIGURATION_SUBMENU:
 %menu_header("CONFIGURATION")
 
 ;===================================================================================================
@@ -7,24 +7,24 @@ CONFIG_SUBMENU:
 
 ;===================================================================================================
 
-%toggle_onoff("Rerandomize", !config_rerandomize)
+%toggle_onoff("Rerandomize", CONFIG.rerandomize)
 
 ;===================================================================================================
 
 if !RANDO
-	%toggle_onoff("FastROM", !config_fastrom)
-	%toggle_onoff("Vanilla items", !config_vanillaitems)
+	%toggle_onoff("FastROM", CONFIG.fastrom)
+	%toggle_onoff("Vanilla items", CONFIG.vanillaitems)
 endif
 
 ;===================================================================================================
 
-%toggle_func_customtext("Music", !config_feature_music, .func, .text)
+%toggle_func_customtext("Music", CONFIG.feature_music, .func, .text)
 
 .text
 %toggletext("Muted", "Enabled")
 
 .func
-	LDA.w !config_feature_music
+	LDA.w CONFIG.feature_music
 
 	REP #$20
 	BNE .unmute
@@ -65,11 +65,11 @@ transfer_adsr:
 
 	SEP #$30
 
-	LDA.b #$FF : STA.w $2140
-	STZ.w $4200
+	LDA.b #$FF : STA.w APUIO0
+	STZ.w NMITIMEN
 
-	LDA.b #UnmutedInstruments>>16
-	JSL $00891D
+	LDA.b #^UnmutedInstruments
+	JSL jlong($00891D)
 
 	SEP #$30
 
@@ -78,13 +78,13 @@ transfer_adsr:
 
 ;===================================================================================================
 
-%toggle_customtext("Menu open", !config_cm_save_place, this)
+%toggle_customtext("Menu open", CONFIG.cm_save_place, this)
 
 %toggletext("Save place", "Main menu")
 
 ;===================================================================================================
 
-%choice_here("HUD font", !config_hud_font, 23)
+%choice_here("HUD font", CONFIG.hud_font, 23)
 	%list_item("LTTP")
 	%list_item("Klonoa")
 	%list_item("TI-83")
@@ -114,22 +114,18 @@ transfer_adsr:
 !color_count = 22
 !color_id = -1
 
-COLORS_YAY:
-	fillword $0000 : fill !color_count*2
+piling COLORS_YAY :: !color_count * 2
+fill word count !color_count :: $0000
 
 ;===================================================================================================
 
 %submenu("Color config", COLOR_CONFIG_SUBMENU)
 
-
 ;===================================================================================================
 
 macro AddMenuColor(val, name)
-	!color_id #= !color_id+1
-	%list_item("<name>")
-	pushpc
-		org COLORS_YAY+!color_id*2 : dw hexto555(<val>)
-	pullpc
+	%list_item("{name}")
+	pile COLORS_YAY :: dw col({val})
 endmacro
 
 ;===================================================================================================
@@ -138,30 +134,30 @@ COLOR_CONFIG_SUBMENU:
 
 %menu_header("COLOR CONFIG")
 
-%choice_func("Menu BG", !config_hud_bg, !color_count, set_color, color_list)
+%choice_func("Menu BG", CONFIG.hud_bg, !color_count, set_color, color_list)
 
-%choice_func("Header FG", !config_hud_header_fg, !color_count, set_color, color_list)
-%choice_func("Header HL", !config_hud_header_hl, !color_count, set_color, color_list)
-%choice_func("Header BG", !config_hud_header_bg, !color_count, set_color, color_list)
+%choice_func("Header FG", CONFIG.hud_header_fg, !color_count, set_color, color_list)
+%choice_func("Header HL", CONFIG.hud_header_hl, !color_count, set_color, color_list)
+%choice_func("Header BG", CONFIG.hud_header_bg, !color_count, set_color, color_list)
 
-%choice_func("Selection FG", !config_hud_sel_fg, !color_count, set_color, color_list)
-%choice_func("Selection BG", !config_hud_sel_bg, !color_count, set_color, color_list)
+%choice_func("Selection FG", CONFIG.hud_sel_fg, !color_count, set_color, color_list)
+%choice_func("Selection BG", CONFIG.hud_sel_bg, !color_count, set_color, color_list)
 
-%choice_func("Inactive FG", !config_hud_dis_fg, !color_count, set_color, color_list)
+%choice_func("Inactive FG", CONFIG.hud_dis_fg, !color_count, set_color, color_list)
 
 ;===================================================================================================
 
 set_color:
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BVC .dontreset
 
-	LDA.b SA1IRAM.cm_cursor
+	LDA.b IRAM.cm_cursor
 	TAX
 	ASL
 	TAY
 
 	LDA.l .defaults,X
-	STA.w !config_hud_bg,Y
+	STA.w CONFIG.hud_bg,Y
 
 .dontreset
 	RTL
@@ -213,9 +209,9 @@ color_list:
 ;===================================================================================================
 
 UnmutedInstruments:
-	dw .end-.start, $3D00
+	dw .data.size, $3D00
 
-.start
+.data
 	db $00, $FF, $E0, $B8, $04, $70
 	db $01, $FF, $E0, $B8, $07, $90
 	db $02, $FF, $E0, $B8, $09, $C0
@@ -242,15 +238,15 @@ UnmutedInstruments:
 	db $17, $FF, $E0, $B8, $02, $C0
 	db $18, $FE, $8F, $B8, $06, $F0
 
-.end
+^..size
 	dw $0000, $0800
 
 ;===================================================================================================
 
 MutedInstruments:
-	dw .end-.start, $3D00
+	dw .data.size, $3D00
 
-.start
+.data
 	db $00, $00, $00, $00, $04, $70
 	db $01, $00, $00, $00, $07, $90
 	db $02, $00, $00, $00, $09, $C0
@@ -277,7 +273,7 @@ MutedInstruments:
 	db $17, $00, $00, $00, $02, $C0
 	db $18, $00, $00, $00, $06, $F0
 
-.end
+^..size
 	dw $0000, $0800
 
 ;===================================================================================================

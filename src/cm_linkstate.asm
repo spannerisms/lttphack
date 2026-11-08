@@ -34,10 +34,10 @@ LINKSTATE_SUBMENU:
 	BNE StateChangeBeep
 
 	STZ.b $5D
-	JML MenuSFX_poof
+	JML MenuSFX.poof
 
 StateChangeBeep:
-	JML MenuSFX_error
+	JML MenuSFX.error
 
 ;===================================================================================================
 
@@ -47,7 +47,7 @@ StateChangeBeep:
 
 	LDA.b #$17
 	STA.b $5D
-	JML MenuSFX_oof
+	JML MenuSFX.oof
 
 ;===================================================================================================
 
@@ -77,9 +77,9 @@ StateChangeBeep:
 
 	LDA.b #$3A : STA.w $031F
 
-	JML $09AF89
+	JML jlong($09AF89)
 
 .no
-	JMP MenuSFX_error
+	JMP MenuSFX.error
 
 ;===================================================================================================

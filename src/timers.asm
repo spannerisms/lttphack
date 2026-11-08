@@ -1,3 +1,10 @@
+;===================================================================================================
+
+!UPDATE_TIMER = $02
+!RESET_TIMER = $41
+
+;===================================================================================================
+
 pushpc
 
 ; Underworld
@@ -53,29 +60,33 @@ org $078FFB : JSL UpdateOnBonk
 org $0799F3 : JSL UpdateOnReceiveItem
 org $09F775 : JSL UpdateOnDeath
 
+;===================================================================================================
+
 ; Wait for key
 org $0EFB90
 	LDA.b $F4 ; vanilla pointlessly used absolute; dp is better
-	JSL idle_waitkey ; now we have an easy 4 bytes here for the JSL
+	JSL WaitKeyIdleCounter ; now we have an easy 4 bytes here for the JSL
 
 ; EndMessage
-org $0EFBBB : JSL idle_endmessage
+org $0EFBBB : JSL EndMessageIdleCounter
 
 ; MenuActive
-org $0DDF1E : JSL idle_menu
+org $0DDF1E : JSL MenuIdleCounter
 
 ; BottleMenu
-org $0DE0E2 : JSL idle_menu
+org $0DE0E2 : JSL MenuIdleCounter
 
 ; Choosing
-org $0EF881 : JSL idle_choose : ORA.b #$00
-org $0EF8F9 : JSL idle_choose : ORA.b #$00
-org $0EF718 : JSL idle_chooseb : NOP
+org $0EF881 : JSL ChoiceIdleCounter : ORA.b #$00
+org $0EF8F9 : JSL ChoiceIdleCounter : ORA.b #$00
+org $0EF718 : JSL ChoiceBIdleCounter : NOP
 
 ; Waiting
-org $0EFA61 : JSL idle_holdA
+org $0EFA61 : JSL HoldAIdleCounter
 
-org $0EF77E : JSL idle_item_toss : AND.b #$C0
+org $0EF77E : JSL ItemTossCounter : AND.b #$C0
+
+;===================================================================================================
 
 ; ledge hops (too many of these!!!!)
 org $07895E : JSL UpdateOnLedgeHop : NOP
@@ -95,272 +106,308 @@ org $07C2F0 : JSL UpdateOnWaterHop
 org $07C3ED : JSL UpdateOnWaterHop
 org $07CC67 : JSL UpdateOnWaterHop
 
+;===================================================================================================
+
 ; sprites
 org $1E848C : JSL UpdateOnHelmaMaskBreak
 
-
-
 pullpc
 
-!UPDATE_TIMER = $02
-!RESET_TIMER = $41
-
+;===================================================================================================
 
 UpdateOnLedgeHop:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	; vanilla
+	; * = ignore because both routines do it
+	; LDA.b #$20       - *
+	; JSR Sfx2         - 6    6
+	;    JSR GetPan    - 6    12
+	;    STA.w $0CF8   - *
+	;    JSL CalcSfx   - *
+	;    ORA.w $0CF8   - *
+	;    RTS           - 6    18
+	; STA.w $012E      - *
+	; RTS              - 6    24
 
+	; prachack:
+	; JSL              - 6    6
+	; LDA.b #Update    - 2    8
+	; STA.w Flag       - 6    14
+	; LDA.b #$20       - *
+	; STA.w $0CF8      - *
+	; JSL CalcSfx      - *
+	; ORA.w $0CF8      - *
+	; STA.w $012E      - *
+	; RTL              - 6    20
+	; NOP              - 2    22
+
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
+
+	; JSL + 8 + 6
+	; No JSR - 6 - 6
 	LDA.b #$20
-	XBA : XBA ; just to make cycle counts even from removing a JSR
+	XBA : XBA ; TODO remove these and add a NOP
 	STA.w $0CF8
 
-	JSL $8DBB67 ; CalculateLinkSFXPan
+	JSL jlong($8DBB67) ; CalculateLinkSFXPan
 	ORA.w $0CF8
 	STA.w $012E
 
 	RTL
 
+;===================================================================================================
+
 UpdateOnWaterHop:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$06 : STA.b $5D
 
 	RTL
 
+;===================================================================================================
+
 ; Underworld updates
 UpdateOnUWTransition:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b $67 : AND.b #$03
 	RTL
 
 UpdateOnUWStairs:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
-	JML $07F243
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
+	JML jlong($07F243)
 
 UpdateOnSwitchPress:
 	STA.b $11
 	LDX.b $0C
 
 UpdateOnKeyDoor:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	RTL
 
 UpdateOnUWMirror:
 	STA.b $11 : STZ.b $B0
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG 
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG 
 	RTL
 
 UpdateOnUWPitTransition:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG 
-	LDA.l $01C31F,X
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG 
+	LDA.l jlong($01C31F),X
 	RTL
 
 UpdateOnKillRoom:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$05 : STA.b $11
 	RTL
 
 UpdateOnBombableWallOW:
 UpdateOnExitingText:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$01 : STA.b $14
 	RTL
 
 UpdateOnPegSwitch:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$16 : STA.b $11
 	RTL
 
 UpdateOnWarpTile:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG 
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG 
 	LDA.b #$15 : STA.b $11
 	RTL
 
 UpdateOnIntraroomStairs:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$07 : STA.b $10
 	RTL
 
 UpdateOnInterRoomStairs:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG 
-	JML $02B861
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG 
+	JML jlong($02B861)
 
 UpdateOnBombableWallUW:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$09 : STA.b $11
 	RTL
 
 UpdateOnBombableFloor:
 	SEP #$30
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$1B
 	RTL
 
 UpdateOnExplodingWall:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	STZ.b $50
 	LDA.b $EE
 	RTL
 
 UpdateOnGanonKill:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	STZ.b $B0
 	STZ.b $AE
 	RTL
 
 UpdateOnTriforceDoor:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	STZ.b $11
 	STZ.b $B0
 	RTL
 
+;===================================================================================================
+
 UpdateOnMovingWallStart:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$01 : STA.w $02E4
 	RTL
 
 ; mire/pod slow: 17"04 | fast: 00"17
 UpdateOnMovingWallEndPodMire:
-	LDA.w !config_fast_moving_walls : BEQ .slowwalls
+	LDA.w CONFIG.fast_moving_walls : BEQ .slowwalls
 
-	LDY.b #$02 : STY.w SA1IRAM.TIMER_ADD_INDEX
+	LDY.b #$02 : STY.w IRAM.TIMER_ADD_INDEX
 
 .slowwalls
-	LDY.b #$02 : STY.w SA1IRAM.TIMER_FLAG
+	LDY.b #$02 : STY.w IRAM.TIMER_FLAG
 	LDY.b #$00 : STY.b $AE,X
 	RTL
 
 ; desert slow: 09"18 | fast: 00"10
 UpdateOnMovingWallEndDesert:
-	LDA.w !config_fast_moving_walls : BEQ .slowwalls
+	LDA.w CONFIG.fast_moving_walls : BEQ .slowwalls
 
-	LDY.b #$04 : STY.w SA1IRAM.TIMER_ADD_INDEX
+	LDY.b #$04 : STY.w IRAM.TIMER_ADD_INDEX
 
 .slowwalls
-	LDY.b #$02 : STY.w SA1IRAM.TIMER_FLAG
+	LDY.b #$02 : STY.w IRAM.TIMER_FLAG
 	LDY.b #$00 : STY.b $AE,X
 	RTL
 
+;===================================================================================================
+
 ; Overworld updates
 UpdateOnOWUWTransition:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	STZ.b $11 : STZ.b $B0
 	RTL
 
 UpdateOnOWTransition:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	INC.b $11 : LDA.b $00
 	RTL
 
 UpdateOnOWMirror:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$23 : STA.b $11
 	RTL
 
 UpdateOnOWMirror2:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$14 : STA.b $5D
 	RTL
 
 UpdateOnOWPitTransition:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
-	JML $1BB860 ; Overworld_Hole
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
+	JML jlong($1BB860) ; Overworld_Hole
 
 UpdateOnOWToSpecial:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$17 : STA.b $11
 	RTL
 
 UpdateOnSpecialToOW:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$24 : STA.b $11
 	RTL
 
 UpdateOnWhirlPool:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$2E : STA.b $11
 	RTL
 
 UpdateOnFlute:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$0A : STA.b $11
 	RTL
+
+;===================================================================================================
 
 ; Messaging updates
 UpdateOnEnteringMessaging:
 UpdateOnItemMenu:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$0E : STA.b $10
 	RTL
 
 UpdateOnItemMenuClose:
 	STA.b $10
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b $11
 	RTL
 
 UpdateOnDeath:
-	LDA.b #!RESET_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.l $7EC227
 	RTL
+
+;===================================================================================================
 
 ; Other updates
 UpdateOnKey:
 	STA.l $7EF36F
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	RTL
 
 UpdateOnBonk:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	STA.b $5D ; needs $02
 	RTL
 
 UpdateOnReceiveItem:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDY.b #$04
 	LDA.b #$22
 	RTL
 
 UpdateOnHelmaMaskBreak:
-	LDA.b #!UPDATE_TIMER : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDY.b #$0F
 	LDA.b #$00
 	RTL
 
-
 ;===================================================================================================
 ; Idle frames
 ;===================================================================================================
-idle_waitkey:
+WaitKeyIdleCounter:
 	; LDA $F4 from entry point
 	ORA.b $F6 : AND.b #$C0 : BNE .pressed_key
 
 	REP #$20
-	INC.w SA1IRAM.ROOM_TIME_IDLE
+	INC.w IRAM.ROOM_TIME_IDLE
 	SEP #$20
 
 .pressed_key
+	; AND.b #$C0 executed again after wedge
 	RTL
 
 ;---------------------------------------------------------------------------------------------------
 
-idle_endmessage:
+EndMessageIdleCounter:
 	LDA.b $F4 : ORA.b $F6 : BNE .pressed_key
 
 	REP #$20
-	INC.w SA1IRAM.ROOM_TIME_IDLE
+	INC.w IRAM.ROOM_TIME_IDLE
 	SEP #$20
 
-	ORA.b #$00
+	ORA.b #$00 ; TODO change to    SEP #$22 ; set zero flag for exit
 
 .pressed_key
 	RTL
 
 ;---------------------------------------------------------------------------------------------------
 
-idle_menu:
+MenuIdleCounter:
 	LDA.b $F4 : BNE .pressed_key
 
 	REP #$20
-	INC.w SA1IRAM.ROOM_TIME_IDLE
+	INC.w IRAM.ROOM_TIME_IDLE
 	SEP #$20
 
 .pressed_key
@@ -369,24 +416,25 @@ idle_menu:
 
 ;---------------------------------------------------------------------------------------------------
 
-idle_choose:
+ChoiceIdleCounter:
 	LDA.b $F6
 	AND.b #$C0
 	ORA.b $F4
 
-	BIT.b #$DC
+	BIT.b #$DC ; must preserve contents
 	BNE .pressed_key
 
 	REP #$20
-	INC.w SA1IRAM.ROOM_TIME_IDLE
+	INC.w IRAM.ROOM_TIME_IDLE
 	SEP #$20
 
 .pressed_key
+	; AND.b 
 	RTL
 
 ;---------------------------------------------------------------------------------------------------
 
-idle_chooseb:
+ChoiceBIdleCounter:
 	LDA.b $F6
 	LDY.b $F4
 	AND.b #$C0
@@ -396,15 +444,16 @@ idle_chooseb:
 	BNE .pressed_key
 
 	REP #$20
-	INC.w SA1IRAM.ROOM_TIME_IDLE
+	INC.w IRAM.ROOM_TIME_IDLE
 	SEP #$20
 
 .pressed_key
+	; AND.b #$C0 executed again after wedge
 	RTL
 
 ;---------------------------------------------------------------------------------------------------
 
-idle_item_toss:
+ItemTossCounter:
 	LDA.b $F6
 	AND.b #$C0
 	ORA.b $F4
@@ -412,7 +461,7 @@ idle_item_toss:
 	BNE .pressed_key
 
 	REP #$20
-	INC.w SA1IRAM.ROOM_TIME_IDLE
+	INC.w IRAM.ROOM_TIME_IDLE
 	SEP #$20
 
 .pressed_key
@@ -422,13 +471,15 @@ idle_item_toss:
 
 ;---------------------------------------------------------------------------------------------------
 
-idle_holdA:
+HoldAIdleCounter:
 	LDA.b $F2 : BPL .no_a_press
 
 	REP #$20
-	INC.w SA1IRAM.ROOM_TIME_IDLE
+	INC.w IRAM.ROOM_TIME_IDLE
 	SEP #$20
 
 .no_a_press
 	AND.b #$80
 	RTL
+
+;===================================================================================================

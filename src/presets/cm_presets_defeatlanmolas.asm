@@ -399,4 +399,4 @@ presetSRAM_defeatlanmolas:
 ...end
 ;===================================================================================================
 presetend_defeatlanmolas:
-print "defeatlanmolas size: $", hex(presetend_defeatlanmolas-presetheader_defeatlanmolas)
+printf "defeatlanmolas size: ${0:X4}", presetend_defeatlanmolas-presetheader_defeatlanmolas

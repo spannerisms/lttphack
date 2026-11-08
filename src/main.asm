@@ -1,121 +1,159 @@
-;	"Training" submenu
-;	mash counter using 60 byte circular buffer (ABXYLR show x/60 for all, individual, face; exit menu with select; keep record best for session)
-;	hover counter (show longest press and longest release, and number of successful; keep record best for session)
+;===================================================================================================
 
+if !BUILD?
+	!VERSION = "15.0.1"
+	!VERSIONTEXT = "v!VERSION"
+else
+	!VERSION ?= "ALEPH1"
+	!VERSIONTEXT = "!VERSION"
+endif
 
-math pri on
+!RANDO ?= 0
 
-sa1rom
+;===================================================================================================
 
-!VERSION ?= "ALEPH 1"
+encoder MenuEncoding = "resources/menuencoding.txt"
+encoder FileSelectTop = "resources/fileselecttop.txt"
+encoder FileSelectBot = "resources/fileselectbot.txt"
 
-incsrc defines.asm
-incsrc hexedits.asm
+encoder MenuEncoding
 
-org $208000
-incsrc init.asm
-incsrc sa1hooks.asm
-incsrc nmi.asm
-incsrc timers.asm
-incsrc gamemode.asm
-incsrc misc.asm
-incsrc rng.asm
-incsrc presets.asm
-incsrc roomload.asm
-incsrc linkstuff.asm
+;===================================================================================================
 
-print "Bank end: $", pc
+org $208000 ; TODO move all these to just always be fastrom
+piling ConfigInitTable :: $0400
 
-org $218000
-incsrc tiles.asm
+incsrc "variables.asm"
+incsrc "memory.asm"
+incsrc "hexedits.asm"
 
-print "Bank end: $", pc
+;---------------------------------------------------------------------------------------------------
 
-print ""
+org jlong($208400)
+incsrc "init.asm"
+incsrc "sa1main.asm"
+incsrc "nmi.asm"
+incsrc "timers.asm"
+incsrc "gamemode.asm"
+incsrc "misc.asm"
+incsrc "rng.asm"
+incsrc "presets.asm"
+incsrc "roomload.asm"
+incsrc "linkstuff.asm"
 
-org $228000
-table resources/menu.tbl
-incsrc cm_macros.asm
-incsrc cm_main.asm
-incsrc cm_draw.asm
-incsrc cm_func.asm
-incsrc cm_items.asm
-incsrc cm_equipment.asm
-incsrc cm_gamestate.asm
-incsrc cm_linkstate.asm
-incsrc cm_gameplay.asm
-incsrc cm_rng.asm
-incsrc cm_hud.asm
-incsrc cm_roomload.asm
-incsrc cm_lite_states.asm
-incsrc cm_shortcuts.asm
-incsrc cm_config.asm
-incsrc cm_presetconfig.asm
-incsrc cm_sentry_picker.asm
-incsrc hudextras.asm
-incsrc sentries.asm
+printf "Bank end: {0:A}", !:pc
 
-print "Menu end: $", pc
+;---------------------------------------------------------------------------------------------------
 
-org $238000
+org jlong($218000)
+incsrc "tiles.asm"
 
+printf "Bank end: {0:A}", !:pc
 
+;---------------------------------------------------------------------------------------------------
 
+org jlong($228000)
+incsrc "cm_macros.asm"
+incsrc "cm_main.asm"
+incsrc "cm_draw.asm"
+incsrc "cm_func.asm"
+incsrc "cm_items.asm"
+incsrc "cm_equipment.asm"
+incsrc "cm_gamestate.asm"
+incsrc "cm_linkstate.asm"
+incsrc "cm_gameplay.asm"
+incsrc "cm_rng.asm"
+incsrc "cm_hud.asm"
+incsrc "cm_roomload.asm"
+incsrc "cm_lite_states.asm"
+incsrc "cm_shortcuts.asm"
+incsrc "cm_config.asm"
+incsrc "cm_presetconfig.asm"
+incsrc "cm_sentry_picker.asm"
+incsrc "hudextras.asm"
+incsrc "sentries.asm"
 
+printf "Menu bank end: {0:A}", !:pc
 
-org $268000
+;---------------------------------------------------------------------------------------------------
 
-print ""
-print "Preset data:"
-print "--------------------"
+org jlong($238000)
+
+org jlong($268000)
 
 ;===================================================================================================
 ; GREP FOR "PRESET LIST" WHEN ADDING NEW PRESETS
 ;===================================================================================================
-org $308000
-print "Bank 1 ", pc
-incsrc presets/cm_presets_nmg.asm
-incsrc presets/cm_presets_100nmg.asm
-incsrc presets/cm_presets_defeatlanmolas.asm
-incsrc presets/cm_presets_defeatarmos.asm
-incsrc presets/cm_presets_defeatmoldorm.asm
-incsrc presets/cm_presets_defeatagahnim.asm
-incsrc presets/cm_presets_defeathelmasaur.asm
-incsrc presets/cm_presets_defeatarrghus.asm
-incsrc presets/cm_presets_defeatagahnim2.asm
-print "Bank 1 end: ", pc
 
-org $318000
-print ""
-print "Bank 2 ", pc
-incsrc presets/cm_presets_lownmg.asm
-incsrc presets/cm_presets_lowleg.asm
-incsrc presets/cm_presets_defeatkholdstare.asm
-incsrc presets/cm_presets_defeatvitreous.asm
-incsrc presets/cm_presets_defeattrinexx.asm
-incsrc presets/cm_presets_defeatmothula.asm
-print "Bank 2 end: ", pc
+print
+print bar
+print bar
+print "-- Preset data"
+print bar
+print bar
 
-org $328000
-print ""
-print "Bank 3 ", pc
-incsrc presets/cm_presets_adold.asm
-incsrc presets/cm_presets_ad2020.asm
-incsrc presets/cm_presets_anyrmg.asm
-incsrc presets/cm_presets_reversebossorder.asm
-incsrc presets/cm_presets_defeatblind.asm
-print "Bank 3 end: ", pc
+macro PresetBank(n)
+	print
+	print bar
+	printf "-- Bank {n} : {0:A}", !:pc
+	print bar
+endmacro
 
-org $338000
-print ""
-print "Bank 4 ", pc
-incsrc presets/cm_presets_alldungeonsmg.asm
-print "Bank 4 end: ", pc
+macro PresetBankEnd(n)
+	printf "-- Bank {n} end: {0:A}", !:pc
+endmacro
 
+;---------------------------------------------------------------------------------------------------
 
-org $3E8000
-incsrc bsod.asm
+org jlong($308000)
+%PresetBank(1)
+incsrc "presets/cm_presets_nmg.asm"
+incsrc "presets/cm_presets_100nmg.asm"
+incsrc "presets/cm_presets_defeatlanmolas.asm"
+incsrc "presets/cm_presets_defeatarmos.asm"
+incsrc "presets/cm_presets_defeatmoldorm.asm"
+incsrc "presets/cm_presets_defeatagahnim.asm"
+incsrc "presets/cm_presets_defeathelmasaur.asm"
+incsrc "presets/cm_presets_defeatarrghus.asm"
+incsrc "presets/cm_presets_defeatagahnim2.asm"
+%PresetBankEnd(1)
 
-; pad rom to 2mb
-org $3FFFFF
-db $FF
+;---------------------------------------------------------------------------------------------------
+
+org jlong($318000)
+%PresetBank(2)
+incsrc "presets/cm_presets_lownmg.asm"
+incsrc "presets/cm_presets_lowleg.asm"
+incsrc "presets/cm_presets_defeatkholdstare.asm"
+incsrc "presets/cm_presets_defeatvitreous.asm"
+incsrc "presets/cm_presets_defeattrinexx.asm"
+incsrc "presets/cm_presets_defeatmothula.asm"
+%PresetBankEnd(2)
+
+;---------------------------------------------------------------------------------------------------
+
+org jlong($328000)
+%PresetBank(3)
+incsrc "presets/cm_presets_adold.asm"
+incsrc "presets/cm_presets_ad2020.asm"
+incsrc "presets/cm_presets_anyrmg.asm"
+incsrc "presets/cm_presets_reversebossorder.asm"
+incsrc "presets/cm_presets_defeatblind.asm"
+%PresetBankEnd(3)
+
+;---------------------------------------------------------------------------------------------------
+
+org jlong($338000)
+%PresetBank(4)
+incsrc "presets/cm_presets_alldungeonsmg.asm"
+%PresetBankEnd(4)
+
+;===================================================================================================
+
+print
+print bar
+
+org jlong($3E8000)
+incsrc "bsod.asm"
+
+;===================================================================================================

@@ -214,5 +214,5 @@ presetSRAM_defeatmoldorm:
 ...end
 ;===================================================================================================
 presetend_defeatmoldorm:
-print "defeatmoldorm size: $", hex(presetend_defeatmoldorm-presetheader_defeatmoldorm)
+printf "defeatmoldorm size: ${0:X4}", presetend_defeatmoldorm-presetheader_defeatmoldorm
 

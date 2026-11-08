@@ -10,7 +10,7 @@ LoadSingleDoorTileAttribute:
 	JSR.w $01D51D
 	RTL
 
-warnpc $01B55F
+guardpc $01B55F
 
 pullpc
 
@@ -26,28 +26,28 @@ LoadArbitraryRoom:
 
 	SEP #$30
 
-	LDA.b #$00 : STA.b $13
+	LDA.b #$00 : STA.b $13 ; TODO STZ
 
 	LDA.b $1B : BEQ .no_data_flush
 
-	JSL $02A0BE
-	JSL $02B87B
+	JSL jlong($02A0BE)
+	JSL jlong($02B87B)
 
 .no_data_flush
 	REP #$20
 
-	LDA.w SA1RAM.loadroomid : JSR SetLoadedRoomID
+	LDA.w BWRAM.loadroom_id : JSR SetLoadedRoomID
 
 	SEP #$30
 	TAX
 
-	LDA.w $044A : STA.w SA1RAM.loadroomeg
+	LDA.w $044A : STA.w BWRAM.loadroom_eg
 
 	STZ.w $044A
 
 	LDY.w .layerfloor,X
 
-	LDA.w SA1RAM.loadroomworldset : BEQ .default_world
+	LDA.w BWRAM.loadroom_worldset : BEQ .default_world
 	CMP.b #$02 : BEQ .light_world
 	BCC .do_floor
 
@@ -85,7 +85,7 @@ LoadArbitraryRoom:
 
 	PLA
 
-	LDX.w SA1RAM.loadroomdungeonset : BEQ .done_dungeon_id
+	LDX.w BWRAM.loadroom_dungeonset : BEQ .done_dungeon_id
 	CPX.w #$01 : BEQ .use_old_dungeon_id
 
 	LDA.w DungeonID-2,X
@@ -94,7 +94,7 @@ LoadArbitraryRoom:
 	STA.w $040C
 
 .done_dungeon_id
-	LDA.w SA1RAM.loadroompegset : CMP.b #$02 : BCC .explicit_pegs
+	LDA.w BWRAM.loadroom_pegset : CMP.b #$02 : BCC .explicit_pegs
 
 	; since this address is reused, make sure it takes on a valid value
 	LDA.l $7EC172 : CMP.b #$02 : BCC .explicit_pegs
@@ -102,7 +102,7 @@ LoadArbitraryRoom:
 	LDA.b #$00
 
 .explicit_pegs
-	STA.w SA1RAM.loadroompegstate
+	STA.w BWRAM.loadroom_pegstate
 
 	JSL SetHUDItemGraphics
 
@@ -117,37 +117,37 @@ LoadArbitraryRoom:
 
 	SEP #$30
 
-	LDA.w SA1RAM.loadroompegstate
+	LDA.w BWRAM.loadroom_pegstate
 	JSL HandlePegState
 
 	SEP #$30
 
-	LDA.w SA1RAM.loadroomshutters : AND.b #$01 : EOR.b #$01
+	LDA.w BWRAM.loadroom_shutters : AND.b #$01 : EOR.b #$01
 	JSL HandleOpenShutters
 
-	LDX.w SA1RAM.loadroomid
+	LDX.w BWRAM.loadroom_id
 
 	PHK
 	PLB
 
 	REP #$30
-	LDA.w #$3000 : TCD
+	LDA.w #IRAM : TCD
 
 	TXA
-	ASL : ADC.w SA1RAM.loadroomid : TAX
+	ASL : ADC.w BWRAM.loadroom_id : TAX
 
-	LDA.l $1F83C0,X : STA.b SA1IRAM.preset_scratch+0
-	LDA.l $1F83C1,X : STA.b SA1IRAM.preset_scratch+1
+	LDA.l jlong($1F83C0),X : STA.b IRAM.preset_scratch+0
+	LDA.l jlong($1F83C1),X : STA.b IRAM.preset_scratch+1
 
 	; need a very special exception for this duplicated room
 	LDA.w $00A0 : CMP.w #$004F : BEQ .no_doors
 
-	LDA.b [SA1IRAM.preset_scratch]
+	LDA.b [IRAM.preset_scratch]
 	CMP.w #$FFFF : BEQ .no_doors
 
 	JSR FindOptimalDoorType
 
-	STA.b SA1IRAM.preset_scratch+2
+	STA.b IRAM.preset_scratch+2
 
 	SEP #$30
 
@@ -168,7 +168,7 @@ LoadArbitraryRoom:
 	PLA
 	LSR : LSR : LSR
 
-	STZ.b SA1IRAM.preset_scratch+2
+	STZ.b IRAM.preset_scratch+2
 
 	; door position
 	REP #$30
@@ -177,9 +177,9 @@ LoadArbitraryRoom:
 	TAY
 
 	LDA.w .door_position_tables,X
-	STA.b SA1IRAM.preset_scratch
+	STA.b IRAM.preset_scratch
 
-	LDA.b [SA1IRAM.preset_scratch],Y
+	LDA.b [IRAM.preset_scratch],Y
 
 	PEA.w $0000
 	PLD
@@ -194,17 +194,17 @@ LoadArbitraryRoom:
 
 	; check entrance for matching room ID
 	LDA.w $010E : ASL : TAX
-	LDA.l $02C577,X : CMP.b $A0 : BNE .not_entrance
+	LDA.l jlong($02C577),X : CMP.b $A0 : BNE .not_entrance
 
-	LDA.l $02CCBD,X : STA.b $20
-	LDA.l $02CDC7,X : STA.b $22
+	LDA.l jlong($02CCBD),X : STA.b $20
+	LDA.l jlong($02CDC7),X : STA.b $22
 
 	SEP #$20
 
-	LDA.l $02D274,X : STA.b $6C
+	LDA.l jlong($02D274),X : STA.b $6C
 
-	LDA.l $02D2F9,X : LSR : LSR : LSR : LSR : STA.b $EE
-	LDA.l $02D2F9,X : AND.b #$0F : STA.w $0476
+	LDA.l jlong($02D2F9),X : LSR : LSR : LSR : LSR : STA.b $EE
+	LDA.l jlong($02D2F9),X : AND.b #$0F : STA.w $0476
 
 	REP #$20
 	BRA .adjust_coords
@@ -273,8 +273,8 @@ LoadArbitraryRoom:
 	; control layer, based on door we're on
 	STZ.w $0476 : STZ.b $EE
 
-	LDA.w SA1IRAM.preset_scratch+3
-	LDX.b #.lower_layer_doors_end-.lower_layer_doors-1
+	LDA.w IRAM.preset_scratch+3
+	LDX.b #.lower_layer_doors.size-1
 
 .lower_layer_search
 	CMP.w .lower_layer_doors,X
@@ -295,7 +295,7 @@ LoadArbitraryRoom:
 	LDA.w $044A : BNE .dont_refresh_eg
 
 	PHA
-	LDA.w SA1RAM.loadroomeg : STA.w $044A
+	LDA.w BWRAM.loadroom_eg : STA.w $044A
 	PLA
 
 .dont_refresh_eg
@@ -336,7 +336,7 @@ LoadArbitraryRoom:
 	JSR SetCameraToCoordinates
 	JSL CacheRoomEntryPropertiesLong
 
-	LDA.w SA1RAM.loadroomkill : BEQ .no_massacre
+	LDA.w BWRAM.loadroom_kill : BEQ .no_massacre
 
 	REP #$30
 
@@ -360,7 +360,7 @@ LoadArbitraryRoom:
 
 .lower_layer_doors
 	db $02, $04, $06, $0C, $10, $40, $44, $46, $48, $4A
-.lower_layer_doors_end
+^..size
 
 .bound_setters
 	dw .layout00
@@ -413,23 +413,18 @@ LoadArbitraryRoom:
 
 ;---------------------------------------------------------------------------------------------------
 
-.entrance
-	fillbyte $00 : fill 256
+piling .entrance :: $100
+	fill byte count 256 :: $00
 
-.layerfloor
-	fillbyte $00 : fill 256
+piling .layerfloor :: $100
+	fill byte count 256 :: $00
 
 ;    .w.. ffff
 ;    w = world
 ;    ffff = $A4 & 0x0F - sign extended after read
-!ROOM_ID = 0
 macro room_load(e, w, f)
-	pushpc
-	org .entrance+!ROOM_ID : db <e>
-	org .layerfloor+!ROOM_ID : db (<f>&$F)|((<w>&$01)<<6)
-
-	pullpc
-	!ROOM_ID #= !ROOM_ID+1
+	pile .entrance :: db {e}
+	pile .layerfloor :: db ({f}&$F)|(({w}&$01)<<6)
 endmacro
 
 %room_load($7B, 1,  2) ; 0000
@@ -715,9 +710,9 @@ ResetBeforeLoading:
 	SEP #$30
 
 	LDA.b #$80
-	STA.w $2100
-	STZ.w $4200
-	STZ.w $420C
+	STA.w INIDISP
+	STZ.w NMITIMEN
+	STZ.w HDMAEN
 
 	REP #$30
 
@@ -758,7 +753,7 @@ ResetBeforeLoading:
 
 	SEP #$30
 
-	JSL $07F18C
+	JSL jlong($07F18C)
 
 	STZ.w $0112
 	STZ.w $0126
@@ -789,64 +784,64 @@ ResetBeforeLoading:
 	STZ.b $EF
 	STZ.b $9B
 
-	STZ.w SA1IRAM.BossCycles+0
-	STZ.w SA1IRAM.BossCycles+1
-	STZ.w SA1IRAM.BossCycles+2
+	STZ.w IRAM.boss_cycles+0
+	STZ.w IRAM.boss_cycles+1
+	STZ.w IRAM.boss_cycles+2
 
 	; big blocks of zero
 	REP #$20
 
 	LDA.w #$2100 : TCD
 
-	LDX.b #$80 : STX.b $2100
+	LDX.b #$80 : STX.b INIDISP
 
 	; disable sound effects now
-	LDX.b #$05 : STX.b $2141
-	LDX.b #$F0 : STX.b $2140
+	LDX.b #$05 : STX.b APUIO1
+	LDX.b #$F0 : STX.b APUIO0
 
 	; clear text tile map
-	LDY.b #$00 : STY.b $2115
+	LDY.b #$00 : STY.b VMAIN
 
-	STA.w $4355
-	LDA.w #$1808 : STA.w $4350
-	LDA.w #$C240>>1 : STA.b $2116
-	LDA.w #emptybg3+1 : STA.w $4352
-	LDY.b #emptybg3>>16 : STY.w $4354
-	LDA.w #$05C0/2 : STA.w $4355
+	STA.w DMA5SIZE
+	LDA.w #$08][VMDATA : STA.w DMAP5
+	LDA.w #vram($C240) : STA.b VMADDR
+	LDA.w #emptybg3+1 : STA.w DMA5ADDRL
+	LDY.b #^emptybg3 : STY.w DMA5ADDRB
+	LDA.w #$05C0/2 : STA.w DMA5SIZE
 
-	LDX.b #$20 : STX.w $420B
+	LDX.b #$20 : STX.w MDMAEN
 
-	LDY.b #$80 : STY.b $2115
+	LDY.b #$80 : STY.b VMAIN
 
-	STA.w $4355
-	LDA.w #$1908 : STA.w $4350
-	LDA.w #$C240>>1 : STA.b $2116
-	LDA.w #emptybg3 : STA.w $4352
+	STA.w DMA5SIZE
+	LDA.w #$08][VMDATAH : STA.w DMAP5
+	LDA.w #vram($C240) : STA.b VMADDR
+	LDA.w #emptybg3 : STA.w DMA5ADDRL
 
-	STX.w $420B
+	STX.w MDMAEN
 
 	; clear stuff for text
-	LDA.w #$F800>>1 : STA.b $2116
-	LDA.w #ZeroLand+1 : STA.w $4352
-	LDX.b #ZeroLand>>16 : STX.w $4354
-	LDA.w #$0780 : STA.w $4355
-	LDA.w #$1809 : STA.w $4350
+	LDA.w #vram($F800) : STA.b VMADDR
+	LDA.w #ZeroLand : STA.w DMA5ADDRL
+	LDX.b #^ZeroLand : STX.w DMA5ADDRB
+	LDA.w #$0780 : STA.w DMA5SIZE
+	LDA.w #$09][VMDATA : STA.w DMAP5
 
-	STX.w $420B
+	STX.w MDMAEN
 
-	LDA.w #$8008 : STA.w $4350
+	LDA.w #$8008 : STA.w DMAP5
 
 	LDY.b #$01
-	STY.b $2183 ; bank 7F to start
+	STY.b WMADDB ; bank 7F to start
 
 	; clear some sprite stuff
-	LDA.w #$F800 : STA.b $2181
-	LDA.w #$0020 : STA.w $4355
-	STX.w $420B
+	LDA.w #$F800 : STA.b WMADDL
+	LDA.w #$0020 : STA.w DMA5SIZE
+	STX.w MDMAEN
 
-	LDA.w #$DF80 : STA.b $2181
-	LDA.w #$1200 : STA.w $4355
-	STX.w $420B
+	LDA.w #$DF80 : STA.b WMADDL
+	LDA.w #$1200 : STA.w DMA5SIZE
+	STX.w MDMAEN
 
 	RTL
 
@@ -859,13 +854,13 @@ ApplyAfterLoading:
 	TCD
 
 	; Enable HDMA to get proper lag times
-	LDA.w #$2641 : STA.w $4360 : STA.w $4370
-	LDA.w #$F2F6 : STA.w $4362 : STA.w $4372
+	LDA.w #$2641 : STA.w DMAP6 : STA.w DMAP7
+	LDA.w #$F2F6 : STA.w DMA6ADDRL : STA.w DMA7ADDRL
 
 	SEP #$30
 
-	STZ.w $4364 : STZ.w $4374
-	STZ.w $4367 : STZ.w $4377
+	STZ.w DMA6ADDRB : STZ.w DMA7ADDRB
+	STZ.w DASB6 : STZ.w DASB7
 
 	STZ.w $0710
 
@@ -877,33 +872,33 @@ ApplyAfterLoading:
 	; TODO is this doing anything at all?
 	LDA.w $0ABD : BEQ ++
 
-	JSL $02FD04
+	JSL jlong($02FD04)
 
 ++	REP #$10
 
-	LDA.b #$80 : STA.w $2100
+	LDA.b #$80 : STA.w INIDISP
 
-	STZ.w $2121
-	LDY.w #$2200 : STY.w $4350
-	LDY.w #$C500 : STY.w $4352
-	LDY.w #$0200 : STY.w $4355
-	LDA.b #$7E : STA.w $4354
-	LDA.b #$20 : STA.w $420B
+	STZ.w CGADD
+	LDY.w #$2200 : STY.w DMAP5
+	LDY.w #$C500 : STY.w DMA5ADDRL
+	LDY.w #$0200 : STY.w DMA5SIZE
+	LDA.b #$7E : STA.w DMA5ADDRB
+	LDA.b #$20 : STA.w MDMAEN
 
 	; fix camera
 	SEP #$30
 
-	LDA.w $0120 : STA.w $210D
-	LDA.w $0121 : STA.w $210D
+	LDA.w $0120 : STA.w BG1HOFS
+	LDA.w $0121 : STA.w BG1HOFS
 
-	LDA.w $0124 : STA.w $210E
-	LDA.w $0125 : STA.w $210E
+	LDA.w $0124 : STA.w BG1VOFS
+	LDA.w $0125 : STA.w BG1VOFS
 
-	LDA.w $011E : STA.w $210F
-	LDA.w $011F : STA.w $210F
+	LDA.w $011E : STA.w BG2HOFS
+	LDA.w $011F : STA.w BG2HOFS
 
-	LDA.w $0122 : STA.w $2110
-	LDA.w $0123 : STA.w $2110
+	LDA.w $0122 : STA.w BG2VOFS
+	LDA.w $0123 : STA.w BG2VOFS
 
 	LDA.l $7EF3CC
 	CMP.b #$0D : BNE .superbomb
@@ -914,7 +909,7 @@ ApplyAfterLoading:
 	LDA.l $7EF3CC
 	BEQ .no_follower
 
-	JSL $00D463
+	JSL jlong($00D463)
 
 .no_follower
 	RTL
@@ -942,7 +937,7 @@ ClearOverlordProps:
 TriggerTimerAndReset:
 	SEP #$30
 
-	LDA.b #$41 : STA.w SA1IRAM.TIMER_FLAG
+	LDA.b #$41 : STA.w IRAM.TIMER_FLAG
 
 	LDA.b #$0F
 	STA.b $13
@@ -988,20 +983,20 @@ SetDungeonEntranceAndProperties:
 	REP #$30
 
 	; overworld door
-	LDA.l $02D488,X : STA.w $0696
+	LDA.l jlong($02D488),X : STA.w $0696
 
 	PLX
 
 	SEP #$20
 
 	; graphics
-	LDA.l $02D0E5,X : STA.w $0AA1
+	LDA.l jlong($02D0E5),X : STA.w $0AA1
 
 	; dungeon ID
-	LDA.l $02D1EF,X : STA.w $040C
+	LDA.l jlong($02D1EF),X : STA.w $040C
 
 	; Song
-	LDA.l $02D592,X
+	LDA.l jlong($02D592),X
 
 	; dumb hardcoded stuff for Sanc and Link's house
 	REP #$20
@@ -1018,7 +1013,7 @@ SetDungeonEntranceAndProperties:
 
 	LDX.w #$0016
 
---	CMP.l $028856,X
+--	CMP.l jlong($028856),X
 	BEQ .boss_room
 	DEX
 	DEX
@@ -1110,13 +1105,13 @@ SetDungeonEntranceAndProperties:
 .dw_theme
 	LDX.w #$0009 : BRA .set_fade
 
-.lw_theme
+.lw_theme ; TODO this seems wrong? use 0002 maybe check vanilla
 	LDX.w #$0009 : BRA .set_fade
 
 ;===================================================================================================
 
 ConfigureCoordinatesToTilemap:
-	PHA
+	PHA ; TODO STA.b $20 since it will be overwritten anyways
 
 	AND.w #$007F
 	ASL : ASL
@@ -1143,7 +1138,8 @@ ConfigureCameraToCoordinates:
 	ORA.w #$0110 : STA.w $0606
 
 	LDA.w $0022
-	AND.w #$FF00 : STA.w $0608 : STA.w $060C
+	AND.w #$FF00 : STA.w $0608
+	             : STA.w $060C ; save value
 	AND.w #$FE00 : STA.w $060A
 	ORA.w #$0100 : STA.w $060E
 
@@ -1224,20 +1220,20 @@ FindOptimalDoorType:
 
 	LDY.w #$FFFF
 
-	STZ.b SA1IRAM.preset_writer ; clear best door index
-	STY.b SA1IRAM.preset_reader2 ; clear best door score
+	STZ.b IRAM.preset_writer ; clear best door index
+	STY.b IRAM.preset_reader2 ; clear best door score
 
 .next
 	INY
 
-	LDA.b [SA1IRAM.preset_scratch],Y
+	LDA.b [IRAM.preset_scratch],Y
 	CMP.w #$FFFF : BEQ .done
 
 	; find score, based on index in the table
 	; lower = better
 	SEP #$20
 	XBA
-	LDX.w #.end-.best_doors-1
+	LDX.w #.best_doors.size-1
 
 .score_eval
 	CMP.w .best_doors,X
@@ -1248,12 +1244,12 @@ FindOptimalDoorType:
 	DEX ; one more dex to say we found a door with score FFFE
 
 .compare_score
-	CPX.b SA1IRAM.preset_reader2 : BCS .to_next
+	CPX.b IRAM.preset_reader2 : BCS .to_next
 
 	CMP.b #$12 : BEQ .find_associated_entrance_door
 
-	STX.b SA1IRAM.preset_reader2
-	STY.b SA1IRAM.preset_writer
+	STX.b IRAM.preset_reader2
+	STY.b IRAM.preset_writer
 
 .to_next
 	REP #$20
@@ -1263,8 +1259,8 @@ FindOptimalDoorType:
 ;---------------------------------------------------------------------------------------------------
 
 .done
-	LDY.b SA1IRAM.preset_writer
-	LDA.b [SA1IRAM.preset_scratch],Y
+	LDY.b IRAM.preset_writer
+	LDA.b [IRAM.preset_scratch],Y
 
 	RTS
 
@@ -1278,7 +1274,7 @@ FindOptimalDoorType:
 
 .exit_search
 	REP #$20
-	LDA.b [SA1IRAM.preset_scratch],Y
+	LDA.b [IRAM.preset_scratch],Y
 	CMP.w #$FFFF
 	SEP #$20
 	BEQ .done_exit_find
@@ -1288,6 +1284,7 @@ FindOptimalDoorType:
 	BEQ .skip_exit_find
 
 	XBA
+
 	; compare the positions
 	CMP 1,S : BEQ .match
 
@@ -1297,8 +1294,8 @@ FindOptimalDoorType:
 	BRA .exit_search
 
 .match
-	STX.b SA1IRAM.preset_reader2
-	STY.b SA1IRAM.preset_writer
+	STX.b IRAM.preset_reader2
+	STY.b IRAM.preset_writer
 
 .done_exit_find
 	PLA
@@ -1332,7 +1329,7 @@ FindOptimalDoorType:
 	db $32 ; curtain
 	db $1C ; small key door
 	db $1E ; big key door
-.end
+^..size
 
 ;===================================================================================================
 
@@ -1391,10 +1388,10 @@ HandleOpenShutters:
 .shutter
 	STA.b $06
 
-	LDA.l $009A52,X
+	LDA.l jlong($009A52),X
 	STA.b $00
 
-	LDA.l $009A02,X
+	LDA.l jlong($009A02),X
 	STA.b $02
 
 	LDA.w $19C0,Y
@@ -1412,10 +1409,10 @@ HandleOpenShutters:
 	RTS
 
 .vectors
-	dw .north-1
-	dw .south-1
-	dw .west-1
-	dw .east-1
+	dw rtn(.north)
+	dw rtn(.south)
+	dw rtn(.west)
+	dw rtn(.east)
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -1451,7 +1448,7 @@ HandleOpenShutters:
 	STA.l $7F21C1,X
 
 ++	LDX.b $02
-	LDA.l $00CD9E,X
+	LDA.l jlong($00CD9E),X
 	TAY
 
 	LDX.b $04
@@ -1464,7 +1461,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+0,Y
 	STA.l $7E2000,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1473,7 +1470,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+2,Y
 	STA.l $7E2080,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1482,7 +1479,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+4,Y
 	STA.l $7E2100,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TYA
 	CLC
@@ -1523,7 +1520,7 @@ HandleOpenShutters:
 
 .upper_south
 	LDX.b $02
-	LDA.l $00CE06,X
+	LDA.l jlong($00CE06),X
 	TAY
 
 	LDX.b $04
@@ -1538,7 +1535,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+0,Y
 	STA.l $7E2080,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1547,7 +1544,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+2,Y
 	STA.l $7E2100,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1556,7 +1553,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+4,Y
 	STA.l $7E2180,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TYA
 	CLC
@@ -1605,7 +1602,7 @@ HandleOpenShutters:
 	STA.l $7F2084,X
 
 ++	LDX.b $02
-	LDA.l $00CE66,X
+	LDA.l jlong($00CE66),X
 	TAY
 
 	LDX.b $04
@@ -1620,7 +1617,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+0,Y
 	STA.l $7E2000,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1629,7 +1626,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+2,Y
 	STA.l $7E2080,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1638,7 +1635,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+4,Y
 	STA.l $7E2100,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1647,7 +1644,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+6,Y
 	STA.l $7E2180,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TYA
 	CLC
@@ -1696,7 +1693,7 @@ HandleOpenShutters:
 	STA.l $7F2080,X
 
 	LDX.b $02
-	LDA.l $00CEC6,X
+	LDA.l jlong($00CEC6),X ; TODO already in bank00 so just .w
 
 	TAY
 
@@ -1712,7 +1709,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+0,Y
 	STA.l $7E2002,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1721,7 +1718,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+2,Y
 	STA.l $7E2082,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1730,7 +1727,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+4,Y
 	STA.l $7E2102,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TXA
 	CLC
@@ -1739,7 +1736,7 @@ HandleOpenShutters:
 
 	LDA.w $009B52+6,Y
 	STA.l $7E2182,X
-	STA.w $2118
+	STA.w VMDATA
 
 	TYA
 	CLC
@@ -1773,7 +1770,7 @@ HandleOpenShutters:
 	LSR : LSR
 	ORA.b $0A
 
-	STA.w $2116
+	STA.w VMADDR
 
 	RTS
 
@@ -1809,8 +1806,8 @@ HandlePegState:
 	STA.l $7EC172
 	BEQ --
 
-	JSL $01C22A
-	JSL $0296AD
+	JSL jlong($01C22A)
+	JSL jlong($0296AD)
 	JML RefreshPegs
 
 ;===================================================================================================
@@ -1858,15 +1855,16 @@ HandleOverworldLoad:
 	STZ.w $062A
 	STZ.w $0696
 	STZ.w $0698
-	STZ.w $2116
+	STZ.w VMADDR
 
 
-	JSL $02EA30
+	JSL jlong($02EA30)
 	SEP #$20
 
-	JSL $0AB911
+	JSL jlong($0AB911)
 
-	JSL $02B116 : JSR OWToVRAM
+	JSL jlong($02B116)
+	JSR OWToVRAM
 
 	LDA.w $0410 : PHA
 	LDA.w $0416 : PHA
@@ -1897,7 +1895,7 @@ HandleOverworldLoad:
 
 	SEP #$30
 
-	JSL $09C499
+	JSL jlong($09C499)
 
 	SEP #$34
 
@@ -1906,11 +1904,11 @@ HandleOverworldLoad:
 	STA.w $040C ; no dungeon
 
 	; load overworld music
-	STA.w $2140
-	LDA.b #$01 : STA.w $4200
+	STA.w APUIO0
+	LDA.b #$01 : STA.w NMITIMEN
 	STZ.w $0136
 
-	JSL $008913
+	JSL jlong($008913)
 
 	LDA.b #$09
 	BIT.b $8A
@@ -1973,7 +1971,7 @@ SetOverworldMusic:
 
 .save
 	STX.w $012C
-	STX.w $2140
+	STX.w APUIO0
 
 	RTL
 
@@ -1984,20 +1982,20 @@ OWToVRAM:
 
 	STZ.b $17 : STZ.w $0710
 
-	LDA.b #$7F : STA.w $4304
-	LDA.b #$80 : STA.w $2115
+	LDA.b #$7F : STA.w DMA0ADDRB
+	LDA.b #$80 : STA.w VMAIN
 
 	REP #$31
 
-	LDA.w #$2000 : STA.w $4302
+	LDA.w #$2000 : STA.w DMA0ADDRL
 	LDY.w #$0080 : LDX.w #$0000
-	LDA.w #$1801 : STA.w $4300
+	LDA.w #$01][VMDATA : STA.w DMAP0
 
 .next_chunk
-	LDA.l $7F4000,X : STA.w $2116 : STY.w $4305 : LDA.w #$0001 : STA.w $420B
-	LDA.l $7F4002,X : STA.w $2116 : STY.w $4305 : LDA.w #$0001 : STA.w $420B
-	LDA.l $7F4004,X : STA.w $2116 : STY.w $4305 : LDA.w #$0001 : STA.w $420B
-	LDA.l $7F4006,X : STA.w $2116 : STY.w $4305 : LDA.w #$0001 : STA.w $420B
+	LDA.l $7F4000,X : STA.w VMADDR : STY.w DMA0SIZE : LDA.w #$0001 : STA.w MDMAEN
+	LDA.l $7F4002,X : STA.w VMADDR : STY.w DMA0SIZE : LDA.w #$0001 : STA.w MDMAEN
+	LDA.l $7F4004,X : STA.w VMADDR : STY.w DMA0SIZE : LDA.w #$0001 : STA.w MDMAEN
+	LDA.l $7F4006,X : STA.w VMADDR : STY.w DMA0SIZE : LDA.w #$0001 : STA.w MDMAEN
 
 	TXA : ADC.w #$0008 : TAX
 
@@ -2009,13 +2007,13 @@ OWToVRAM:
 ;===================================================================================================
 
 MushroomSprite:
-	db $03, $00, $04, $03, $08, $07, $39, $07, $49, $37, $91, $6F, $80, $7F, $B8, $47
-	db $03, $03, $04, $07, $08, $0F, $39, $3F, $49, $7F, $91, $FF, $80, $FF, $B8, $FF
-	db $C0, $00, $20, $C0, $90, $E0, $D0, $E0, $EC, $F0, $EA, $F4, $C1, $FE, $05, $FE
-	db $C0, $C0, $20, $E0, $90, $F0, $D0, $F0, $EC, $FC, $EA, $FE, $C1, $FF, $05, $FF
-	db $5C, $23, $26, $19, $1F, $02, $3F, $1F, $3C, $1F, $1E, $0F, $0F, $03, $03, $00
-	db $5C, $7F, $26, $3F, $1F, $1F, $3F, $3F, $3F, $3F, $1F, $1F, $0F, $0F, $03, $03
-	db $1B, $FC, $06, $F8, $98, $60, $F0, $80, $58, $F0, $38, $F0, $F0, $E0, $E0, $00
-	db $1B, $FF, $06, $FE, $98, $F8, $F0, $F0, $F8, $F8, $F8, $F8, $F0, $F0, $E0, $E0
+raw 03000403080739074937916F807FB847
+raw 03030407080F393F497F91FF80FFB8FF
+raw C00020C090E0D0E0ECF0EAF4C1FE05FE
+raw C0C020E090F0D0F0ECFCEAFEC1FF05FF
+raw 5C2326191F023F1F3C1F1E0F0F030300
+raw 5C7F263F1F1F3F3F3F3F1F1F0F0F0303
+raw 1BFC06F89860F08058F038F0F0E0E000
+raw 1BFF06FE98F8F0F0F8F8F8F8F0F0E0E0
 
 ;===================================================================================================

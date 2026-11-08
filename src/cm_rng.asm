@@ -3,14 +3,14 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Prize packs", SA1RAM.drop_rng, 3)
+%choice_here("Prize packs", BWRAM.drop_rng, 3)
 	%add_list_item(CMTEXT_VANILLA)
 	%list_item("Always")
 	%list_item("Never")
 
 ;===================================================================================================
 
-%choice_prgtext("Frame rule", SA1RAM.framerule, $41, this)
+%choice_prgtext("Frame rule", BWRAM.framerule, $41, this)
 	BEQ .unfixed
 
 	DEC
@@ -24,7 +24,7 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_prgtext("Pokeys", SA1RAM.pokey_rng, 17, this)
+%choice_prgtext("Pokeys", BWRAM.pokey_rng, 17, this)
 	BEQ .random
 	DEC
 
@@ -55,21 +55,21 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Agahnim shots", SA1RAM.agahnim_rng, 3)
+%choice_here("Agahnim shots", BWRAM.agahnim_rng, 3)
 	%add_list_item(CMTEXT_RANDOM)
 	%add_list_item(CMTEXT_YELLOW)
 	%add_list_item(CMTEXT_BLUE)
 
 ;===================================================================================================
 
-%choice_here("Helmasaur", SA1RAM.helmasaur_rng, 3)
+%choice_here("Helmasaur", BWRAM.helmasaur_rng, 3)
 	%add_list_item(CMTEXT_RANDOM)
 	%list_item("No fireball")
 	%list_item("Fireball")
 
 ;===================================================================================================
 
-%choice_prgtext("First Vitty", SA1RAM.vitreous_rng, 10, this)
+%choice_prgtext("First Vitty", BWRAM.vitreous_rng, 10, this)
 	BEQ .random
 
 	CLC
@@ -93,14 +93,14 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Ganon warps", SA1RAM.ganon_warp_rng, 3)
+%choice_here("Ganon warps", BWRAM.ganon_warp_rng, 3)
 	%add_list_item(CMTEXT_RANDOM)
 	%list_item("No warp")
 	%list_item("Warp")
 
 ;===================================================================================================
 
-%choice_here("Ganon warp to", SA1RAM.ganon_warp_location_rng, 5)
+%choice_here("Ganon warp to", BWRAM.ganon_warpto_rng, 5)
 	%add_list_item(CMTEXT_RANDOM)
 	%list_item("Far left")
 	%list_item("Bottom left")
@@ -109,7 +109,7 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Eyegore walk", SA1RAM.eyegore_rng, 4)
+%choice_here("Eyegore walk", BWRAM.eyegore_rng, 4)
 	%add_list_item(CMTEXT_RANDOM)
 	%add_list_item(CMTEXT_SHORT)
 	%add_list_item(CMTEXT_MEDIUM)
@@ -118,7 +118,7 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Arrghus walk", SA1RAM.arrghus_rng, 6)
+%choice_here("Arrghus walk", BWRAM.arrghus_rng, 6)
 	%add_list_item(CMTEXT_RANDOM)
 	%list_item("Shortest") : %ReusableText(CMTEXT_SHORTEST)
 	%list_item("Short")    : %ReusableText(CMTEXT_SHORT)
@@ -128,7 +128,7 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_prgtext("Turtle walk", SA1RAM.turtles_rng, 33, this)
+%choice_prgtext("Turtle walk", BWRAM.turtles_rng, 33, this)
 	BEQ .random
 
 	DEC ; special text for shortest
@@ -158,7 +158,7 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_prgtext("Lanmola exit", SA1RAM.lanmola_rng, 65, this)
+%choice_prgtext("Lanmola exit", BWRAM.lanmola_rng, 65, this)
 	BNE .notrandom
 
 	JML CMDRAW_RANDOM
@@ -187,7 +187,7 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Moth conveyor", SA1RAM.conveyor_rng, 5)
+%choice_here("Moth conveyor", BWRAM.conveyor_rng, 5)
 	%add_list_item(CMTEXT_RANDOM)
 	%list_item("Right")
 	%list_item("Left")

@@ -6291,4 +6291,4 @@ presetSRAM_100nmg:
 ...end
 ;===================================================================================================
 presetend_100nmg:
-print "100nmg size: $", hex(presetend_100nmg-presetheader_100nmg)
+printf "100nmg size: ${0:X4}", presetend_100nmg-presetheader_100nmg

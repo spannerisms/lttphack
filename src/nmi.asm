@@ -3,10 +3,9 @@
 pushpc
 
 org $00CF50
-BadInterrupt:
-	JML OOPS
+BadInterrupt: JML OOPS
 
-warnpc $00CFBE
+guardpc $00CFBE
 
 ;===================================================================================================
 
@@ -15,23 +14,23 @@ org $00805D
 
 org $00841E
 	if !RANDO
-		LDA.l !config_fastrom
-		STA.l $420D
+		LDA.l CONFIG.fastrom
+		STA.l MEMSEL
 	endif
 
-	LDA.b $F0 : STA.w SA1IRAM.CopyOf_F0
-	LDA.b $F2 : STA.w SA1IRAM.CopyOf_F2
-	LDA.b $F4 : STA.w SA1IRAM.CopyOf_F4
-	LDA.b $F6 : STA.w SA1IRAM.CopyOf_F6
+	LDA.b $F0 : STA.w IRAM.copyof_F0
+	LDA.b $F2 : STA.w IRAM.copyof_F2
+	LDA.b $F4 : STA.w IRAM.copyof_F4
+	LDA.b $F6 : STA.w IRAM.copyof_F6
 
 	LDA.b #$81 ; fire an IRQ to request shortcuts
-	STA.w $2200
+	STA.w CCNT
 
 	JSL ClearOAM
 
 	SEP #$30
 
-	BIT.w SA1IRAM.SHORTCUT_USED+1
+	BIT.w IRAM.shortcut_used+1
 	BMI ++
 
 	RTS
@@ -42,11 +41,11 @@ org $00841E
 
 	JMP RequestShortcut
 
-warnpc $008489
+guardpc $008489
 
 org $0085FC
 	JSL MergeOAM
-	JMP.w $00865C
+	JMP $00865C
 
 ;===================================================================================================
 ; This small joypad improvement of 8 cycles gives us a little more leeway
@@ -56,11 +55,11 @@ org $0085FC
 org $0083D1
 	REP #$20
 
-	LDA.w $421A
-	STA.w SA1IRAM.JOYPAD2_NEW
+	LDA.w JOY2L
+	STA.w IRAM.joy2_new
 
-	LDA.w $4218
-	STA.b $00 ; not really necessary, but good for expected glitching
+	LDA.w JOY1L
+	STA.b $00 ; not really necessary, but good to preserve behavior
 
 	SEP #$20
 	STA.b $F2
@@ -80,15 +79,14 @@ org $0083D1
 
 	RTS
 
-warnpc $0083F8
+guardpc $0083F8
 
 ; NMI hook
-org $0080D5
-	JSL nmi_expand
+org $0080D5 : JSL nmi_expand
 
 ; TM and TS writes
-org $008176 : STA.w SA1RAM.layer_writer+0
-org $00817B : STA.w SA1RAM.layer_writer+1
+org $008176 : STA.w BWRAM.layer_writer+0
+org $00817B : STA.w BWRAM.layer_writer+1
 
 ; The time this routine takes isn't relevant
 ; since it's never during game play
@@ -107,22 +105,21 @@ nmi_expand:
 	PHA ; A is 0 from right before the hook
 	PLB ; and that happens to be the bank we want
 
-	LDA.w SA1RAM.disabled_layers
-	TRB.w SA1RAM.layer_writer+0
-	TRB.w SA1RAM.layer_writer+1
+	LDA.w BWRAM.disabled_layers
+	TRB.w BWRAM.layer_writer+0
+	TRB.w BWRAM.layer_writer+1
 
 	REP #$20
-	LDA.w SA1RAM.layer_writer
-	STA.w $212C
+	LDA.w BWRAM.layer_writer
+	STA.w TM
 	SEP #$20
 
-	LDA.b $12 : STA.w SA1IRAM.CopyOf_12
+	LDA.b $12 : STA.w IRAM.copyof_12
 
 	LDA.b #$12 ; timers NMI
-	STA.w $2200
+	STA.w CCNT
 
 	RTL
-
 
 ;===================================================================================================
 
@@ -180,12 +177,13 @@ ClearOAM:
 
 MergeOAM:
 macro preponeoam(offset)
-	LDA.b $0A20+$03+(<offset>*4) : ASL : ASL
-	ORA.b $0A20+$02+(<offset>*4) : ASL : ASL
-	ORA.b $0A20+$01+(<offset>*4) : ASL : ASL
-	ORA.b $0A20+$00+(<offset>*4)
-	STA.b $0A00+<offset>
+	LDA.b $0A20+$03+({offset}*4) : ASL : ASL
+	ORA.b $0A20+$02+({offset}*4) : ASL : ASL
+	ORA.b $0A20+$01+({offset}*4) : ASL : ASL
+	ORA.b $0A20+$00+({offset}*4)
+	STA.b $0A00+{offset}
 endmacro
+
 	PEA.w $0000
 	PEA.w $0A00
 	PLD
@@ -208,27 +206,27 @@ endmacro
 UploadPracticeMenu:
 	REP #$20
 
-	LDA.w #SA1RAM.MENU
-	STA.w $4352
+	LDA.w #BWRAM.MENU
+	STA.w DMA5ADDRL
 
-	LDA.w #$6C00
-	STA.w $2116
+	LDA.w #vram($D800)
+	STA.w VMADDR
 
 	LDA.w #$0800
-	STA.w $4355
+	STA.w DMA5SIZE
 
-	LDA.w #$1801
-	STA.w $4350
+	LDA.w #$01][VMDATA
+	STA.w DMAP5
 
 	SEP #$20
 
 	LDA.b #$80
-	STA.w $2115
+	STA.w VMAIN
 
-	STZ.w $4354
+	STZ.w DMA5ADDRB
 
 	LDA.b #$20
-	STA.w $420B
+	STA.w MDMAEN
 
 ;===================================================================================================
 
@@ -241,38 +239,44 @@ SNES_ENABLE_CUSTOM_NMI:
 	REP #$20
 
 	LDA.w #NoBonusRoutine
-	STA.w SA1RAM.NMIBonusVector
+	STA.w BWRAM.nmi_bonus_vector
 
---	SEP #$21
+.retry
+	SEP #$21
 
 	LDA.b #$11
-	STA.w $2200
+	STA.w CCNT
 
 	ROL A
--	DEC A : BPL -
+
+.waste_time
+	DEC A : BPL .waste_time
 
 	; check if custom NMI is enabled
 	LDA.b #$10
-	AND.w $2300
-	BEQ --
+	AND.w SFR
+	BEQ .retry
 
 	RTL
 
 ;===================================================================================================
 
 SNES_DISABLE_CUSTOM_NMI:
---	SEP #$21
+.retry
+	SEP #$21
 
 	LDA.b #$10
-	STA.w $2200
+	STA.w CCNT
 
 	ROL A
--	DEC A : BPL -
+
+.waste_time
+	DEC A : BPL .waste_time
 
 	; check if custom NMI is enabled
 	LDA.b #$10
-	AND.w $2300
-	BNE --
+	AND.w SFR
+	BNE .retry
 
 	RTL
 
@@ -287,7 +291,8 @@ SNES_CUSTOM_NMI:
 	PHB
 
 	SEP #$21
-	LDA.l $004210
+
+	LDA.l RDNMI
 
 	PEA.w $0000
 	PLD
@@ -297,10 +302,10 @@ SNES_CUSTOM_NMI:
 	PHK
 	PLB
 
-	STA.w $420C ; disable HDMA aggressively
+	STA.w HDMAEN ; disable HDMA aggressively
 
 	ROR ; A = 80
-	STA.w $2100
+	STA.w INIDISP
 
 	LDA.b $12
 	BEQ .good_to_go
@@ -312,14 +317,14 @@ SNES_CUSTOM_NMI:
 
 	JSR.w UploadPracticeMenu
 
-	PEA.w .bonus_return-1
+	PEA.w rtn(.bonus_return)
 
-	JMP.w (SA1RAM.NMIBonusVector)
+	JMP.w (BWRAM.nmi_bonus_vector)
 
 .bonus_return
 	REP #$20
 
-	PEA.w $0000 ; used to be D=0 later
+	PEA.w $0000 ; used for D=0 later
 
 	LDA.w #$2100
 	TCD
@@ -330,31 +335,31 @@ SNES_CUSTOM_NMI:
 	SEP #$30
 
 	LDA.b #$04 ; only show BG3
-	STA.b $212C
-	STZ.b $212D
+	STA.b TM
+	STZ.b TS
 
-	LDA.b #$09 : STA.w $2105 ; BG mode 1
-	LDA.b #$63 : STA.w $2109 ; tilemap and char addresses
-	LDA.b #$07 : STA.w $210C
+	LDA.b #$09 : STA.w BGMODE ; BG mode 1
+	LDA.b #$63 : STA.w BG3SC ; tilemap and char addresses
+	LDA.b #$07 : STA.w BG34NBA
 
 	; BG 3 scroll
 	LDA.b #$01
-	STZ.b $2111
-	STA.b $2111
+	STZ.b BG3HOFS
+	STA.b BG3HOFS
 
-	STZ.b $2112
-	STA.b $2112
+	STZ.b BG3VOFS
+	STA.b BG3VOFS
 
-	STZ.b $2106 ; no mosaic
+	STZ.b MOSAIC ; no mosaic
 
-	STZ.b $2123 ; no windowing
-	STZ.b $2124
-	STZ.b $2125
+	STZ.b W12SEL ; no windowing
+	STZ.b W34SEL
+	STZ.b WOBJSEL
 
-	STZ.b $212E
-	STZ.b $212F
+	STZ.b TMW
+	STZ.b TSW
 
-	STZ.b $2131 ; no color math
+	STZ.b CGADSUB ; no color math
 
 	; handle music and sfx
 	LDX.b #3
@@ -371,17 +376,16 @@ SNES_CUSTOM_NMI:
 	; Refresh colors every frame just cause it's easier
 	REP #$10
 
+	LDA.b #$05 : STA.w CGADD
 
-	LDA.b #$05 : STA.w $2121
+	LDA.b #$31 : STA.w CGDATA
+	LDA.b #$5A : STA.w CGDATA
 
-	LDA.b #$31 : STA.w $2122
-	LDA.b #$5A : STA.w $2122
+	LDA.b #$FF : STA.w CGDATA
+	LDA.b #$7F : STA.w CGDATA
 
-	LDA.b #$FF : STA.w $2122
-	LDA.b #$7F : STA.w $2122
-
-	STZ.w $2122
-	STZ.w $2122
+	STZ.w CGDATA
+	STZ.w CGDATA
 
 	LDY.w #0
 
@@ -390,7 +394,7 @@ SNES_CUSTOM_NMI:
 	BMI .done_color
 
 	INY
-	STA.w $2121
+	STA.w CGADD
 
 	LDX.w .cgrams,Y
 	INY
@@ -403,11 +407,11 @@ SNES_CUSTOM_NMI:
 	TAX
 
 	LDA.l COLORS_YAY,X
-	STA.w $2122
+	STA.w CGDATA
 
 	INX
 	LDA.l COLORS_YAY,X
-	STA.w $2122
+	STA.w CGDATA
 
 	BRA .next_color
 
@@ -416,38 +420,38 @@ SNES_CUSTOM_NMI:
 
 	JSL ReadJoyPad_long
 
-	LDA.b $F0 : STA.w SA1IRAM.CopyOf_F0
-	LDA.b $F2 : STA.w SA1IRAM.CopyOf_F2
-	LDA.b $F4 : STA.w SA1IRAM.CopyOf_F4
-	LDA.b $F6 : STA.w SA1IRAM.CopyOf_F6
+	LDA.b $F0 : STA.w IRAM.copyof_F0
+	LDA.b $F2 : STA.w IRAM.copyof_F2
+	LDA.b $F4 : STA.w IRAM.copyof_F4
+	LDA.b $F6 : STA.w IRAM.copyof_F6
 
 .lagging
 	SEP #$20
 
 	LDA.b #$0F
-	STA.w $2100
+	STA.w INIDISP
 
-	JMP.w SA1NMI_EXIT
+	JMP.w SA1NMI.exit
 
 .nothing
 	RTS
 
 .cgrams
-	db 00 : dw !config_hud_bg
-	db 03 : dw !config_hud_bg
+	db $00 : dw CONFIG.hud_bg
+	db $03 : dw CONFIG.hud_bg
 
-	db 17 : dw !config_hud_header_hl
-	db 18 : dw !config_hud_header_fg
-	db 19 : dw !config_hud_header_bg
+	db $11 : dw CONFIG.hud_header_hl
+	db $12 : dw CONFIG.hud_header_fg
+	db $13 : dw CONFIG.hud_header_bg
 
-	db 22 : dw !config_hud_sel_fg
-	db 23 : dw !config_hud_sel_bg
+	db $16 : dw CONFIG.hud_sel_fg
+	db $17 : dw CONFIG.hud_sel_bg
 
-	db 30 : dw !config_hud_sel_bg
-	db 31 : dw !config_hud_sel_fg
+	db $1E : dw CONFIG.hud_sel_bg
+	db $1F : dw CONFIG.hud_sel_fg
 
-	db 26 : dw !config_hud_dis_fg
-	db 27 : dw !config_hud_bg
+	db $1A : dw CONFIG.hud_dis_fg
+	db $1B : dw CONFIG.hud_bg
 
 	db $FF ; done
 
@@ -456,72 +460,72 @@ SNES_CUSTOM_NMI:
 NMIBonusLoadoutPopup:
 	SEP #$30
 
-	LDY.b #!LOPOPUPSIZE
+	LDY.b #LOPOPUPSIZE
 	LDX.b #$20
 
 	REP #$21
 
-	LDA.w #SA1RAM.LoadoutPopupDraw
-	STA.w $4352
+	LDA.w #BWRAM.loadout_popup_canvas
+	STA.w DMA5ADDRL
 
-	LDA.w SA1RAM.LoadoutPopupVRAM
+	LDA.w BWRAM.loadout_popup_vram
 	PHA
 
-	STA.w $2116
+	STA.w VMADDR
 	ADC.w #$0020
-	STA.w SA1RAM.LoadoutPopupVRAM
+	STA.w BWRAM.loadout_popup_vram
 	TYA
-	STA.w $4355
-	STX.w $420B
+	STA.w DMA5SIZE
+	STX.w MDMAEN
 
-	LDA.w SA1RAM.LoadoutPopupVRAM
-	STA.w $2116
+	LDA.w BWRAM.loadout_popup_vram
+	STA.w VMADDR
 	ADC.w #$0020
-	STA.w SA1RAM.LoadoutPopupVRAM
+	STA.w BWRAM.loadout_popup_vram
 	TYA
-	STA.w $4355
-	STX.w $420B
+	STA.w DMA5SIZE
+	STX.w MDMAEN
 
-	LDA.w SA1RAM.LoadoutPopupVRAM
-	STA.w $2116
+	LDA.w BWRAM.loadout_popup_vram
+	STA.w VMADDR
 	ADC.w #$0020
-	STA.w SA1RAM.LoadoutPopupVRAM
+	STA.w BWRAM.loadout_popup_vram
 	TYA
-	STA.w $4355
-	STX.w $420B
+	STA.w DMA5SIZE
+	STX.w MDMAEN
 
-	LDA.w SA1RAM.LoadoutPopupVRAM
-	STA.w $2116
+	LDA.w BWRAM.loadout_popup_vram
+	STA.w VMADDR
 	ADC.w #$0020
-	STA.w SA1RAM.LoadoutPopupVRAM
+	STA.w BWRAM.loadout_popup_vram
 	TYA
-	STA.w $4355
-	STX.w $420B
+	STA.w DMA5SIZE
+	STX.w MDMAEN
 
-	LDA.w SA1RAM.LoadoutPopupVRAM
-	STA.w $2116
+	LDA.w BWRAM.loadout_popup_vram
+	STA.w VMADDR
 	ADC.w #$0020
-	STA.w SA1RAM.LoadoutPopupVRAM
+	STA.w BWRAM.loadout_popup_vram
 	TYA
-	STA.w $4355
-	STX.w $420B
+	STA.w DMA5SIZE
+	STX.w MDMAEN
 
-	LDA.w SA1RAM.LoadoutPopupVRAM
-	STA.w $2116
+	LDA.w BWRAM.loadout_popup_vram
+	STA.w VMADDR
 	ADC.w #$0020
-	STA.w SA1RAM.LoadoutPopupVRAM
+	STA.w BWRAM.loadout_popup_vram
 	TYA
-	STA.w $4355
-	STX.w $420B
+	STA.w DMA5SIZE
+	STX.w MDMAEN
 
-	LDA.w SA1RAM.LoadoutPopupVRAM
-	STA.w $2116
+	LDA.w BWRAM.loadout_popup_vram
+	STA.w VMADDR
 	TYA
-	STA.w $4355
-	STX.w $420B
+	STA.w DMA5SIZE
+	STX.w MDMAEN
 
 	PLA
-	STA.w SA1RAM.LoadoutPopupVRAM
+	STA.w BWRAM.loadout_popup_vram
 
 	RTS
 

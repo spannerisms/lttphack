@@ -43,7 +43,7 @@ ValidateLiteState:
 
 	JSR GetLiteStateOffset
 	TAX
-	STA.w SA1IRAM.litestate_off
+	STA.w IRAM.litestate_off
 
 	LDY.w #$0000
 	SEP #$20
@@ -144,18 +144,18 @@ SaveLiteState:
 
 	PEA.w $0000
 	PLD
-	JSL $02B87B
+	JSL jlong($02B87B)
 	PLD
 
 	REP #$30
 
-	LDA.w SA1IRAM.litestate_act
+	LDA.w IRAM.litestate_act
 	JSR GetLiteStateOffset
 	TAY
 
 	LDA.w #$000F
 	LDX.w #LiteStateHeader
-	%MVN(LiteStateHeader>>16,LiteStateData>>16)
+	MVN ^LiteStateHeader,^LiteStateData
 
 	PHK
 	PLB
@@ -176,7 +176,7 @@ SaveLiteState:
 --	RTL
 
 .banned
-	JSL MenuSFX_error
+	JSL MenuSFX.error
 	BRA .exit
 
 ;===================================================================================================
@@ -187,8 +187,8 @@ LoadLiteState:
 	JSL ValidateLiteState
 	BCC --
 
-	STZ.w SA1IRAM.preset_addr
-	LDA.w SA1IRAM.litestate_last
+	STZ.w IRAM.preset_addr
+	LDA.w IRAM.litestate_last
 
 	JSR GetLiteStateOffset
 	ADC.w #$0010
@@ -199,8 +199,8 @@ LoadLiteState:
 
 	SEP #$20
 
-	LDA.b #$80 : STA.w $2100 : STA.w $0013
-	STZ.w $4200
+	LDA.b #$80 : STA.w INIDISP : STA.w $0013
+	STZ.w NMITIMEN
 
 	LDA.b #$00
 	JSR DMALiteStates
@@ -219,25 +219,24 @@ LoadLiteState:
 
 ;===================================================================================================
 
-LiteSRAMSize = $0402
-
 DMALiteStates:
-	STZ.w $4200
+	STZ.w NMITIMEN
 
 	REP #$10
 
-	STA.w $4350
+	STA.w DMAP5
 
-	LDA.b #$80 : STA.w $4351 ; wram
+	LDA.b #WMDATA : STA.w BBAD5 ; wram
 
-	STY.w $4352
-	LDA.b #LiteStateData>>16 : STA.w $4354
+	STY.w DMA5ADDRL
+	LDA.b #^LiteStateData : STA.w DMA5ADDRB
 
-	STZ.w $2183
-	LDY.w #$F000 : STY.w $2181
-	LDY.w #LiteSRAMSize : STY.w $4355
+	STZ.w WMADDB
+	LDY.w #$F000 : STY.w WMADDL
+	LDY.w #LiteStateData.save_data:size
+	STY.w DMA5SIZE
 
-	LDA.b #$20 : STA.w $420B
+	LDA.b #$20 : STA.w MDMAEN
 
 	LDX.w #.utmost_importance
 	JSR .do_transfer
@@ -258,22 +257,22 @@ DMALiteStates:
 	LDY.w #$FF00
 
 .not_dumb_fake_room
-	STY.w $2181
+	STY.w WMADDL
 
-	LDA.b #$7F : STA.w $2183
-	LDY.w #$0002 : STY.w $4355
-	LDA.b #$20 : STA.w $420B
+	LDA.b #$7F : STA.w WMADDB
+	LDY.w #$0002 : STY.w DMA5SIZE
+	LDA.b #$20 : STA.w MDMAEN
 
 	NOP
 
-	STZ.w $2183
+	STZ.w WMADDB
 
 	; back to normal transfers
-	LDY.w $4352
-	STY.w SA1RAM.LiteStateDupeOffset ; remember location of data
+	LDY.w DMA5ADDRL
+	STY.w BWRAM.litestate_offset_copy ; remember location of data
 	JSR .do_duped_importance
 
-	LDA.w $4350 : CMP.b #$80 : BEQ .saving
+	LDA.w DMAP5 : CMP.b #$80 : BEQ .saving
 
 	JSR SaveATonLiteState
 	JSR SaveATonLiteState
@@ -296,7 +295,7 @@ DMALiteStates:
 	JSL PresetLoadArea_UW
 
 	SEP #$20
-	LDA.b #$01 : STA.w $4200
+	LDA.b #$01 : STA.w NMITIMEN
 
 	PLA : JSL HandlePegState
 	SEP #$20
@@ -326,7 +325,7 @@ DMALiteStates:
 	LDX.w #.less_importance
 	JSR .do_transfer
 
-	LDA.b $4350 : BPL .done_loading
+	LDA.b DMAP5 : BPL .done_loading
 
 	; Some dumb after hacks
 	LDA.b $5D
@@ -342,8 +341,8 @@ DMALiteStates:
 ;---------------------------------------------------------------------------------------------------
 
 .do_duped_importance
-	LDY.w SA1RAM.LiteStateDupeOffset
-	STY.w $4352
+	LDY.w BWRAM.litestate_offset_copy
+	STY.w DMA5ADDRL
 
 	LDX.w #.duped_importance
 
@@ -351,14 +350,14 @@ DMALiteStates:
 	LDY.w $0000,X
 	BEQ .done_set
 
-	STY.w $2181
+	STY.w WMADDL
 
-	LDA.w $0002,X : STA.w $2183
+	LDA.w $0002,X : STA.w WMADDB
 
 	LDA.w $0003,X
-	STA.w $4355 : STZ.w $4356
+	STA.w DMA5SIZE : STZ.w DMA5SIZEH
 
-	LDA.b #$20 : STA.w $420B
+	LDA.b #$20 : STA.w MDMAEN
 
 	INX : INX : INX : INX
 	BRA .do_transfer
@@ -445,10 +444,10 @@ SaveATonLiteState:
 	PHK
 	PLB
 
-	LDY.w $4350 : PHY
-	LDY.w $4352 : PHY
-	LDY.w $4354 : PHY
-	LDY.w $4356 : PHY
+	LDY.w DMAP5 : PHY
+	LDY.w DMA5ADDRL : PHY
+	LDY.w DMA5ADDRB : PHY
+	LDY.w DMA5SIZEH : PHY
 
 	PHA
 
@@ -466,10 +465,10 @@ PullATonLiteState:
 	PHK
 	PLB
 
-	PLY : STY.w $4356
-	PLY : STY.w $4354
-	PLY : STY.w $4352
-	PLY : STY.w $4350
+	PLY : STY.w DMA5SIZEH
+	PLY : STY.w DMA5ADDRB
+	PLY : STY.w DMA5ADDRL
+	PLY : STY.w DMAP5
 
 	PLX
 	PLY

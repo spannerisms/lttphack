@@ -3,19 +3,18 @@ ROOMLOAD_SUBMENU:
 
 ;===================================================================================================
 
-%numfield_hex_update("Set room", SA1RAM.loadroomid, $00, $FF, $10)
+%numfield_hex_update("Set room", BWRAM.loadroom_id, $00, $FF, $10)
 
 ;===================================================================================================
 
 %func("Load selected room", this)
 	REP #$30
-
 	JSL CM_Exiting
 	JML LoadArbitraryRoom
 
 ;===================================================================================================
 
-%submenu("Configure loading", ROOMLOADCONFIG_SUBMENU)
+%submenu("Configure loading", ROOMLOADCONFIGURATION_SUBMENU)
 
 ;===================================================================================================
 
@@ -41,25 +40,25 @@ ROOMLOAD_SUBMENU:
 
 ;===================================================================================================
 
-ROOMLOADCONFIG_SUBMENU:
+ROOMLOADCONFIGURATION_SUBMENU:
 %menu_header("ROOM LOAD CONFIGURATION")
 
-%toggle_onoff("Open shutters", SA1RAM.loadroomshutters)
+%toggle_onoff("Open shutters", BWRAM.loadroom_shutters)
 
-%toggle_onoff("Kill sprites", SA1RAM.loadroomkill)
+%toggle_onoff("Kill sprites", BWRAM.loadroom_kill)
 
-%choice_here("Peg state", SA1RAM.loadroompegset, 3)
+%choice_here("Peg state", BWRAM.loadroom_pegset, 3)
 	%add_list_item(CMTEXT_RED)
 	%add_list_item(CMTEXT_BLUE)
 	%add_list_item(CMTEXT_CURRENT)
 
-%choice_here("World state", SA1RAM.loadroomworldset, 4)
+%choice_here("World state", BWRAM.loadroom_worldset, 4)
 	%add_list_item(CMTEXT_DEFAULT)
 	%add_list_item(CMTEXT_CURRENT)
 	%add_list_item(CMTEXT_LIGHTWORLD)
 	%add_list_item(CMTEXT_DARKWORLD)
 
-%choice_here("Dungeon ID", SA1RAM.loadroomdungeonset, 18)
+%choice_here("Dungeon ID", BWRAM.loadroom_dungeonset, 18)
 	%add_list_item(CMTEXT_DEFAULT)
 	%add_list_item(CMTEXT_CURRENT)
 	%add_list_item(CMTEXT_SEWERS)

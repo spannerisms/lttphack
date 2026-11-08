@@ -1,36 +1,13 @@
-!VERSIONTEXT = "v"
-!RANDO ?= 0
+;===================================================================================================
 
-if stringsequal("!VERSION", "DEBUG")
-	!VERSIONTEXT = ""
-endif
-
-!VERSIONTEXT += "!{VERSION}"
-
-pushtable
-cleartable
-org $00FFC0
-db "                     " ; empty this
-
-org $00FFC0
-db "ALTTPRAC !VERSIONTEXT"
-warnpc $00FFD5
-pulltable
-
+org $00FFC0 : db "ALTTPRAC !VERSIONTEXT"///enc:ascii/len:r21/ ; title
 org $00FFD5 : db $23, $35 ; SA-1
 org $00FFD7 : db 11 ; 2mb ROM
 org $00FFD8 : db 8 ; 256k SRAM
 
 if !RANDO
-	incsrc "fastrom.asm"
-	pushpc
 	incsrc "rando.asm"
-	pullpc
-	org $00FFD5 : db $23
 endif
-
-
-
 
 ; interrupt changes
 org $00FFE4 : dw BadInterrupt
@@ -39,28 +16,18 @@ org $00FFF4 : dw BadInterrupt
 
 ;===================================================================================================
 
-pushtable
-table resources/fileselecttop.tbl
-	org $0CDDF0 : fillword $0188 : fill 52
-	org $0CDDF0 : dw "PRACTICE HACK !VERSIONTEXT"
-
-table resources/fileselectbot.tbl
-	org $0CDE2C : fillword $0188 : fill 52
-	org $0CDE2C : dw "PRACTICE HACK !VERSIONTEXT"
-pulltable
+org $0CDDF0 : dw "PRACTICE HACK !VERSIONTEXT"///enc:FileSelectTop/len:r26/
+org $0CDE2C : dw "PRACTICE HACK !VERSIONTEXT"///enc:FileSelectBot/len:r26/
 
 ;===================================================================================================
-
-macro what_item_is_this()
-	fillword !BLANK_TILE : fill 16
-	fillword !BLANK_TILE : fill 4
-	fillword !QMARK : fill 8
-	fillword !BLANK_TILE : fill 4
-endmacro
-
-!MENU_D = $A482
-!MENU_O = $A483
-!QMARKW = $252F
+; 246E 246F 252F => ITEM?
+; E46D E46C => NO
+;===================================================================================================
+!MENU_D     = $A482
+!MENU_O     = $A483
+!QMARKW     = $252F
+!QMARK      = $252A
+!BLANK_TILE = $24F5
 
 org $0DE876 ; Japanese "PENDANTS" text
 	dw !MENU_D, !MENU_O, !MENU_D, !MENU_O, !QMARKW
@@ -69,21 +36,27 @@ org $0DE92A ; Japanese "CRYSTALS" text
 	dw !MENU_D, !MENU_O, !QMARKW, !MENU_D, !MENU_O
 
 org $0DF1C9
-	rep 36 : %what_item_is_this()
+
+repeat 36
+	fill word count 8 :: !BLANK_TILE
+	fill word count 2 :: !BLANK_TILE
+	fill word count 4 :: !QMARK
+	fill word count 2 :: !BLANK_TILE
+endrepeat
 
 ; these clean up the messy menu tiles in the DO section
 
 ; Lift texts (leave the number)
 org $0DF951
-	fillword !BLANK_TILE : fill 12
+	fill word count 6 :: !BLANK_TILE
 	dw $A8D7, !MENU_D, !MENU_O
 
 org $0DF965
-	fillword !BLANK_TILE : fill 12
+	fill word count 6 :: !BLANK_TILE
 	dw $A8D7, !MENU_D, !MENU_O
 
 org $0DF979
-	fillword !BLANK_TILE : fill 12
+	fill word count 6 :: !BLANK_TILE
 	dw $A8D7, !MENU_D, !MENU_O
 
 org $0DF99B

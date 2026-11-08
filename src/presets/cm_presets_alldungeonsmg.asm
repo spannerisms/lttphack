@@ -2385,4 +2385,4 @@ presetSRAM_alldungeonsmg:
 ...end
 ;===================================================================================================
 presetend_alldungeonsmg:
-print "alldungeonsmg size: $", hex(presetend_alldungeonsmg-presetheader_alldungeonsmg)
+printf "alldungeonsmg size: ${0:X4}", presetend_alldungeonsmg-presetheader_alldungeonsmg

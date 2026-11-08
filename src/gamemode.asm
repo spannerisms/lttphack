@@ -2,23 +2,21 @@ pushpc
 
 org $008039
 RequestShortcut:
-	BIT.w SA1IRAM.SHORTCUT_USED+1
-	BPL .askforshortcut
+	BIT.w IRAM.shortcut_used+1
+	BPL .ask_for_shortcut
 
 	JSL UseShortCut
 
 	SEP #$30
-	STZ.w SA1IRAM.SHORTCUT_USED+1
+	STZ.w IRAM.shortcut_used+1
 	BRA .done
 
-.askforshortcut
+.ask_for_shortcut
 	LDA.b #$81
-	STA.w $2200 ; SA-1 IRQ, bit 1 for preparing shortcut checks
+	STA.w CCNT ; SA-1 IRQ, bit 1 for preparing shortcut checks
 	BRA .done
 
-warnpc $008051
-org $008051
-.done
+safeorg $008051 : .done
 
 pullpc
 
@@ -30,16 +28,16 @@ ResetGameStack:
 	LDA.w #$01FF : TCS
 	LDA.w #$0000 : TCD
 
-	STZ.b $F0 : STZ.w SA1IRAM.CopyOf_F0
-	STZ.b $F2 : STZ.w SA1IRAM.CopyOf_F2
-	STZ.b $F4 : STZ.w SA1IRAM.CopyOf_F4
-	STZ.b $F6 : STZ.w SA1IRAM.CopyOf_F6
+	STZ.b $F0 : STZ.w IRAM.copyof_F0
+	STZ.b $F2 : STZ.w IRAM.copyof_F2
+	STZ.b $F4 : STZ.w IRAM.copyof_F4
+	STZ.b $F6 : STZ.w IRAM.copyof_F6
 
-	STZ.w SA1IRAM.SEG_TIME_F
-	STZ.w SA1IRAM.SEG_TIME_S
-	STZ.w SA1IRAM.SEG_TIME_M
+	STZ.w IRAM.SEG_TIME_F
+	STZ.w IRAM.SEG_TIME_S
+	STZ.w IRAM.SEG_TIME_M
 
-	STZ.w SA1IRAM.SHORTCUT_USED
+	STZ.w IRAM.shortcut_used
 
 	SEP #$30
 
@@ -48,18 +46,18 @@ ResetGameStack:
 	STZ.b $12
 
 	LDA.b #$0F : STA.b $13
-	LDA.b #$81 : STA.w $4200
+	LDA.b #$81 : STA.w NMITIMEN
 
-	JML $008034
+	JML jlong($008034)
 
 ;===================================================================================================
 
 Rerandomize:
-	LDA.w !config_rerandomize : BEQ .dont_rerandomize
+	LDA.w CONFIG.rerandomize : BEQ .dont_rerandomize
 
 	REP #$20
 
-	LDA.w SA1IRAM.randomish
+	LDA.w IRAM.randomish
 
 	SEP #$20
 
@@ -68,13 +66,13 @@ Rerandomize:
 	STA.w $0FA1
 
 .dont_rerandomize
-	LDA.w SA1RAM.framerule
+	LDA.w BWRAM.framerule
 	DEC
-	BMI .nofixedframerule
+	BMI .no_fixed_framerule
 
 	STA.b $1A
 
-.nofixedframerule
+.no_fixed_framerule
 	RTL
 
 ;===================================================================================================
@@ -83,10 +81,10 @@ UseShortCut:
 	REP #$20
 
 	; kill controller so SA-1 doesn't get confused next frame
-	STZ.b $F0 : STZ.w SA1IRAM.CopyOf_F0
-	STZ.b $F2 : STZ.w SA1IRAM.CopyOf_F2
-	STZ.b $F4 : STZ.w SA1IRAM.CopyOf_F4
-	STZ.b $F6 : STZ.w SA1IRAM.CopyOf_F6
+	STZ.b $F0 : STZ.w IRAM.copyof_F0
+	STZ.b $F2 : STZ.w IRAM.copyof_F2
+	STZ.b $F4 : STZ.w IRAM.copyof_F4
+	STZ.b $F6 : STZ.w IRAM.copyof_F6
 
 	SEP #$20
 
@@ -95,7 +93,7 @@ UseShortCut:
 	CMP.b #$19 : BCS ShortcutsBanned
 	CMP.b #$14 : BEQ ShortcutsBanned
 
-	JMP.w (SA1IRAM.SHORTCUT_USED)
+	JMP.w (IRAM.shortcut_used)
 
 ;===================================================================================================
 
@@ -109,7 +107,7 @@ UseShortCutSA1:
 ShortcutsBanned:
 	SEP #$20
 
-	LDA.b #$3C : STA.w $2142
+	LDA.b #$3C : STA.w APUIO2
 
 SA1SideShortcut:
 	RTL
@@ -129,23 +127,24 @@ Shortcut_LoadLastPreset:
 Shortcut_SaveState:
 	SEP #$20
 
-	LDA.b $10 : CMP.b #$06 : BNE ++
+	LDA.b $10 : CMP.b #$06 : BNE .can_state
 
 	JMP ShortcutsBanned
 
-++	PHK
+.can_state
+	PHK
 	PLB
 
 	REP #$10
 	; Remember which song bank was loaded before load stating
-	; I put it here too, since `end` code runs both on save and load state..
-	LDA.w $0136 : STA.w SA1RAM.old_music_bank
+	; I put it here too, since .end code runs both on save and load state..
+	LDA.w $0136 : STA.w BWRAM.old_music_bank
 
-	STZ.w $4200
-	STZ.w $420C
+	STZ.w NMITIMEN
+	STZ.w HDMAEN
 
-	LDA.b #$80 : STA.w $2100
-	STA.w $4350 ; B to A
+	LDA.b #$80 : STA.w INIDISP
+	STA.w DMAP5 ; B to A
 	JSR DMA_BWRAMSRAM
 
 	JMP FinalizeSavestate
@@ -157,55 +156,56 @@ Shortcut_LoadState:
 	; assume any other value means there's no save state
 	SEP #$30
 
-	LDA.w SA1RAM.old_music_bank
-	CMP.b #$02 : BCC ++
+	LDA.w BWRAM.old_music_bank
+	CMP.b #$02 : BCC .have_state
 
 	JMP ShortcutsBanned
 
-++	PHK
+.have_state
+	PHK
 	PLB
 
 	SEP #$20
 	REP #$10
 
 	; Remember which song and bank was in APU before load stating (so we can change if needed)
-	LDA.w $0136 : STA.w SA1RAM.old_music_bank
-	LDA.w $0130 : STA.w SA1RAM.old_music
+	LDA.w $0136 : STA.w BWRAM.old_music_bank
+	LDA.w $0130 : STA.w BWRAM.old_music
 
 	; Mute ambient sounds
-	LDA.b #$05 : STA.w $2141
+	LDA.b #$05 : STA.w APUIO1
 
-	LDA.b #$80 : STA.w $2100
-	STZ.w $420C
-	STZ.w $4200
+	LDA.b #$80 : STA.w INIDISP
+	STZ.w HDMAEN
+	STZ.w NMITIMEN
 
-	LDA.b #$00 : STA.w $4350
+	LDA.b #$00 : STA.w DMAP5
 	JSR DMA_BWRAMSRAM
 
-	LDX.b $1C : STX.w $212C
-	LDX.b $1E : STX.w $212E
-	LDX.b $94 : STX.w $2105
-	LDX.b $96 : STX.w $2123
-	LDX.b $99 : STX.w $2130
+	LDX.b $1C : STX.w TM
+	LDX.b $1E : STX.w TMW
+	LDX.b $94 : STX.w BGMODE
+	LDX.b $96 : STX.w W12SEL
+	LDX.b $99 : STX.w CGWSEL
 
 	INC.b $15
 
 	; Update which song is currently being played by the APU
-	LDA.w SA1RAM.old_music : STA.w $0133
+	LDA.w BWRAM.old_music : STA.w $0133
 
 	; Attempt to restart the current song if it isn't already playing
 	LDA.w $0130 : STA.w $012C
 
-	LDA.w $0131 : CMP.b #$17 : BEQ .annoyingSounds ; Bird music
+	LDA.w $0131 : CMP.b #$17 : BEQ .annoying_sounds ; Bird music
 	STA.w $012D : STZ.w $0131
 
-.annoyingSounds
-	LDA.w $0638 : STA.w $211F
-	LDA.w $0639 : STA.w $211F
-	LDA.w $063A : STA.w $2120
-	LDA.w $063B : STA.w $2120
-	LDA.b $98 : STA.w $2125
-	LDA.b $9B : STA.w $420C
+.annoying_sounds
+	LDA.w $0638 : STA.w M7X
+	LDA.w $0639 : STA.w M7X
+	LDA.w $063A : STA.w M7Y
+	LDA.w $063B : STA.w M7Y
+	LDA.b $98 : STA.w WOBJSEL
+	LDA.b $9B : STA.w HDMAEN
 
 	JSL Rerandomize
 
@@ -216,28 +216,28 @@ Shortcut_LoadState:
 ;===================================================================================================
 
 DMA_BWRAMSRAM:
-	PLX : STX.w SA1IRAM.preset_scratch
+	PLX : STX.w IRAM.preset_scratch
 
-	STA.w $4350 ; direction
-	LDA.b #$80 : STA.w $4351 ; wram
-	LDA.b #$41 : STA.w $4354
+	STA.w DMAP5 ; direction
+	LDA.b #WMDATA : STA.w BBAD5 ; wram
+	LDA.b #^SaveStateData : STA.w DMA5ADDRB
 
 	LDX.w #$0000
-	STX.w $4352 ; bottom of bank
+	STX.w DMA5ADDRL ; bottom of bank
 
 .next
 	LDA.w .address_size+2,X ; get bank
 	BEQ .last_buffers
 
-	STA.w $2183
+	STA.w WMADDB
 
 	LDY.w .address_size+0,X
-	STY.w $2181
+	STY.w WMADDL
 
 	LDY.w .address_size+3,X
-	STY.w $4355
+	STY.w DMA5SIZE
 
-	LDA.b #$20 : STA.w $420B
+	LDA.b #$20 : STA.w MDMAEN
 
 	INX
 	INX
@@ -248,148 +248,163 @@ DMA_BWRAMSRAM:
 
 ; need a completely separate space for this shit
 .last_buffers
-	STZ.w $2183
-	LDY.w $4352 : PHY ; get last location written
+	STZ.w WMADDB
+	LDY.w DMA5ADDRL : PHY ; get last location written
 
-	LDA.b #$43 : STA.w $4354
-	LDY.w #$C000 : STY.w $4352
+	LDA.b #^SaveStateExtra : STA.w DMA5ADDRB
+	LDY.w #$C000 : STY.w DMA5ADDRL
 
-	LDY.w #$6000 : STY.w $2181
-	LDY.w #$3000 : STY.w $4355
-	LDA.b #$20 : STA.w $420B
+	LDY.w #$6000 : STY.w WMADDL
+	LDY.w #$3000 : STY.w DMA5SIZE
+	LDA.b #$20   : STA.w MDMAEN
 
-	LDA.b #$01 : STA.w $2183
-	LDY.w #$4000 : STY.w $2181
-	LDY.w #$1000 : STY.w $4355
-	LDA.b #$20 : STA.w $420B
+	LDA.b #$01   : STA.w WMADDB
+	LDY.w #$4000 : STY.w WMADDL
+	LDY.w #$1000 : STY.w DMA5SIZE
+	LDA.b #$20   : STA.w MDMAEN
 
-	PLY : STY.w $4352
+	PLY : STY.w DMA5ADDRL
 
 	PHB
 	REP #$20
 
-	LDA.w #(SA1IRAM.savethis_end-SA1IRAM.savethis_start)-1
+	LDA.w #SavedVarsSize-1
 
-	BIT.w $4350-1 ; which way to transfer?
+	BIT.w DMAP5-1 ; which way to transfer?
 	BPL .loading
 
 .saving
-	LDX.w #SA1IRAM.savethis_start
-	LDY.w $4352 ; get location last written
-	%MVN($00, $41)
+	LDX.w #IRAM.savethis_start
+	LDY.w DMA5ADDRL ; get location last written
+	MVN $00, ^SaveStateData
 
 	LDA.l HUD_NMI_DMA_SIZE : DEC
-	LDX.w #SA1RAM.HUD
-	%MVN($00, $41)
+	LDX.w #BWRAM.HUD
+	MVN $00, ^SaveStateData
 
 	; DMA
 	LDA.w #$004F
 	LDX.w #$4300
-	%MVN($00, $41)
+	MVN $00, ^SaveStateData
 
 	; HDMA
 	LDA.w #$001F
 	LDX.w #$4360
-	%MVN($00, $41)
+	MVN $00, ^SaveStateData
 	BRA .done
 
 .loading
-	LDY.w #SA1IRAM.savethis_start
-	LDX.w $4352 ; get location last written
-	%MVN($41, $00)
+	LDY.w #IRAM.savethis_start
+	LDX.w DMA5ADDRL ; get location last written
+	MVN ^SaveStateData, $00
 
 	LDA.l HUD_NMI_DMA_SIZE : DEC
-	LDY.w #SA1RAM.HUD
-	%MVN($41, $00)
+	LDY.w #BWRAM.HUD
+	MVN ^SaveStateData, $00
 
 	; DMA
 	LDA.w #$004F
 	LDY.w #$4300
-	%MVN($41, $00)
+	MVN ^SaveStateData, $00
 
 	; HDMA
 	LDA.w #$001F
 	LDY.w #$4360
-	%MVN($41, $00)
+	MVN ^SaveStateData, $00
 
 .done
 	PLB
 
 	SEP #$20
 
-	LDX.w SA1IRAM.preset_scratch : PHX
+	LDX.w IRAM.preset_scratch : PHX
 
 	RTS
 
+;---------------------------------------------------------------------------------------------------
+
+!SaveStateSize = 0
+macro SaveStateBlock(addr, blocksize)
+	dl {addr} : dw {blocksize}
+	!SaveStateSize += {blocksize}
+endmacro
+
 .address_size
-	dl $7E0000 : dw $0220
-	dl $7E0280 : dw $024B
-	dl $7E04F0 : dw $0158
-	dl $7E0670 : dw $00A8
-	dl $7E0800 : dw $11EA
-	dl $7E1A00 : dw $0078
-	dl $7E1AB0 : dw $03B8
-	dl $7E1F00 : dw $4100
-	dl $7E9000 : dw $0480
-	dl $7EA680 : dw $0C00
-	dl $7EB940 : dw $0480
-	dl $7EC000 : dw $0025
-	dl $7EC100 : dw $00AB
-	dl $7EC200 : dw $002A
-	dl $7EC2F8 : dw $0408
-	dl $7EC880 : dw $0080
-	dl $7EE800 : dw $0D00
-	dl $7EF580 : dw $0840
-	dl $7EFE00 : dw $0200
+	%SaveStateBlock($7E0000, $0220)
+	%SaveStateBlock($7E0280, $024B)
+	%SaveStateBlock($7E04F0, $0158)
+	%SaveStateBlock($7E0670, $00A8)
+	%SaveStateBlock($7E0800, $11EA)
+	%SaveStateBlock($7E1A00, $0078)
+	%SaveStateBlock($7E1AB0, $03B8)
+	%SaveStateBlock($7E1F00, $4100)
+	%SaveStateBlock($7E9000, $0480)
+	%SaveStateBlock($7EA680, $0C00)
+	%SaveStateBlock($7EB940, $0480)
+	%SaveStateBlock($7EC000, $0025)
+	%SaveStateBlock($7EC100, $00AB)
+	%SaveStateBlock($7EC200, $002A)
+	%SaveStateBlock($7EC2F8, $0408)
+	%SaveStateBlock($7EC880, $0080)
+	%SaveStateBlock($7EE800, $0D00)
+	%SaveStateBlock($7EF580, $0840)
+	%SaveStateBlock($7EFE00, $0200)
 
-	dl $7F0000 : dw $4000
-	dl $7F5800 : dw $0702
-	dl $7F6918 : dw $0001
-	dl $7F7000 : dw $01C0
-	dl $7FDD80 : dw $1400
-	dl $7FF800 : dw $0800 ; $F408 + $800 for HUD + $70 for DMA = $FC78
-	HUDBWRAMLOC = $41F408
+	%SaveStateBlock($7F0000, $4000)
+	%SaveStateBlock($7F5800, $0702)
+	%SaveStateBlock($7F6918, $0001)
+	%SaveStateBlock($7F7000, $01C0)
+	%SaveStateBlock($7FDD80, $1400)
+	%SaveStateBlock($7FF800, $0800)
 
+	HUDBWRAMLOC = SaveStateData+!SaveStateSize
+	TotalSaveStateSize = !SaveStateSize+$70+$800
+
+	if TotalSaveStateSize > $FFFF
+		error "Save states are too big!!!"
+	endif
+
+	printf "Save state size: ${0:X4}", !SaveStateSize
 	dl 0
 
 ;===================================================================================================
 
 FinalizeSavestate:
-	LDA.w $4350
+	LDA.w DMAP5
 	ORA.b #$01
-	STA.w $4350
+	STA.w DMAP5
 	BMI .saving
 
 .loading
-	LDA.b #$18
+	LDA.b #VMDATA
 	CLV ; clear overflow for loading
 	BRA .continue
 
 .saving
-	LDA.b #$39
+	LDA.b #VMREADL
 	SEP #$40 ; set overflow for saving
 
 .continue
-	STA.w $4351
+	STA.w BBAD5
 
 	LDA.b #$80
-	STA.w $2115
+	STA.w VMAIN
 
 	LDX.w #$0000
-	STX.w $4352
+	STX.w DMA5ADDRL
 
-	LDA.b #$42
-	STA.w $4354
+	LDA.b #^SaveStateVram
+	STA.w DMA5ADDRB
 
-	STX.w $4355
-	STX.w $2116
+	STX.w DMA5SIZE
+	STX.w VMADDR
 	BVC .no_dummy_read
 
 	; necessary dummy read
-	LDY.w $2139
+	LDY.w VMREADL
 
 .no_dummy_read
-	LDA.b #$20 : STA.w $420B
+	LDA.b #$20 : STA.w MDMAEN
 	; after vram is loaded, need to quickly swap in the sentry icons that may or may not be different
 	BVS .no_sentry_icons
 
@@ -397,28 +412,30 @@ FinalizeSavestate:
 	SEP #$30
 
 .no_sentry_icons
-	LDA.w SA1RAM.old_music_bank : CMP.w $0136 : BEQ .songBankNotChanged
+	LDA.w BWRAM.old_music_bank : CMP.w $0136 : BEQ .song_bank_not_changed
 
 	SEP #$34 ; I flag too
 
-	STZ.w $4200
-	STZ.w $420C
+	STZ.w NMITIMEN
+	STZ.w HDMAEN
 
-	LDA.b #$FF : STA.w $2140
+	LDA.b #$FF : STA.w APUIO0
 
 	LDA.b $1B : STA.w $0136
 	BEQ .indoors
 
-	JSL $008925
-	BRA ++
+	JSL jlong($008925)
+	BRA .reset
 
 .indoors
-	JSL $008913
+	JSL jlong($008913)
 
-.songBankNotChanged
+.song_bank_not_changed
 	; i hope this works
 	; now we just reset to the main game loop
-++	JML ResetGameStack
+
+.reset
+	JML ResetGameStack
 
 ;===================================================================================================
 
@@ -441,14 +458,14 @@ Shortcut_ToggleCrystalSwitch:
 	CMP.w #$0007
 
 	SEP #$20
-	BNE .notsafe
+	BNE .not_safe
 
 	LDA.l $7EC172 : EOR.b #$01 : STA.l $7EC172
 
 	LDA.b #$16 : STA.b $11
 	LDA.b #$25 : STA.w $012F
 
-.notsafe
+.not_safe
 	RTL
 
 ;===================================================================================================
@@ -464,7 +481,7 @@ Shortcut_SkipText:
 
 Shortcut_DisableSprites:
 	SEP #$20
-	JML $09C44E ; Disable all sprites
+	JML jlong($09C44E) ; Disable all sprites
 
 ;===================================================================================================
 
@@ -500,11 +517,11 @@ Shortcut_FillEverything:
 	LDA.b #$09 : STA.l $7EF36F
 
 .no_keys
-	LDA.l $7EF3C5 : BNE .ignoreprogress
+	LDA.l $7EF3C5 : BNE .ignore_progress
 
 	INC : STA.l $7EF3C5
 
-.ignoreprogress
+.ignore_progress
 	SEP #$30
 
 	JSL FixLinkEquipment
@@ -581,13 +598,13 @@ Shortcut_FillEverything:
 Shortcut_ResetSegmentTimer:
 	REP #$20
 
-	STZ.w SA1IRAM.SEG_TIME_F
-	STZ.w SA1IRAM.SEG_TIME_S
-	STZ.w SA1IRAM.SEG_TIME_M
+	STZ.w IRAM.SEG_TIME_F
+	STZ.w IRAM.SEG_TIME_S
+	STZ.w IRAM.SEG_TIME_M
 
 	SEP #$20
 
-	LDA.b #$02 : TSB.w SA1IRAM.TIMER_FLAG
+	LDA.b #$02 : TSB.w IRAM.TIMER_FLAG
 
 	RTL
 
@@ -595,27 +612,28 @@ Shortcut_ResetSegmentTimer:
 
 Shortcut_FixGraphics:
 	SEP #$30
-	LDA.b #$80 : STA.w $2100
-	STZ.w $4200
+	LDA.b #$80 : STA.w INIDISP
+	STZ.w NMITIMEN
 
 	REP #$20
-	LDA.w #$0280 : STA.w $2100
-	LDA.w #$0313 : STA.w $2107
-	LDA.w #$0063 : STA.w $2109 ; zeros out unused bg4
-	LDA.w #$0722 : STA.w $210B
-	STZ.w $2133 ; mode 7 register hit, but who cares
+	LDA.w #$0280 : STA.w INIDISP
+	LDA.w #$0313 : STA.w BG1SC
+	LDA.w #$0063 : STA.w BG3SC ; zeros out unused bg4
+	LDA.w #$0722 : STA.w BG12NBA
+	STZ.w SETINI ; mode 7 register hit, but who cares
 
 	SEP #$F0
-	LDA.b $1B : BEQ ++
+	LDA.b $1B : BEQ .no_pegging
 
 	JSL FixGraphics_Underworld
 	JSL LoadCustomHUDGFX
 
-	LDA.l $7EC172 : BEQ ++
+	LDA.l $7EC172 : BEQ .no_pegging
 	JSR FixGraphics_Pegs
 
-++	LDA.b #$0F : STA.b $13
-	LDA.b #$81 : STA.w $4200
+.no_pegging
+	LDA.b #$0F : STA.b $13
+	LDA.b #$81 : STA.w NMITIMEN
 
 	RTL
 
@@ -630,7 +648,7 @@ FixGraphics_Pegs:
 	LDY.w #$F000
 	LDA.w #$007F
 
-	%MVN($7E,$7F)
+	MVN $7E,$7F
 
 	PLB
 
@@ -648,25 +666,25 @@ FixGraphics_Underworld: ; mostly copied from vanilla
 	LDA.b #$00 : PHA : PLB
 
 	LDA.b $9B : PHA
-	STZ.b $9B : STZ.w $420C
+	STZ.b $9B : STZ.w HDMAEN
 
 	SEP #$30
 
-	JSL $00834B ; Tile maps
-	JSL $00E1DB ; Tile sets
-	JSL $0DFA8C ; HUD
+	JSL jlong($00834B) ; Tile maps
+	JSL jlong($00E1DB) ; Tile sets
+	JSL jlong($0DFA8C) ; HUD
 
 .just_redraw
 	STZ.w $0418
 	STZ.w $045C
 
-.drawQuadrants
-	JSL $0091C4
-	JSL $0090E3
-	JSL $00913F
-	JSL $0090E3
+.draw_quadrants
+	JSL jlong($0091C4)
+	JSL jlong($0090E3)
+	JSL jlong($00913F)
+	JSL jlong($0090E3)
 
-	LDA.w $045C : CMP.b #$10 : BNE .drawQuadrants
+	LDA.w $045C : CMP.b #$10 : BNE .draw_quadrants
 
 	STZ.b $17
 	STZ.b $B0
@@ -680,29 +698,31 @@ FixGraphics_Underworld: ; mostly copied from vanilla
 
 Shortcut_ShowPits:
 	SEP #$30
-	LDA.b $1B : BEQ ++ ; don't do this outdoors
+	LDA.b $1B : BEQ .exit ; don't do this outdoors
 
-	STZ.w $4200
-	LDA.b #$80 : STA.b $13 : STA.w $2100
-	STA.w $2115
+	STZ.w NMITIMEN
+	LDA.b #$80 : STA.b $13 : STA.w INIDISP
+	STA.w VMAIN
 
 	JSL ShowPits
 
 	LDA.b #$0F : STA.b $13
-	LDA.b #$81 : STA.w $4200
+	LDA.b #$81 : STA.w NMITIMEN
 
-++	RTL
+.exit
+	RTL
 
 ;===================================================================================================
 
 ShowPits:
+	!PIT_GFX = $050F
 	PHB ; rebalanced in redraw
 
 	PEA $7F00
 	PLB
 
 	LDA.b $9B
-	STZ.b $9B : STA.w $420C
+	STZ.b $9B : STA.w HDMAEN
 
 	PLB
 	PHA
@@ -711,13 +731,14 @@ ShowPits:
 
 	LDY.w #$0FFE
 
---	LDA.w $2000,Y : AND.w #$00FF ; checks tile attributes table
+.next_object
+	LDA.w $2000,Y : AND.w #$00FF ; checks tile attributes table
 	CMP.w #$0020 : BNE .skip
 
 	STZ.b $00
 
 	TYA : ASL : TAX
-	LDA.w #$050F : STA.l $7E2000,X
+	LDA.w #!PIT_GFX : STA.l $7E2000,X
 	TXA
 	BIT.w #$1000 : BEQ ++
 
@@ -740,17 +761,18 @@ ShowPits:
 	LSR
 	STA.b $02
 	PLA
-	SEC
+	SEC ; TODO ADC first then SBC to remove the CLC (b/c LSR)
 	SBC.b $02
 	CLC
 	ADC.b $00
 	LSR
-	STA.l $2116
-	LDA.w #$050F
-	STA.l $2118
+	STA.l VMADDR
+	LDA.w #!PIT_GFX
+	STA.l VMDATA
 
 .skip
-	DEY : BPL --
+	DEY
+	BPL .next_object
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -773,27 +795,27 @@ QuickSwap:
 	LDA.b $F6 : AND.b #$30 : BEQ .done
 
 	PHX
-	LDX.w $0202 : BEQ .done_X
+	LDX.w $0202 : BEQ .done_x
 
 ;	CMP.b #$30 : BEQ .swap
 	BIT.b #$10 : BEQ .no_r_press
 
 	LDA.b $F2 : BIT.b #$20 : BNE .swap ; .swap_from_last_r
-;	STZ.w SA1IRAM.QuickSwapLR
+;	STZ.w IRAM.quickswap_lr
 .find_r
 	JSR .find_next
 	BRA .store
 
 .no_r_press
 	LDA.b $F2 : BIT.b #$10 : BNE .swap ; .swap_from_last_l
-;	STZ.w SA1IRAM.QuickSwapLR
+;	STZ.w IRAM.quickswap_lr
 .find_l
 	JSR .find_prev
 	BRA .store
 
 .swap
 	CPX.b #$10 : BNE .store ; not bottles
-;	STX.w SA1IRAM.QuickSwapLR
+;	STX.w IRAM.quickswap_lr
 
 	JSR FindNextBottle
 	BRA .click
@@ -804,9 +826,9 @@ QuickSwap:
 .click
 	LDA.b #$20 : STA.w $012F
 
-	JSL $0DDB7F
+	JSL jlong($0DDB7F)
 
-.done_X
+.done_x
 	PLX
 
 .done
@@ -816,24 +838,29 @@ QuickSwap:
 ;---------------------------------------------------------------------------------------------------
 
 .swap_from_last_r
-	LDA.w SA1IRAM.QuickSwapLR : BEQ .find_r
+	LDA.w IRAM.quickswap_lr : BEQ .find_r
 	BRA .store
 
 .swap_from_last_l
-	LDA.w SA1IRAM.QuickSwapLR : BEQ .find_l
+	LDA.w IRAM.quickswap_lr : BEQ .find_l
 	BRA .store
 
 ;---------------------------------------------------------------------------------------------------
 
 .find_next
 	INX
-	CPX.b #$15 : BCC + : LDX.b #$00
-+	LDA.l $7EF33F,X : BEQ .find_next
+	CPX.b #$15 : BCC .not_at_end
+	LDX.b #$00
+
+.not_at_end
+	LDA.l $7EF33F,X : BEQ .find_next
 	RTS
 
 .find_prev
-	DEX : BPL + : LDX.b #$14
-+	LDA.l $7EF33F,X : BEQ .find_prev
+	DEX : BPL .not_at_start
+	LDX.b #$14
+.not_at_start
+	LDA.l $7EF33F,X : BEQ .find_prev
 	RTS
 
 ;---------------------------------------------------------------------------------------------------
@@ -843,11 +870,12 @@ FindNextBottle:
 	TAX
 
 .next
-	INX : CPX.b #$05 : BCC ++
+	INX : CPX.b #$05 : BCC .test_bottle
 
 	LDX.b #$01
 
-++	LDA.l $7EF35B,X
+.test_bottle
+	LDA.l $7EF35B,X
 	BEQ .next
 
 	TXA
@@ -858,12 +886,15 @@ FindNextBottle:
 ;---------------------------------------------------------------------------------------------------
 
 BottleMenuButtonPress:
-	BIT.b $F4 : BVC ++
+	BIT.b $F4 : BVC .try_x
 	JSR FindNextBottle
 	RTL
 
-++	BIT.b $F6 : BVC ++
+.try_x
+	BIT.b $F6 : BVC .exit
 	LDA.b #$07 : STA.w $0200
-++	RTL
+
+.exit
+	RTL
 
 ;===================================================================================================

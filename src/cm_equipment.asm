@@ -12,7 +12,7 @@ EQUIPMENT_SUBMENU:
 	BRA .set
 
 .not_max
-	BIT.b SA1IRAM.cm_shoulder
+	BIT.b IRAM.cm_shoulder
 	BVS .flatten
 	BPL .set
 
@@ -41,8 +41,8 @@ EQUIPMENT_SUBMENU:
 
 ;===================================================================================================
 
-%numfield_func("Max HP", SA1RAM.cm_equipment_maxhp, 3, 20, 5, this)
-	LDA.w SA1RAM.cm_equipment_maxhp
+%numfield_func("Max HP", BWRAM.cm_equipment_maxhp, 3, 20, 5, this)
+	LDA.w BWRAM.cm_equipment_maxhp
 	ASL
 	ASL
 	ASL
@@ -82,15 +82,15 @@ draw_sword:
 
 	REP #$30
 	AND.w #$00FF
-	ORA.w #(draw_sword>>8)&$FF00
-	STA.b SA1IRAM.cm_writer+1
+	ORA.w #(^draw_sword)<<8
+	STA.b IRAM.cm_writer+1
 
 	AND.w #$00FF
 	ASL
 	ADC.w #.list
-	STA.b SA1IRAM.cm_writer+0
+	STA.b IRAM.cm_writer+0
 
-	LDA.b [SA1IRAM.cm_writer+0]
+	LDA.b [IRAM.cm_writer+0]
 	JMP CMDRAW_WORD_FUNCEND
 
 .bad
@@ -155,7 +155,7 @@ draw_sword:
 
 	AND.w #$00FF
 	TAX
-	LDA.l $0DDB48,X
+	LDA.l jlong($0DDB48),X
 
 ;===================================================================================================
 
@@ -191,7 +191,7 @@ TestBadCapacity:
 
 	AND.w #$00FF
 	TAX
-	LDA.l $0DDB58,X
+	LDA.l jlong($0DDB58),X
 	JMP TestBadCapacity
 
 ;===================================================================================================

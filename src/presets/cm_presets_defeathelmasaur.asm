@@ -286,4 +286,4 @@ presetSRAM_defeathelmasaur:
 ...end
 ;===================================================================================================
 presetend_defeathelmasaur:
-print "defeathelmasaur size: $", hex(presetend_defeathelmasaur-presetheader_defeathelmasaur)
+printf "defeathelmasaur size: ${0:X4}", presetend_defeathelmasaur-presetheader_defeathelmasaur

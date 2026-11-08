@@ -1,0 +1,27 @@
+[FUTABA:assemble]
+
+assembly:
+	entry              = ../src/main.asm
+	output             = lttphack-rando.sfc
+	base               = alttp.sfc
+	addsymbols         = standard, sa1
+
+header:
+	autofill           = false
+	checksum           = true
+	mapmode            = sa1
+	fastrom            = false
+	title              = PRACHACK
+	romsize            = 2MB
+	ramsize            = 256KB
+	version            = 0
+	region             = Japan
+	extended           = false
+
+debug: 
+	overflow           = error
+	tokens             = aggressive
+	maxerrors          = 20
+
+!BUILD = 1
+!RANDO = 1

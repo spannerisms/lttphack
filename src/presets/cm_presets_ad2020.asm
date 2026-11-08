@@ -4358,4 +4358,4 @@ presetSRAM_ad2020:
 ...end
 ;===================================================================================================
 presetend_ad2020:
-print "ad2020 size: $", hex(presetend_ad2020-presetheader_ad2020)
+printf "ad2020 size: ${0:X4}", presetend_ad2020-presetheader_ad2020

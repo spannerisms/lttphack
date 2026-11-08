@@ -456,4 +456,4 @@ presetSRAM_defeatvitreous:
 ...end
 ;===================================================================================================
 presetend_defeatvitreous:
-print "defeatvitreous size: $", hex(presetend_defeatvitreous-presetheader_defeatvitreous)
+printf "defeatvitreous size: ${0:X4}", presetend_defeatvitreous-presetheader_defeatvitreous

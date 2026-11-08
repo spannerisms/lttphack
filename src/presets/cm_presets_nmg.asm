@@ -5217,4 +5217,5 @@ presetSRAM_nmg:
 ...end
 ;===================================================================================================
 presetend_nmg:
-print "nmg size: $", hex(presetend_nmg-presetheader_nmg)
+
+printf "nmg size: ${0:X4}", presetend_nmg-presetheader_nmg

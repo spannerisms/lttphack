@@ -28,10 +28,10 @@ GetLoadoutOffset:
 	ASL
 	ASL
 	ASL
-	STA.l SA1IRAM.LoadOutScratch
+	STA.l IRAM.loudout_scratch
 	ASL
-	ADC.l SA1IRAM.LoadOutScratch
-	ADC.w #SA1RAM.Loadouts
+	ADC.l IRAM.loudout_scratch
+	ADC.w #BWRAM.loadouts
 
 	RTS
 
@@ -40,9 +40,11 @@ GetLoadoutOffset:
 HandleCustomLoadout:
 	SEP #$31
 
-	LDA.l SA1RAM.loadout_to_use
+	LDA.l BWRAM.loadout_to_use
 	SBC.b #$01
 	BCC .exit
+
+;===================================================================================================
 
 #LoadCustomLoadout:
 	JSR GetLoadoutOffset
@@ -53,20 +55,20 @@ HandleCustomLoadout:
 	PHB
 
 	LDA.w #$0021
-	%MVN($40, $7E)
+	MVN ^BWRAM.loadouts, $7E
 
 	LDA.w $7EF360 : STA.w $7EF362
 
 	SEP #$20
 
-	LDA.l $400000,X : STA.w $7EF36C
-	LDA.l $400001,X : STA.w $7EF36D
-	LDA.l $400002,X : STA.w $7EF36E
-	LDA.l $400003,X : STA.w $7EF370
-	LDA.l $400004,X : STA.w $7EF371
-	LDA.l $400005,X : STA.w $7EF377
-	LDA.l $400006,X : STA.w $7EF37B
-	LDA.l $400007,X : STA.w $7E0303
+	LDA.l ^&BWRAM.loadouts+0,X : STA.w $7EF36C
+	LDA.l ^&BWRAM.loadouts+1,X : STA.w $7EF36D
+	LDA.l ^&BWRAM.loadouts+2,X : STA.w $7EF36E
+	LDA.l ^&BWRAM.loadouts+3,X : STA.w $7EF370
+	LDA.l ^&BWRAM.loadouts+4,X : STA.w $7EF371
+	LDA.l ^&BWRAM.loadouts+5,X : STA.w $7EF377
+	LDA.l ^&BWRAM.loadouts+6,X : STA.w $7EF37B
+	LDA.l ^&BWRAM.loadouts+7,X : STA.w $7E0303
 
 	PLB
 
@@ -96,7 +98,7 @@ SaveCustomLoadout:
 	PHB
 
 	LDA.w #$0021
-	%MVN($7E, $40)
+	MVN $7E, ^BWRAM.loadouts
 
 	SEP #$20
 
@@ -122,7 +124,7 @@ SetHUDItemGraphics:
 	PHK
 	PLB
 
-	PEA.w $3000
+	PEA.w IRAM
 	PLD
 
 	SEP #$30
@@ -142,7 +144,7 @@ SetHUDItemGraphics:
 
 .no_bow
 	LDA.b #$7E
-	STA.b SA1IRAM.preset_reader+2
+	STA.b IRAM.preset_reader+2
 
 	LDY.w $0303
 	LDA.w .item_to_menu,Y
@@ -164,12 +166,12 @@ SetHUDItemGraphics:
 	TAY
 
 	LDX.w .item_HUD-4,Y ; bank0D offset
-	STX.b SA1IRAM.preset_reader2
+	STX.b IRAM.preset_reader2
 
 	LDA.w .item_HUD-2,Y ; bank7E SRAM val
-	STA.b SA1IRAM.preset_reader+0
+	STA.b IRAM.preset_reader+0
 
-	LDA.b [SA1IRAM.preset_reader]
+	LDA.b [IRAM.preset_reader]
 	AND.w #$00FF
 	BEQ .missing_item
 
@@ -185,7 +187,7 @@ SetHUDItemGraphics:
 	ASL
 	ASL
 	ASL
-	ADC.b SA1IRAM.preset_reader2
+	ADC.b IRAM.preset_reader2
 	TAX
 	BRA .draw_item
 
@@ -195,7 +197,7 @@ SetHUDItemGraphics:
 	TYA
 	LSR
 	LSR
-	STA.b SA1IRAM.preset_reader2
+	STA.b IRAM.preset_reader2
 
 	TAX
 
@@ -206,7 +208,7 @@ SetHUDItemGraphics:
 	LDX.b #$13
 
 .no_overflow
-	CPX.b SA1IRAM.preset_reader2
+	CPX.b IRAM.preset_reader2
 	BEQ .no_item_at_all
 
 	LDA.l $7EF340,X
@@ -247,13 +249,13 @@ SetHUDItemGraphics:
 	REP #$30
 
 .no_item
-	LDX.w #$FEE7 ; address happens to have $207F x4
+	LDX.w #$FEE7 ; address happens to have !EMPTY x4
 
 .draw_item
-	LDA.l $0D0000,X : STA.w SA1RAM.HUD+$04A
-	LDA.l $0D0002,X : STA.w SA1RAM.HUD+$04C
-	LDA.l $0D0004,X : STA.w SA1RAM.HUD+$08A
-	LDA.l $0D0006,X : STA.w SA1RAM.HUD+$08C
+	LDA.l jlong($0D0000),X : STA.w BWRAM.HUD+$04A
+	LDA.l jlong($0D0002),X : STA.w BWRAM.HUD+$04C
+	LDA.l jlong($0D0004),X : STA.w BWRAM.HUD+$08A
+	LDA.l jlong($0D0006),X : STA.w BWRAM.HUD+$08C
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -263,29 +265,29 @@ SetHUDItemGraphics:
 	CMP.w #$0003
 	BCC .wooden_arrows
 
-	LDA.w #$2486 : STA.w SA1RAM.HUD+$01E
-	LDA.w #$2487 : STA.w SA1RAM.HUD+$020
+	LDA.w #$2486 : STA.w BWRAM.HUD+$01E
+	LDA.w #$2487 : STA.w BWRAM.HUD+$020
 
 	BRA .done_arrows
 
 .wooden_arrows
-	LDA.w #$20A7 : STA.w SA1RAM.HUD+$01E
-	LDA.w #$20A9 : STA.w SA1RAM.HUD+$020
+	LDA.w #$20A7 : STA.w BWRAM.HUD+$01E
+	LDA.w #$20A9 : STA.w BWRAM.HUD+$020
 
 .done_arrows
 	LDA.l $7EF37B
 	AND.w #$00FF
 	BEQ .no_half_magic
 
-	LDA.w #$28F7 : STA.w SA1RAM.HUD+$004
-	LDA.w #$2851 : STA.w SA1RAM.HUD+$006
-	LDA.w #$28FA : STA.w SA1RAM.HUD+$008
+	LDA.w #$28F7 : STA.w BWRAM.HUD+$004
+	LDA.w #$2851 : STA.w BWRAM.HUD+$006
+	LDA.w #$28FA : STA.w BWRAM.HUD+$008
 	BRA .done_half_magic
 
 .no_half_magic
-	LDA.w #$2850 : STA.w SA1RAM.HUD+$004
-	LDA.w #$A856 : STA.w SA1RAM.HUD+$006
-	LDA.w #$2852 : STA.w SA1RAM.HUD+$008
+	LDA.w #$2850 : STA.w BWRAM.HUD+$004
+	LDA.w #$A856 : STA.w BWRAM.HUD+$006
+	LDA.w #$2852 : STA.w BWRAM.HUD+$008
 
 .done_half_magic
 	PLB
@@ -344,17 +346,17 @@ SetHUDItemGraphics:
 
 set_sword:
 	SEP #$30
-	JSL $00D308 ; decomp sword
-	JML $1BED03 ; sword palette
+	JSL jlong($00D308) ; decomp sword
+	JML jlong($1BED03) ; sword palette
 
 set_shield:
 	SEP #$30
-	JSL $00D348 ; decomp shield
-	JML $1BED29 ; shield palette
+	JSL jlong($00D348) ; decomp shield
+	JML jlong($1BED29) ; shield palette
 
 set_armor:
 	SEP #$30
-	JML $1BEDF9 ; mail palette
+	JML jlong($1BEDF9) ; mail palette
 
 ;===================================================================================================
 

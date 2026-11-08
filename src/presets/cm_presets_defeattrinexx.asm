@@ -693,4 +693,4 @@ presetSRAM_defeattrinexx:
 ...end
 ;===================================================================================================
 presetend_defeattrinexx:
-print "defeattrinexx size: $", hex(presetend_defeattrinexx-presetheader_defeattrinexx)
+printf "defeattrinexx size: ${0:X4}", presetend_defeattrinexx-presetheader_defeattrinexx
