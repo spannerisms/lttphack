@@ -3,10 +3,17 @@ RNG_SUBMENU:
 
 ;===================================================================================================
 
-%choice_here("Prize packs", BWRAM.drop_rng, 3)
+ENEMY_PRIZE_PACKS:
+%choice_here("Enemy drops", BWRAM.drop_rng, 3)
+#PrizePacksList:
 	%add_list_item(CMTEXT_VANILLA)
 	%list_item("Always")
 	%list_item("Never")
+
+;===================================================================================================
+
+BUSH_PRIZE_PACKS:
+%choice("Bush drops", BWRAM.bush_rng, 3, PrizePacksList)
 
 ;===================================================================================================
 

@@ -10,6 +10,11 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 
 - Presets
   - Adjust wallmaster timer for Mummy Hellway presets
+- Game state
+  - Renamed "Enemy drops" to "Prize packs" and added bushes as well as the RNG control items
+  - Renamed "Prize packs" (the list item) to "Enemy drops"
+- RNG control
+  - Bush prizes
 - Randomizer
   - Improved fastrom implementation
 - Other

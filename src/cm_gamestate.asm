@@ -27,7 +27,7 @@ GAMESTATE_SUBMENU:
 
 %submenu("Game flags", cm_game_state_game_flags_submenu)
 
-%submenu("Drops", cm_game_state_drops_submenu)
+%submenu("Prize packs", cm_game_state_drops_submenu)
 
 ;===================================================================================================
 
@@ -182,7 +182,10 @@ cm_game_state_game_flags_submenu:
 ;===================================================================================================
 
 cm_game_state_drops_submenu:
-%menu_header("ENEMY DROPS")
+%menu_header("PRIZE PACKS")
+
+%add_menu_item(ENEMY_PRIZE_PACKS)
+%add_menu_item(BUSH_PRIZE_PACKS)
 
 %choice_here("Drop luck", $7E0CF9, 3)
 	%list_item("Normal")
@@ -200,6 +203,8 @@ cm_game_state_drops_submenu:
 %choice_prgtext("Prize pack 5", $7E0FCB, 8, draw_prize_pack_5)
 %choice_prgtext("Prize pack 6", $7E0FCC, 8, draw_prize_pack_6)
 %choice_prgtext("Prize pack 7", $7E0FCD, 8, draw_prize_pack_7)
+
+%numfield("Bush pack", $7E0CF7, 0, 7, 1)
 
 ;===================================================================================================
 

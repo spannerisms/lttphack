@@ -22,6 +22,10 @@ org $05A401 : JSL rng_lanmola_2
 
 org $09BD5D : JSL rng_conveyor_belt
 
+
+org $068268 : JSL rng_bushes
+org $1AFBDE : JSL rng_bushes
+
 pullpc
 
 ;===================================================================================================
@@ -83,20 +87,7 @@ rng_eyegore:
 ;===================================================================================================
 
 rng_arrghus:
-	LDA.w BWRAM.arrghus_rng : BNE .get_speed
-
-;---------------------------------------------------------------------------------------------------
-
-; In the middle for best access
-#VanillaRNG:
-	LDA.w SLVH
-	LDA.w OPHCT
-	ADC.b $1A
-	ADC.w $0FA1
-	STA.w $0FA1
-	RTL
-
-;---------------------------------------------------------------------------------------------------
+	LDA.w BWRAM.arrghus_rng : BEQ VanillaRNG
 
 .get_speed
 	TXY
@@ -107,6 +98,25 @@ rng_arrghus:
 
 .speeds
 	db $00, $10, $20, $30, $3F
+
+;===================================================================================================
+
+rng_bushes:
+	; 01 is always and 02 is never, which happens to work with the expected values
+	LDA.w BWRAM.bush_rng : BNE VanillaRNG.exit
+
+;===================================================================================================
+
+; In the middle for best access
+VanillaRNG:
+	LDA.w SLVH
+	LDA.w OPHCT
+	ADC.b $1A
+	ADC.w $0FA1
+	STA.w $0FA1
+
+.exit
+	RTL
 
 ;===================================================================================================
 

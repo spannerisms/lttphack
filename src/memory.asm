@@ -248,7 +248,6 @@ allocate $407000 :: $0C00 ; DO NOT CHANGE THIS
 	skip 2
 
 	.disable_beams   :: 2
-	.drop_rng        :: 2
 	.loadout_to_save :: 2
 	.loadout_to_use  :: 2
 
@@ -257,6 +256,9 @@ allocate $407000 :: $0C00 ; DO NOT CHANGE THIS
 
 	.map16cacheindex :: 2
 
+	.framerule        :: 2
+	.drop_rng        :: 2
+	.bush_rng         :: 2
 	.pokey_rng        :: 2
 	.agahnim_rng      :: 2
 	.helmasaur_rng    :: 2
@@ -265,7 +267,6 @@ allocate $407000 :: $0C00 ; DO NOT CHANGE THIS
 	.eyegore_rng      :: 2
 	.arrghus_rng      :: 2
 	.turtles_rng      :: 2
-	.framerule        :: 2
 	.lanmola_rng      :: 2
 	.conveyor_rng     :: 2
 	.vitreous_rng     :: 2
