@@ -8,20 +8,10 @@ org $0DFC29
 	JML FireHudIRQ
 
 ; for boss cycle counters
-org $05A39B
-	JML ResetLanmoCycles
-
-org $05A40E
-	JSL UpdateLanmoCycles
-	NOP
-
-org $06919F
-	JSL ResetAgaCycles
-	NOP
-
-org $1ED632
-	JSL UpdateAgaCycles
-	NOP
+org $05A39B : JML ResetLanmoCycles
+org $05A40E : JML UpdateLanmoCycles
+org $06919F : JML ResetAgaCycles
+org $1ED651 : JML UpdateAgaCycles
 
 if !RANDO
 	org $0DFC26 : JMP &
@@ -41,6 +31,7 @@ FireHudIRQ:
 	BEQ .noextra
 
 	JSL ExtraSA1Transfers
+
 	SEP #$30
 
 .noextra
@@ -69,10 +60,11 @@ HUDJumpCallY:
 ;===================================================================================================
 
 UpdateLanmoCycles:
-	INC.w $0D80,X
 	INC.w IRAM.boss_cycles,X
+
+	INC.w $0D80,X
 	LDA.b #$18
-	RTL
+	JML jlong($05A413)
 
 ResetLanmoCycles:
 	STA.l $7FF81E,X
@@ -86,14 +78,14 @@ ResetAgaCycles:
 	STZ.w IRAM.boss_cycles+1
 	STZ.w IRAM.boss_cycles+2
 
-	RTL
+	JML jlong($0691A4)
 
 UpdateAgaCycles:
-	INC.w $0D80,X
-	LDY.b #$04
-
 	INC.w IRAM.boss_cycles,X
-	RTL
+
+	LDA.b #$08
+	STA.w $0ED0,X
+	JML jlong($1ED656)
 
 ;===================================================================================================
 ; A = address
@@ -464,7 +456,6 @@ endif
 
 ++	STA.w BWRAM.HUD+$102
 
-
 ;===================================================================================================
 
 DrawSentries:
@@ -517,22 +508,53 @@ hud_draw_input_display:
 	JSR (InputDisplayOptions,X)
 
 ;===================================================================================================
-; clean up the stuff right under items
+
+	LDA.b IRAM.copyof_1B
+	AND.b #$00FF
+	BEQ DrawQuickwarp
+
 ;===================================================================================================
+
+DrawBossCycles:
+	LDA.w CONFIG.boss_cycles
+	BEQ .no_qwbc
+
+	LDA.b IRAM.copyof_A0
+	CMP.w #$0033 : BEQ .three ; lanmo
+	CMP.w #$000D : BNE .no_qwbc ; agahnim
+
+.three
+	LDA.b IRAM.boss_cycles+2
+	AND.w #$00FF
+	ORA.w #$2010
+	STA.w BWRAM.HUD+$10E
+
+.draw_two
+	LDA.b IRAM.boss_cycles+1
+	AND.w #$00FF
+	ORA.w #$2010
+	STA.w BWRAM.HUD+$10C
+
+.draw_one
+	LDA.b IRAM.boss_cycles+0
+	AND.w #$00FF
+	ORA.w #$2010
+	STA.w BWRAM.HUD+$10A
+
+	JML SA1NMI.exit_no_rep
+
+;===================================================================================================
+
+.no_qwbc_rep
 	REP #$30
 
+.no_qwbc
 	LDA.w #!EMPTY
 	STA.w BWRAM.HUD+$10A
 	STA.w BWRAM.HUD+$10C
 	STA.w BWRAM.HUD+$10E
 
-	LDA.b IRAM.copyof_1B
-	LSR
-	BCC DrawQuickwarp
-
-	JSR DrawBossCycles
-
-	BRA .skip
+	JML SA1NMI.exit_no_rep
 
 ;===================================================================================================
 
@@ -540,9 +562,7 @@ hud_draw_input_display:
 	SEP #$30
 
 	LDA.w CONFIG.qw_toggle
-	EOR.b #$01
-	ORA.b IRAM.copyof_1B
-	BNE .skip
+	BEQ .no_qwbc_rep
 
 	LDA.b IRAM.copyof_E2 : AND.b #$06 : CMP.b #$06 ; sets carry if 06
 
@@ -558,12 +578,10 @@ hud_draw_input_display:
 	INC
 	STA.w BWRAM.HUD+$10C
 
-.skip
+	LDA.w #!EMPTY
+	STA.w BWRAM.HUD+$10E
 
-;===================================================================================================
-
-DoneExtras:
-	JML SA1NMI.exit
+	JML SA1NMI.exit_no_rep
 
 ;===================================================================================================
 
@@ -846,38 +864,7 @@ InputDisplayOptions:
 
 ;===================================================================================================
 
-DrawBossCycles:
-	LDA.w CONFIG.boss_cycles
-	BEQ .no
 
-	LDA.b IRAM.copyof_A0
-	CMP.w #$0033 : BEQ .three ; lanmo
-	CMP.w #$000D : BEQ .three ; agahnim
-
-	BRA .no
-
-.three
-	LDA.w #$0002
-	BRA .start
-
-.start
-	TAX
-	ASL
-	TAY
-
-.next
-	LDA.b IRAM.boss_cycles,X
-	AND.w #$00FF
-	ORA.w #$2010
-	STA.w BWRAM.HUD+$10A,Y
-
-	DEY
-	DEY
-	DEX
-	BPL .next
-
-.no
-	RTS
 
 ;===================================================================================================
 

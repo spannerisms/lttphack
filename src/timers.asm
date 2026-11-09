@@ -8,22 +8,22 @@
 pushpc
 
 ; Underworld
-org $02B917 : JSL UpdateOnUWTransition
 org $01C411 : JSL UpdateOnUWStairs
-org $01C5CF : JSL UpdateOnSwitchPress
-org $02A0B1 : JSL UpdateOnUWMirror
-org $0794EB : JSL UpdateOnUWPitTransition
 org $01C4B8 : JSL UpdateOnKillRoom
-org $06B949 : JSL UpdateOnPegSwitch
-org $07D127 : JSL UpdateOnWarpTile
-org $07BC9A : JSL UpdateOnIntraroomStairs
-org $01D2C0 : JSL UpdateOnBombableWallUW
-org $01D2DE : JSL UpdateOnBombableFloor
-org $01CA56 : JSL UpdateOnMovingWallStart : NOP
+org $01C5CF : JSL UpdateOnSwitchPress
+org $01C78C : JSL UpdateOnGanonKill
 org $01C927 : JSL UpdateOnMovingWallEndPodMire
 org $01C9DB : JSL UpdateOnMovingWallEndDesert
-org $01C78C : JSL UpdateOnGanonKill
+org $01CA44 : JSL UpdateOnMovingWallStart
+org $01D2C0 : JML UpdateOnBombableWallUW ; RTL after in vanilla
+org $01D2E0 : JML UpdateOnBombableFloor ; RTL after in vanilla
 org $01F6A7 : JSL UpdateOnTriforceDoor
+org $02A0BA : JSL UpdateOnUWMirror
+org $02B917 : JSL UpdateOnUWTransition
+org $06B949 : JSL UpdateOnPegSwitch
+org $0794EB : JSL UpdateOnUWPitTransition
+org $07BC9A : JSL UpdateOnIntraroomStairs
+org $07D127 : JSL UpdateOnWarpTile
 
 ; avoid rewriting vanilla code with a small optimization on the SFX
 org $01CF77 : JSL UpdateOnKeyDoor
@@ -36,31 +36,29 @@ org $01C3A7 : JSL UpdateOnInterRoomStairs
 org $09969E : STZ.w $0380 ; just change order of operations for the STZ
 JSL UpdateOnExplodingWall ; so that this can replace STZ dp LDA dp
 
+;===================================================================================================
+
 ; Overworld
 org $02A9BA : JSL UpdateOnOWTransition
-org $1BBD73 : JSL UpdateOnOWUWTransition
-org $05AFC6 : JSL UpdateOnOWMirror
-org $07A995 : JSL UpdateOnOWMirror2
+org $04E8D3 : JML UpdateOnOWToSpecial ; RTL after in vanilla
+org $04E96A : JML UpdateOnSpecialToOW ; RTL after in vanilla
+org $05AFD5 : JSL UpdateOnOWMirror
 org $0794DB : JSL UpdateOnOWPitTransition
-org $04E8CF : JSL UpdateOnOWToSpecial
-org $04E966 : JSL UpdateOnSpecialToOW
-org $1EEED8 : JSL UpdateOnWhirlPool
-org $1EEE83 : JSL UpdateOnOWMirror
-org $1BC209 : JSL UpdateOnBombableWallOW
+org $07A995 : JSL UpdateOnOWMirror
 org $08E06A : JSL UpdateOnFlute
+org $1BBD73 : JML UpdateOnOWUWTransition ; RTL after in vanilla
+org $1BC209 : JSL UpdateOnBombableWallOW
+org $1EEE92 : JSL UpdateOnOWMirror
+org $1EEEDA : JSL UpdateOnWhirlpool
+
+;===================================================================================================
 
 ; Messaging
 org $028818 : JSL UpdateOnItemMenu
-org $0DDFD3 : JSL UpdateOnItemMenuClose
-org $0EF27C : JSL UpdateOnExitingText
-org $1CFD7E : JML UpdateOnEnteringMessaging
-org $05FC83 : JSL UpdateOnKey ; bonk key
-org $06D192 : JSL UpdateOnKey ; normal key
-org $078FFB : JSL UpdateOnBonk
-org $0799F3 : JSL UpdateOnReceiveItem
 org $09F775 : JSL UpdateOnDeath
-
-;===================================================================================================
+org $0DDFD5 : JML UpdateOnItemMenuClose ; remove garbage code
+org $0EF27C : JSL UpdateOnExitingText
+org $1CFD7E : JML UpdateOnEnteringMessaging ; RTL after in vanilla
 
 ; Wait for key
 org $0EFB90
@@ -87,6 +85,13 @@ org $0EFA61 : JSL HoldAIdleCounter
 org $0EF77E : JSL ItemTossCounter : AND.b #$C0
 
 ;===================================================================================================
+; Link
+;===================================================================================================
+
+org $05FC83 : JSL UpdateOnKey     ; bonk key
+org $06D192 : JSL UpdateOnKey     ; normal key
+org $078FFB : JML UpdateOnBonk    ; BRL after in vanilla
+org $0799F3 : JSL UpdateOnReceiveItem
 
 ; ledge hops (too many of these!!!!)
 org $07895E : JSL UpdateOnLedgeHop : NOP
@@ -102,9 +107,9 @@ org $07C9DB : JSL UpdateOnLedgeHop : NOP
 org $07CA4D : JSL UpdateOnLedgeHop : NOP
 org $07CAAA : JSL UpdateOnLedgeHop : NOP
 
-org $07C2F0 : JSL UpdateOnWaterHop
-org $07C3ED : JSL UpdateOnWaterHop
-org $07CC67 : JSL UpdateOnWaterHop
+org $07C2F0 : JML UpdateOnWaterHop
+org $07C3ED : JML UpdateOnWaterHop
+org $07CC67 : JML UpdateOnWaterHop
 
 ;===================================================================================================
 
@@ -146,7 +151,7 @@ UpdateOnLedgeHop:
 	LDA.b #$20
 	STA.w $0CF8
 
-	JSL jlong($8DBB67) ; CalculateLinkSFXPan
+	JSL jlong($0DBB67) ; panning
 	ORA.w $0CF8
 	STA.w $012E
 
@@ -158,7 +163,8 @@ UpdateOnWaterHop:
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$06 : STA.b $5D
 
-	RTL
+	; all 3 of these happen to RTS immediately after writing link's state
+	JML jlong($07CC6B)
 
 ;===================================================================================================
 
@@ -181,9 +187,8 @@ UpdateOnKeyDoor:
 	RTL
 
 UpdateOnUWMirror:
-	STA.b $11 : STZ.b $B0
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG 
-	RTL
+	JML jlong($02B861) ; FullyUpdateRoomFlags
 
 UpdateOnUWPitTransition:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG 
@@ -226,9 +231,8 @@ UpdateOnBombableWallUW:
 	RTL
 
 UpdateOnBombableFloor:
-	SEP #$30
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
-	LDA.b #$1B
+	LDA.b #$1B : STA.w $012F
 	RTL
 
 UpdateOnExplodingWall:
@@ -253,27 +257,27 @@ UpdateOnTriforceDoor:
 
 UpdateOnMovingWallStart:
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
-	LDA.b #$01 : STA.w $02E4
+	LDA.b $0E : ASL : TAX
 	RTL
 
 ; mire/pod slow: 17"04 | fast: 00"17
 UpdateOnMovingWallEndPodMire:
-	LDA.w CONFIG.fast_moving_walls : BEQ .slowwalls
+	LDA.w CONFIG.fast_moving_walls : BEQ .slow_walls
 
 	LDY.b #$02 : STY.w IRAM.TIMER_ADD_INDEX
 
-.slowwalls
+.slow_walls
 	LDY.b #$02 : STY.w IRAM.TIMER_FLAG
 	LDY.b #$00 : STY.b $AE,X
 	RTL
 
 ; desert slow: 09"18 | fast: 00"10
 UpdateOnMovingWallEndDesert:
-	LDA.w CONFIG.fast_moving_walls : BEQ .slowwalls
+	LDA.w CONFIG.fast_moving_walls : BEQ .slow_walls
 
 	LDY.b #$04 : STY.w IRAM.TIMER_ADD_INDEX
 
-.slowwalls
+.slow_walls
 	LDY.b #$02 : STY.w IRAM.TIMER_FLAG
 	LDY.b #$00 : STY.b $AE,X
 	RTL
@@ -293,31 +297,28 @@ UpdateOnOWTransition:
 
 UpdateOnOWMirror:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
-	LDA.b #$23 : STA.b $11
-	RTL
-
-UpdateOnOWMirror2:
-	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$14 : STA.b $5D
 	RTL
 
 UpdateOnOWPitTransition:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
-	JML jlong($1BB860) ; Overworld_Hole
+	JML jlong($1BB860)
 
 UpdateOnOWToSpecial:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
-	LDA.b #$17 : STA.b $11
+	SEP #$30 ; vanilla is still in 16-bit X
+	LDA.b #$0B : STA.b $10
 	RTL
 
 UpdateOnSpecialToOW:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
-	LDA.b #$24 : STA.b $11
+	STZ.b $B0
+	STZ.b $A0
 	RTL
 
-UpdateOnWhirlPool:
-	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
-	LDA.b #$2E : STA.b $11
+UpdateOnWhirlpool:
+	STA.b $11 : STZ.b $B0
+	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG 
 	RTL
 
 UpdateOnFlute:
@@ -335,10 +336,8 @@ UpdateOnItemMenu:
 	RTL
 
 UpdateOnItemMenuClose:
-	STA.b $10
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
-	LDA.b $11
-	RTL
+	JML jlong($0DDFDD)
 
 UpdateOnDeath:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
@@ -356,7 +355,7 @@ UpdateOnKey:
 UpdateOnBonk:
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	STA.b $5D ; needs $02
-	RTL
+	JML jlong($0786AF)
 
 UpdateOnReceiveItem:
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
@@ -425,7 +424,6 @@ ChoiceIdleCounter:
 	SEP #$20
 
 .pressed_key
-	; AND.b 
 	RTL
 
 ;---------------------------------------------------------------------------------------------------

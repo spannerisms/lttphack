@@ -79,7 +79,6 @@ GAMESTATE_SUBMENU:
 
 	RTL
 
-
 .addresses
 	dw $0000
 	dw $7EFE00-$7EF880-$20

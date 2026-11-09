@@ -451,6 +451,8 @@ SA1NMI:
 
 .exit
 	REP #$30
+
+.exit_no_rep
 	PLB
 	PLD
 	PLY
