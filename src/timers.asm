@@ -46,7 +46,7 @@ org $05AFD5 : JSL UpdateOnOWMirror
 org $0794DB : JSL UpdateOnOWPitTransition
 org $07A995 : JSL UpdateOnOWMirror
 org $08E06A : JSL UpdateOnFlute
-org $1BBD73 : JML UpdateOnOWUWTransition ; RTL after in vanilla
+org $1BBD73 : JSL UpdateOnOWUWTransition ; THIS CANNOT BE AN RTL
 org $1BC209 : JSL UpdateOnBombableWallOW
 org $1EEE92 : JSL UpdateOnOWMirror
 org $1EEEDA : JSL UpdateOnWhirlpool
