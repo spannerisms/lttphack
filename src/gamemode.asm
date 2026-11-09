@@ -278,7 +278,7 @@ DMA_BWRAMSRAM:
 	LDY.w DMA5ADDRL ; get location last written
 	MVN $00, ^SaveStateData
 
-	LDA.l HUD_NMI_DMA_SIZE : DEC
+	LDA.l HudSaveStateSize : DEC
 	LDX.w #BWRAM.HUD
 	MVN $00, ^SaveStateData
 
@@ -298,7 +298,7 @@ DMA_BWRAMSRAM:
 	LDX.w DMA5ADDRL ; get location last written
 	MVN ^SaveStateData, $00
 
-	LDA.l HUD_NMI_DMA_SIZE : DEC
+	LDA.l HudSaveStateSize : DEC
 	LDY.w #BWRAM.HUD
 	MVN ^SaveStateData, $00
 

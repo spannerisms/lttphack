@@ -608,8 +608,6 @@ SA1NMI_SENTRIES:
 
 ; For everything not a timer
 SA1IRQ:
-	SEI
-
 	REP #$30
 	PHA
 	PHX
