@@ -8,6 +8,8 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 
 ### [v15.1.0](https://github.com/spannerisms/lttphack/releases/tag/15.0.1) &mdash; 
 
+- Presets
+  - Adjust wallmaster timer for Mummy Hellway presets
 - Randomizer
   - Improved fastrom implementation
 - Other

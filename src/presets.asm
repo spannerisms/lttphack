@@ -419,7 +419,7 @@ LoadPreset:
 
 	SEP #$30
 
-	LDA.b jbank($00)
+	LDA.b #jbank($00)
 	PHA
 	PLB
 

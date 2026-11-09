@@ -744,13 +744,13 @@ InputDisplayOptions:
 	SEP #$30
 
 	LDA.b IRAM.SCRATCH+0 : AND.b #$C0
-	LSR : LSR : LSR : LSR : LSR ; b and y in place
+	LSR : LSR ; b and y in place
 	STA.b IRAM.SCRATCH+2
 
 	LDA.b IRAM.SCRATCH+1 : AND.b #$40
-	LSR : LSR : LSR ; x in place
 	ORA.b IRAM.SCRATCH+2
-	
+	LSR : LSR : LSR ; x in place
+
 	; this ASL takes care of one for figuring out LR inputs
 	ASL.b IRAM.SCRATCH+1 : ADC.b #$70 ; a in place
 

@@ -1227,6 +1227,8 @@ db $2F ; Room layout / Floor
 db $02 ; Door / Peg state / Layer
 dw $0400 ; Dead sprites
 ;-----------------------------
+%write8_enable()
+%write8($7E0B37, $A0) ; Wallmaster timer
 %write_7F_16()
 %write16($7FE032, $0003) ; Room $59 sprite deaths
 %write_end()
