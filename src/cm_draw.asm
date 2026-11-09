@@ -4,7 +4,6 @@
 ERROR_TEXT:         %cmstr("BAD VAL")
 
 CMTEXT_RANDOM:      %cmstr("Random")
-CMTEXT_UNFIXED:     %cmstr("Unfixed")
 
 CMTEXT_NO:          %cmstr("No")
 CMTEXT_YES:         %cmstr("Yes")

@@ -25,7 +25,7 @@ org $0AFD52 : STA.l FloorIndicator+$0040
 org $0AFD59 : STA.l FloorIndicator+$0002
 
 org $0DFA99 : LDY.w #BWRAM.HUD
-org $0DFA9C : MVN $0D,$0D
+org $0DFA9C : MVN jbank($0D), $00
 
 org $0DFB2B : STA.l BWRAM.HUD+$01E
 org $0DFB31 : STA.l BWRAM.HUD+$01F

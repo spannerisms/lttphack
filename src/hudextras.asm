@@ -1,8 +1,7 @@
 pushpc
 
 org $008B7C
-	; need to calculate a dynamic size for it
-	LDX.w IRAM.hud_size ; make hud bigger
+	LDX.w IRAM.hud_size
 
 org $0DFC29
 	JML FireHudIRQ
@@ -990,6 +989,7 @@ DrawHexForward:
 ;===================================================================================================
 ; A = address
 ; Y = color
+; TODO refactor this to take pre-separated BCD and always the same address maybe
 ;===================================================================================================
 DrawNum:
 .all_one

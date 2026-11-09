@@ -109,14 +109,14 @@ endmacro
 
 pushpc
 
-org $0098AB
+org jlong($0098AB)
 	db $FF, $FF, $FF, $FF, $FF ; kept here intentionally
 
 RefreshPegs:
 	JSR.w $00908B
 	RTL
 
-org $02FFC7
+org jlong($02FFC7)
 PresetLoadArea_UW:
 	SEP #$30
 
@@ -141,11 +141,12 @@ CheckForDeathReload:
 	LDX.b #$03
 	LDA.b #$06
 
---	CMP.l $7EF35C,X
+.check_bottles
+	CMP.l $7EF35C,X
 	BEQ GameOver01
 
 	DEX
-	BPL --
+	BPL .check_bottles
 
 	JSL LoadLastPreset
 	BRA GameOver01
@@ -216,11 +217,6 @@ PRESET_SUBMENU:
 	dl BOSSRTA_SUBMENU-4
 	dl presetheader_alldungeonsmg
 	dl presetheader_reversebossorder
-
-;===================================================================================================
-
-emptybg3:
-	dw $7F20
 
 ;===================================================================================================
 ; Preset format:
@@ -399,8 +395,8 @@ LoadPreset:
 	REP #$31
 
 	PLB
-	JSR LoadPresetWrites
 
+	JSR LoadPresetWrites
 	JSR LoadPresetPersistence
 
 	; time for some fixers
@@ -430,13 +426,14 @@ LoadPreset:
 	SEP #$30
 
 	LDA.w BWRAM.ganon_bats
-	BEQ ++
+	BEQ .no_bat_shuffle
 
 	REP #$20
 	LDA.w IRAM.randomish : STA.w $0B08
 	SEP #$20
 
-++	JSL Rerandomize
+.no_bat_shuffle
+	JSL Rerandomize
 
 	JMP TriggerTimerAndReset
 
@@ -505,7 +502,6 @@ LoadPresetWrites:
 	dw .done_arb
 	dw .toBank7F
 	dw .toBank7F
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -971,7 +967,6 @@ LoadSafeties_nmg:
 	SEP #$20
 	BRA .no_bottles
 
-
 .set_bottles
 	LDA.b #$02 : STA.l $7EF34F ; select 2nd bottle
 	DEC : STA.l $7EF34D ; bug net
@@ -1141,6 +1136,7 @@ LoadPresetUnderworldData:
 	LDA.w #$FFF8 : STA.w $00EC
 
 	SEP #$20
+
 	LDA.b #$02 : STA.w $012C
 	LDA.b #$20 : STA.w $0AA1
 
@@ -1194,7 +1190,7 @@ LoadPresetUnderworldData:
 
 	REP #$20
 
-	; TODO find a place to properly handle these
+	; TODO find the correct place to properly handle these
 	LDA.w $00A0
 	CMP.w #$00BB
 
@@ -1208,7 +1204,6 @@ LoadPresetUnderworldData:
 	STA.w $009A
 
 .not_hellway
-
 	LDA.b #$01 : STA.w NMITIMEN
 
 	; get shutter door state

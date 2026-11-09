@@ -22,7 +22,6 @@ org $05A401 : JSL rng_lanmola_2
 
 org $09BD5D : JSL rng_conveyor_belt
 
-
 org $068268 : JSL rng_bushes
 org $1AFBDE : JSL rng_bushes
 

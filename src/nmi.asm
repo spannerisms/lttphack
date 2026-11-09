@@ -31,12 +31,13 @@ org $00841E
 	SEP #$30
 
 	BIT.w IRAM.shortcut_used+1
-	BMI ++
+	BMI .use_shortcut
 
 	RTS
 
+.use_shortcut
 	; if shortcut was used, exit
-++	PLA ; remove return point
+	PLA ; remove return point
 	PLA
 
 	JMP RequestShortcut
@@ -81,7 +82,8 @@ org $0083D1
 
 guardpc $0083F8
 
-; NMI hook
+;===================================================================================================
+
 org $0080D5 : JSL nmi_expand
 
 ; TM and TS writes
@@ -96,6 +98,8 @@ org $00E36A
 	RTL
 
 pullpc
+
+;===================================================================================================
 
 ; Needs to leave AI=8
 nmi_expand:

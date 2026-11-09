@@ -3,23 +3,15 @@ pushpc
 ;===================================================================================================
 
 org $00F7E1
-SA1Reset00:
-	JML SA1Reset
+SA1Reset00:                    JML SA1Reset
+SA1NMI00:                      JML SA1NMI
+SA1IRQ00:                      JML SA1IRQ
+SNES_CUSTOM_NMI_BOUNCE:        JML SNES_CUSTOM_NMI
+SNES_CORRUPTION_IRQ_BOUNCE:    JML SNES_CORRUPTION_IRQ
 
-SA1NMI00:
-	JML SA1NMI
-
-SA1IRQ00:
-	JML SA1IRQ
-
-SNES_CUSTOM_NMI_BOUNCE:
-	JML SNES_CUSTOM_NMI
-
-SNES_CORRUPTION_IRQ_BOUNCE:
-	JML SNES_CORRUPTION_IRQ
 guardpc $00F800
 
-org $00FFB7 ; this barely fits
+org jlong($00FFB7) ; this barely fits
 ReadJoyPad_long:
 	LSR.w HVBJOY
 	BCS ReadJoyPad_long
@@ -837,8 +829,9 @@ RecoverFromCorruption:
 	CMP.w #$00FE
 	BEQ .floor
 
-	LDA.w #$2000 ; put value in high byte, so it's XBA'd
-	             ; which makes the whole thing easier
+	; put value in high byte, so it's XBA'd
+	; which makes the whole thing easier
+	LDA.w #$2000
 
 .floor
 	SEP #$20

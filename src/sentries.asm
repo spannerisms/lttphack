@@ -67,7 +67,6 @@ InitializeSentries:
 	PLB
 	RTL
 
-
 ;===================================================================================================
 
 AddSentryIcons:
@@ -720,21 +719,17 @@ RawSentryDraw:
 	CMP.w #$0000
 	BEQ .draw
 
-	; carry guaranteed to be set since CMP #0
 	STA.b IRAM.sentry_temp
+
 	LDA.w #$001E
-	SBC.b IRAM.sentry_temp
+	SBC.b IRAM.sentry_temp ; carry guaranteed to be set after CMP #0
 
-	PHX
-	JSR FastHexToDec
-	PLX
-
-	LDA.b IRAM.SCRATCH+2
+	TXY
 	ASL
-	ASL
-	ASL
-	ASL
-	ORA.b IRAM.SCRATCH+4
+	TAX
+	LDA.l FastHexToDec.table,X
+	AND.w #$00FF
+	TYX
 
 .draw
 	STA.b IRAM.SCRATCH
@@ -787,12 +782,10 @@ RawSentryDraw:
 	AND.b IRAM.copyof_22
 	LSR
 	LSR
+	AND.w #$007E
 	LSR
-	AND.w #$003F
-	CLC
-	ADC.b IRAM.SCRATCH+12
-	CLC
 	ADC.w #$2000
+	ADC.b IRAM.SCRATCH+12
 
 	JMP DrawHex.white_4
 
@@ -882,7 +875,7 @@ RawSentryDraw:
 	; rearrange it into the order we want
 	; Start: dddd qqqq hkcc cccc
 	; End:   hkcc cccc dddd qqqq
-	XBA 
+	XBA
 	STA.b IRAM.SCRATCH+10
 
 	LDA.w #char($19)|!RED_PAL : STA.b HUDProxy,X ; flag symbol
@@ -1171,6 +1164,8 @@ LineSentryOWCameras:
 	PLA
 
 	RTS
+
+;---------------------------------------------------------------------------------------------------
 
 .draw_one
 	LDY.b IRAM.SCRATCH+12

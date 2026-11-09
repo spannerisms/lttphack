@@ -81,6 +81,7 @@ org $0DF9FD
 	dw !MENU_D, !MENU_O, !QMARKW
 
 org $0DFA07
+emptybg3:
 	dw !EMPTY
 
 org $0DFA11

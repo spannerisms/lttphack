@@ -41,6 +41,7 @@ ResetGameStack:
 
 	SEP #$30
 
+	LDA.b #jbank($00)
 	PHA : PLB
 
 	STZ.b $12
@@ -55,24 +56,24 @@ ResetGameStack:
 Rerandomize:
 	LDA.w CONFIG.rerandomize : BEQ .dont_rerandomize
 
-	REP #$20
-
 	LDA.w IRAM.randomish
-
-	SEP #$20
-
-	STA.b $1A
-	XBA
 	STA.w $0FA1
 
 .dont_rerandomize
 	LDA.w BWRAM.framerule
-	DEC
-	BMI .no_fixed_framerule
+	CMP.b #$01
+	BEQ .preserve
+	BCS .fixed
 
+	LDA.w IRAM.randomish+1
 	STA.b $1A
 
-.no_fixed_framerule
+.preserve
+	RTL
+
+.fixed
+	SBC.b #$02
+	STA.b $1A
 	RTL
 
 ;===================================================================================================
@@ -648,13 +649,14 @@ FixGraphics_Pegs:
 	LDY.w #$F000
 	LDA.w #$007F
 
-	MVN $7E,$7F
+	MVN $7E, $7F
 
 	PLB
 
 	SEP #$30
 
-	LDA.b #$17 : STA.b $17
+	LDA.b #$17
+	STA.b $17
 
 	RTS
 

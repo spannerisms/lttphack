@@ -9,14 +9,17 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 ### [v15.1.0](https://github.com/spannerisms/lttphack/releases/tag/15.0.1) &mdash; 
 
 - Presets
-  - Adjust wallmaster timer for Mummy Hellway presets
+  - Adjusted wallmaster timer for Mummy Hellway presets
 - Game state
   - Renamed "Enemy drops" to "Prize packs" and added bushes as well as the RNG control items
   - Renamed "Prize packs" (the list item) to "Enemy drops"
 - RNG control
-  - Bush prizes
-- Randomizer
-  - Improved fastrom implementation
+  - Added bush prizes
+  - Decoupled rerandomization from frame rule fixing
+  - Added a "Preserve" option to frame rule (only really useful with savestates)
+- Misc
+  - Various optimizations
+  - Improved fastrom implementation in rando
 - Other
   - Migrated to Futaba!!!
 

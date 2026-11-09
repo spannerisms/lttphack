@@ -22,7 +22,6 @@ org $0CD2F1 : STA.w GameSaveData+$0300,Y
 org $0CD2F4 : LDA.w GameSaveData+$0400,X
 org $0CD2F7 : STA.w GameSaveData+$0400,Y
 
-
 org $0087EB : STA.l GameSaveData+$1FFE
 org $0087EF : LDA.l GameSaveData+$03E1
 org $0087FB : STA.l GameSaveData+$03E1

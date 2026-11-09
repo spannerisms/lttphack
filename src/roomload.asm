@@ -1,16 +1,16 @@
 pushpc
 
-org $02C23A
+org jlong($02C23A)
 CacheRoomEntryPropertiesLong:
 	JSR.w $028C83
 	RTL
 
-org $01B53C
+org jlong($01B53C)
 LoadSingleDoorTileAttribute:
 	JSR.w $01D51D
 	RTL
 
-guardpc $01B55F
+guardpc jlong($01B55F)
 
 pullpc
 
@@ -805,7 +805,7 @@ ResetBeforeLoading:
 	STA.w DMA5SIZE
 	LDA.w #$08][VMDATA : STA.w DMAP5
 	LDA.w #vram($C240) : STA.b VMADDR
-	LDA.w #emptybg3+1 : STA.w DMA5ADDRL
+	LDA.w #emptybg3+0 : STA.w DMA5ADDRL
 	LDY.b #^emptybg3 : STY.w DMA5ADDRB
 	LDA.w #$05C0/2 : STA.w DMA5SIZE
 
@@ -816,19 +816,13 @@ ResetBeforeLoading:
 	STA.w DMA5SIZE
 	LDA.w #$08][VMDATAH : STA.w DMAP5
 	LDA.w #vram($C240) : STA.b VMADDR
-	LDA.w #emptybg3 : STA.w DMA5ADDRL
+	LDA.w #emptybg3+1 : STA.w DMA5ADDRL
 
 	STX.w MDMAEN
 
 	; clear stuff for text
-	LDA.w #vram($F800) : STA.b VMADDR
 	LDA.w #ZeroLand : STA.w DMA5ADDRL
 	LDX.b #^ZeroLand : STX.w DMA5ADDRB
-	LDA.w #$0780 : STA.w DMA5SIZE
-	LDA.w #$09][VMDATA : STA.w DMAP5
-
-	STX.w MDMAEN
-
 	LDA.w #$8008 : STA.w DMAP5
 
 	LDY.b #$01

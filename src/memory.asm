@@ -247,17 +247,17 @@ allocate $407000 :: $0C00 ; DO NOT CHANGE THIS
 .clearable_sa1ram
 	skip 2
 
-	.disable_beams   :: 2
-	.loadout_to_save :: 2
-	.loadout_to_use  :: 2
+	.disable_beams    :: 2
+	.loadout_to_save  :: 2
+	.loadout_to_use   :: 2
 
-	.visible_probes  :: 2
-	.light_rooms     :: 2
+	.visible_probes   :: 2
+	.light_rooms      :: 2
 
-	.map16cacheindex :: 2
+	.map16cacheindex  :: 2
 
 	.framerule        :: 2
-	.drop_rng        :: 2
+	.drop_rng         :: 2
 	.bush_rng         :: 2
 	.pokey_rng        :: 2
 	.agahnim_rng      :: 2

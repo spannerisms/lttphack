@@ -16,7 +16,7 @@ org $028204 : JSL GetLitRoom
 org $028A7E : JSL GetLitRoom
 org $02A148 : JSL GetLitRoom
 
-org $05C21D
+org jlong($05C21D)
 	JML probe_draw
 after_probe_draw:
 

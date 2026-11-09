@@ -4,8 +4,10 @@ RNG_SUBMENU:
 ;===================================================================================================
 
 ENEMY_PRIZE_PACKS:
-%choice_here("Enemy drops", BWRAM.drop_rng, 3)
-#PrizePacksList:
+%choice("Enemy drops", BWRAM.drop_rng, 3, PrizePacksList)
+
+PrizePacksList:
+%list_header(3)
 	%add_list_item(CMTEXT_VANILLA)
 	%list_item("Always")
 	%list_item("Never")
@@ -17,8 +19,11 @@ BUSH_PRIZE_PACKS:
 
 ;===================================================================================================
 
-%choice_prgtext("Frame rule", BWRAM.framerule, $41, this)
+%choice_prgtext("Frame rule", BWRAM.framerule, $42, this)
 	BEQ .unfixed
+
+	DEC
+	BEQ .preserved
 
 	DEC
 	JML CMDRAW_HEX_2_DIGITS
@@ -26,8 +31,17 @@ BUSH_PRIZE_PACKS:
 .unfixed
 	REP #$20
 
-	LDA.w #CMTEXT_UNFIXED
+	LDA.w #CMTEXT_RANDOM
 	JMP CMDRAW_WORD_FUNCEND
+
+.preserved
+	REP #$20
+
+	LDA.w #.pres_text
+	JMP CMDRAW_WORD_FUNCEND
+
+.pres_text
+	%cmstr("Preserve")
 
 ;===================================================================================================
 

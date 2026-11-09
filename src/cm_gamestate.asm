@@ -32,7 +32,7 @@ GAMESTATE_SUBMENU:
 ;===================================================================================================
 
 %choice_func_here("Follower", $7EF3CC, 15, jlong($00D463))
-	%add_list_item(CMTEXT_NO)
+	%list_item("None")
 	%list_item("Zelda") : %ReusableText(CMTEXT_ZELDA)
 	%list_item("Garbage")
 	%list_item("Trash")
@@ -295,25 +295,40 @@ reset_dungeon_func:
 	TCD
 	STX.b $00
 
+;---------------------------------------------------------------------------------------------------
+
 	LDX.w #(256+40)*2 ; eg1 size + eg2 size, words
 
---	LDY.w room_to_dungeon_id,X
-	CPY.b $00 : BNE ++
+.room_search
+	LDY.w room_to_dungeon_id,X
+	CPY.b $00
+	BNE .skip
+
 	STA.l $7EF000,X
-++	DEX : DEX : BPL --
+
+.skip
+	DEX
+	DEX
+	BPL .room_search
+
+;---------------------------------------------------------------------------------------------------
 
 	; check current room
-	INC ; sets accum to #$0001
-	BIT.b $1B : BEQ ++ ; make sure we're indoors
+	INC ; sets accum to $0001
+	BIT.b $1B : BEQ .exit ; make sure we're indoors
 
 	LDA.b $A0 : ASL : TAX
 	LDA.w room_to_dungeon_id,X
-	CMP.b $00 : BNE ++
+	CMP.b $00 : BNE .exit
+
 	STZ.w $0400 : STZ.w $0402 : STZ.w $0408
 
-++	PLD
+.exit
+	PLD
 	PLB
 	RTL
+
+;---------------------------------------------------------------------------------------------------
 
 .list
 	db !EX
