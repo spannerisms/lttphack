@@ -47,12 +47,7 @@ rng_pokey:
 ; Agahnim
 rng_agahnim:
 	LDA.w BWRAM.agahnim_rng : BEQ VanillaRNG
-
-	CMP.b #$01 : BEQ .exit
-
-	LDA.b #$00
-
-.exit
+	DEC
 	RTL
 
 ;===================================================================================================
@@ -102,7 +97,7 @@ rng_arrghus:
 
 rng_bushes:
 	; 01 is always and 02 is never, which happens to work with the expected values
-	LDA.w BWRAM.bush_rng : BNE VanillaRNG.exit
+	LDA.w BWRAM.bush_rng : BNE SpecialBushes
 
 ;===================================================================================================
 
@@ -113,8 +108,6 @@ VanillaRNG:
 	ADC.b $1A
 	ADC.w $0FA1
 	STA.w $0FA1
-
-.exit
 	RTL
 
 ;===================================================================================================
@@ -149,14 +142,27 @@ rng_conveyor_belt:
 ;===================================================================================================
 
 choose_vitty_eye:
-	LDA.w BWRAM.vitreous_rng : BEQ VanillaRNG
+	LDY.w BWRAM.vitreous_rng
+	BEQ VanillaRNG
 
-	LDA.w $0E70,X : BNE VanillaRNG
+	LDA.w $0E70,X
+	BNE VanillaRNG
 
-	INC : STA.w $0E70,X ; set to 1
-	LDA.w BWRAM.vitreous_rng
+	INC
+	STA.w $0E70,X
+
+	TYA
 	DEC
 
+	RTL
+
+;===================================================================================================
+
+; need (f(02) & 09) == 09
+; need (f(01) & 09) == 00
+SpecialBushes:
+	EOR.b #$02 ; 02->00->FF
+	DEC        ; 01->03->02
 	RTL
 
 ;===================================================================================================
