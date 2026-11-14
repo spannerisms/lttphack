@@ -239,6 +239,8 @@ cm_game_reset_dungeons_submenu:
 	%func("Ganon's Tower", reset_dungeon_func)
 	%func("Other", reset_dungeon_func)
 
+;===================================================================================================
+
 !EX = $01 ; escape
 !EP = $02 ; eastern palace
 !DP = $03 ; desert palace
@@ -258,8 +260,7 @@ cm_game_reset_dungeons_submenu:
 !CV = $FF ; caves and houses
 !UU = !CV ; unused caves, just for convenience
 
-#room_to_dungeon_id:
-	; eg1
+room_to_dungeon_id:
 	dw !CV, !EX, !EX, !CV, !TR, !UU, !SP, !TH, !CV, !PD, !PD, !PD, !GT, !GT, !IP, !UU
 	dw !CV, !EX, !EX, !TR, !TR, !TR, !SP, !TH, !CV, !PD, !PD, !PD, !GT, !GT, !IP, !IP
 	dw !AT, !EX, !EX, !TR, !TR, !UU, !SP, !TH, !SP, !SW, !PD, !PD, !CV, !UU, !IP, !CV
@@ -276,32 +277,31 @@ cm_game_reset_dungeons_submenu:
 	dw !AT, !MM, !MM, !CV, !CV, !TR, !TR, !UU, !EP, !EP, !EP, !TT, !TT, !UU, !IP, !CV
 	dw !AT, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !UU, !CV, !CV, !UU, !CV, !CV, !CV
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !UU, !UU, !CV, !CV, !CV, !CV, !UU, !CV, !CV, !CV
-
-	; eg 2
+	; rooms $100+
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV
+^.size
+
+;===================================================================================================
 
 reset_dungeon_func:
 	PHB : PHK : PLB
-	PHD
 
 	LDY.b IRAM.cm_cursor
 	LDX.w .list,Y
 
 	REP #$30
 
-	LDA.w #$0000
-	TCD
-	STX.b $00
+	STX.b IRAM.cm_writer
 
 ;---------------------------------------------------------------------------------------------------
 
-	LDX.w #(256+40)*2 ; eg1 size + eg2 size, words
+	LDX.w #room_to_dungeon_id.size-2
 
 .room_search
 	LDY.w room_to_dungeon_id,X
-	CPY.b $00
+	CPY.b IRAM.cm_writer
 	BNE .skip
 
 	STA.l $7EF000,X
@@ -313,18 +313,17 @@ reset_dungeon_func:
 
 ;---------------------------------------------------------------------------------------------------
 
-	; check current room
-	INC ; sets accum to $0001
-	BIT.b $1B : BEQ .exit ; make sure we're indoors
+	LDA.w $1B ; make sure we're indoors
+	AND.w #$00FF
+	BEQ .exit
 
-	LDA.b $A0 : ASL : TAX
+	LDA.w $A0 : ASL : TAX ; check current room
 	LDA.w room_to_dungeon_id,X
-	CMP.b $00 : BNE .exit
+	CMP.b IRAM.cm_writer : BNE .exit
 
 	STZ.w $0400 : STZ.w $0402 : STZ.w $0408
 
 .exit
-	PLD
 	PLB
 	RTL
 

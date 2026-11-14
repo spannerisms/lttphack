@@ -1,4 +1,4 @@
-CMDO_SAVE_ADDRESS:
+GetMenuItemAddress:
 	REP #$20
 
 	LDA.b [IRAM.cm_current_selection],Y
@@ -17,7 +17,7 @@ CMDO_SAVE_ADDRESS:
 
 ;===================================================================================================
 
-CMDO_GET_FUNC_ADDRESS:
+GetMenuItemFunctionVector:
 	SEP #$31
 
 	LDA.b IRAM.cm_action_length
@@ -128,7 +128,7 @@ CMDO_TOGGLEBIT7_CUSTOMTEXT:
 CMDO_TOGGLEBIT:
 	PHA
 
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	PLA
 
@@ -169,7 +169,7 @@ CMDO_TOGGLEBIT:
 
 CMDO_TOGGLE:
 CMDO_TOGGLE_CUSTOMTEXT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	SEP #$20
 
@@ -236,7 +236,7 @@ CMDO_FUNC_FILTERED:
 	BCC .exit
 
 #CMDO_PERFORM_FUNC_FILTERED:
-	JSR CMDO_GET_FUNC_ADDRESS
+	JSR GetMenuItemFunctionVector
 
 	PHD
 	PEA.w $0000
@@ -273,7 +273,7 @@ CMDO_PERFORM_FUNC_asl:
 CMDO_PERFORM_FUNC:
 	BCC .exit
 
-	JSR CMDO_GET_FUNC_ADDRESS
+	JSR GetMenuItemFunctionVector
 
 	PHK
 	PEA.w rtn(.return)
@@ -296,7 +296,7 @@ CMDO_CHOICEPICK_PRGTEXT:
 	JMP CMDO_FUNC
 
 CMDO_CHOICEPICK_LOADOUT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	JSR CMDO_CHOICE_NOEMPTY
 
@@ -337,7 +337,7 @@ CMDO_NUMFIELD_HEX_UPDATEWHOLEMENU:
 
 CMDO_CHOICE:
 CMDO_CHOICE_PRGTEXT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	BIT.b IRAM.cm_ax
 	BVS .empty
@@ -389,7 +389,7 @@ CMDO_SUBMENU:
 	BPL .no
 
 	JSR EmptyCurrentMenu
-	JSR CM_PushMenuToStack
+	JSR PushMenuState
 
 	REP #$30
 	LDA.b [IRAM.cm_current_selection]
@@ -407,14 +407,14 @@ CMDO_SUBMENU:
 	JSL MenuSFX.submenu
 
 .no
-	RTS
+--	RTS
 
 #CMDO_SUBMENU_VARIABLE:
 	BIT.b IRAM.cm_ax
 	BPL .no
 
 	JSR EmptyCurrentMenu
-	JSR CM_PushMenuToStack
+	JSR PushMenuState
 
 	JSL MenuSFX.submenu
 	SEC
@@ -427,12 +427,9 @@ CMDO_SUBMENU:
 CMDO_PRESET_UW:
 CMDO_PRESET_OW:
 	BIT.b IRAM.cm_ax
-	BMI .go
+	BPL --
 
-	RTS
-
-.go
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	REP #$20
 	TXA
@@ -454,7 +451,7 @@ CMDO_PRESET_OW:
 ;===================================================================================================
 
 CMDO_CTRL_SHORTCUT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	LDA.b #$C0
 	BIT.b IRAM.cm_ax
@@ -464,7 +461,7 @@ CMDO_CTRL_SHORTCUT:
 
 	LDA.b IRAM.cm_writer
 	CMP.w #PracMenuShortcut
-	BEQ .banned
+	BEQ InvalidLiteState
 
 	STZ.b IRAM.preset_scratch
 
@@ -483,9 +480,12 @@ CMDO_CTRL_SHORTCUT:
 .no
 	RTS
 
-.banned
+;===================================================================================================
+
+InvalidLiteState:
 	JSL MenuSFX.error
-	RTS
+
+--	RTS
 
 ;===================================================================================================
 
@@ -498,9 +498,7 @@ CMDO_LITESTATE:
 	BVS .delete
 
 	BIT.b IRAM.cm_y
-	BMI .save
-
-	RTS
+	BPL --
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -515,7 +513,7 @@ CMDO_LITESTATE:
 .delete
 	LDA.w IRAM.litestate_act
 	JSL ValidateLiteState
-	BCC .invalid
+	BCC InvalidLiteState
 
 	REP #$30
 	LDA.w #$000C
@@ -525,7 +523,7 @@ CMDO_LITESTATE:
 
 .load
 	JSL ValidateLiteState
-	BCC .invalid
+	BCC InvalidLiteState
 
 	JSL CM_Exiting
 
@@ -533,10 +531,6 @@ CMDO_LITESTATE:
 	LDA.w IRAM.litestate_act
 	STA.w IRAM.litestate_last
 	JML LoadLiteState
-
-.invalid
-	JSL MenuSFX.error
-	RTS
 
 ;===================================================================================================
 
@@ -564,8 +558,16 @@ CMDO_TOGGLE_ROOMFLAG:
 	BVS .toggle
 
 	BIT.b IRAM.cm_y-1
-	BMI .enable
+	BPL .exit
 
+;---------------------------------------------------------------------------------------------------
+
+.enable
+	ORA.l $7EF000,X
+	STA.l $7EF000,X
+	JSL MenuSFX.fill
+
+.exit
 	RTS
 
 ;---------------------------------------------------------------------------------------------------
@@ -583,17 +585,11 @@ CMDO_TOGGLE_ROOMFLAG:
 	JSL MenuSFX.bink
 	RTS
 
-.enable
-	ORA.l $7EF000,X
-	STA.l $7EF000,X
-	JSL MenuSFX.fill
-	RTS
-
 ;===================================================================================================
 
 ; very dumb hack
 CMDO_NUMFIELD_CAPACITY:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	REP #$30
 
@@ -651,7 +647,7 @@ CMDO_NUMFIELD_CAPACITY:
 ;===================================================================================================
 
 CMDO_NUMFIELD16:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 	REP #$20
 	BRA CMDO_NUMFIELD_MAIN
 
@@ -659,7 +655,7 @@ CMDO_NUMFIELD:
 CMDO_NUMFIELD_HEX:
 CMDO_NUMFIELD_PRGTEXT:
 CMDO_NUMFIELD_2DIGITS:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 CMDO_NUMFIELD_MAIN:
 	PHX
@@ -669,7 +665,7 @@ CMDO_NUMFIELD_MAIN:
 	LDA.b #$00
 	SEC ; if 16 bit, this will be a high byte
 	XBA ; put 00 in high byte
-	LDA.l .zero
+	LDA.l ZeroLand ; need a bit-mode agnostic zero
 	ROL ; put carry in place
 	TAX
 
@@ -736,7 +732,7 @@ CMDO_NUMFIELD_MAIN:
 	RTS
 
 .decrement
-	CMP.l .zero
+	CMP.l ZeroLand ; need a bit-mode agnostic zero
 	BEQ .get_max_min
 	DEC
 
@@ -775,9 +771,6 @@ CMDO_NUMFIELD_MAIN:
 	BRA .in_range_max
 
 ;---------------------------------------------------------------------------------------------------
-
-.zero
-	dw 0
 
 .iny_twice_if_16
 	INY

@@ -184,6 +184,8 @@ PRESET_SUBMENU:
 	LDA.l .pointers+1,X
 	STA.b IRAM.cm_cursor+2
 
+;---------------------------------------------------------------------------------------------------
+
 #SetPresetMenuArea:
 	; put bank in appropriate places
 	STA.b IRAM.preset_prog+1
@@ -204,6 +206,8 @@ PRESET_SUBMENU:
 	STA.b IRAM.cm_current_menu
 
 	RTL
+
+;---------------------------------------------------------------------------------------------------
 
 ; PRESET LIST
 .pointers

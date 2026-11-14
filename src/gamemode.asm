@@ -49,7 +49,7 @@ ResetGameStack:
 	LDA.b #$0F : STA.b $13
 	LDA.b #$81 : STA.w NMITIMEN
 
-	JML jlong($008034)
+	JML jlong(MainLoop)
 
 ;===================================================================================================
 
@@ -137,8 +137,9 @@ Shortcut_SaveState:
 	PLB
 
 	REP #$10
+
 	; Remember which song bank was loaded before load stating
-	; I put it here too, since .end code runs both on save and load state..
+	; Done here too, since .end code runs both on save and load state.
 	LDA.w $0136 : STA.w BWRAM.old_music_bank
 
 	STZ.w NMITIMEN
@@ -146,9 +147,9 @@ Shortcut_SaveState:
 
 	LDA.b #$80 : STA.w INIDISP
 	STA.w DMAP5 ; B to A
-	JSR DMA_BWRAMSRAM
+	JSR SaveStateDMAs
 
-	JMP FinalizeSavestate
+	JMP FinalizeSaveState
 
 ;===================================================================================================
 
@@ -181,7 +182,7 @@ Shortcut_LoadState:
 	STZ.w NMITIMEN
 
 	LDA.b #$00 : STA.w DMAP5
-	JSR DMA_BWRAMSRAM
+	JSR SaveStateDMAs
 
 	LDX.b $1C : STX.w TM
 	LDX.b $1E : STX.w TMW
@@ -212,11 +213,11 @@ Shortcut_LoadState:
 
 	SEP #$20
 
-	JMP FinalizeSavestate
+	JMP FinalizeSaveState
 
 ;===================================================================================================
 
-DMA_BWRAMSRAM:
+SaveStateDMAs:
 	PLX : STX.w IRAM.preset_scratch
 
 	STA.w DMAP5 ; direction
@@ -366,11 +367,13 @@ endmacro
 	endif
 
 	printf "Save state size: ${0:X4}", !SaveStateSize
+
+ZeroLand:
 	dl 0
 
 ;===================================================================================================
 
-FinalizeSavestate:
+FinalizeSaveState:
 	LDA.w DMAP5
 	ORA.b #$01
 	STA.w DMAP5
@@ -494,7 +497,7 @@ Shortcut_FillEverything:
 	PHK
 	PLB
 
-	LDY.w #0
+	LDY.w #$0000
 	LDX.w #$F340
 
 .next_item
@@ -507,7 +510,8 @@ Shortcut_FillEverything:
 	CPX.w #$F37C
 	BCC .next_item
 
-.itemsover
+;---------------------------------------------------------------------------------------------------
+
 	; do keys
 	LDA.l $1B ; are we indoors?
 	BEQ .no_keys
@@ -743,29 +747,28 @@ ShowPits:
 	TXA
 	BIT.w #$1000 : BEQ ++
 
-	PHA
-	LDA.w #$1000
-	STA.b $00
-	PLA
+	LDX.w #$1000
+	STX.b $00
 	EOR.w #$1000
 
 ++	BIT.w #$0040 : BEQ ++
 
-	PHA
+	TAX
 	LDA.w #$0800
 	TSB.b $00
-	PLA
+	TXA
 	EOR.w #$0040
 
-++	PHA
+++	TAX
 	AND.w #$FF80
 	LSR
 	STA.b $02
-	PLA
+	TXA
 	ADC.b $00
 	SEC
 	SBC.b $02
 	LSR
+
 	STA.l VMADDR
 	LDA.w #!PIT_GFX
 	STA.l VMDATA
@@ -781,7 +784,8 @@ ShowPits:
 	STZ.b $17
 	STZ.b $B0
 
-	PLA : STA.b $9B
+	PLA
+	STA.b $9B
 
 	PLB
 

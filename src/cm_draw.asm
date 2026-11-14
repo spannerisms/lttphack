@@ -42,22 +42,22 @@ RedrawMenuTrim:
 	LDX.w .length
 	LDA.w #$3101
 
-.headera
+.header_a
 	STA.w BWRAM.MENU+$0000,X
 
 	DEX
 	DEX
-	BPL .headera
+	BPL .header_a
 
 	LDX.w .length
 
 	ORA.w #$8000
 
-.headerb
+.header_b
 	STA.w BWRAM.MENU+$0080,X
 	DEX
 	DEX
-	BPL .headerb
+	BPL .header_b
 
 	RTS
 
@@ -174,7 +174,6 @@ CMDRAW_CHAR:
 
 	RTL
 
-
 ;===================================================================================================
 
 EmptyCurrentRow:
@@ -266,7 +265,7 @@ DrawCurrentRow:
 	SEP #$20
 	CMP.b IRAM.cm_cursor ; does it match our selection?
 	REP #$20
-	BNE .noselect
+	BNE .no_select
 
 .select
 	LDX.b IRAM.cm_submodule
@@ -277,7 +276,7 @@ DrawCurrentRow:
 	LDA.w #!HEADER
 	BRA .setcol
 
-.noselect
+.no_select
 	LDA.w #!UNSELECTED
 
 .setcol
@@ -291,12 +290,12 @@ DrawCurrentRow:
 	INX
 
 	TYA
-	BEQ .isheader
+	BEQ .is_header
 
 	LDA.b [IRAM.cm_current_draw] ; what routine type is it?
 	AND.w #$00FF
 
-.isheader
+.is_header
 	PHX
 	TAX
 

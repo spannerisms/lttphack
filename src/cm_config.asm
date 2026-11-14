@@ -37,9 +37,10 @@ endif
 	LDA.w #UnmutedInstruments
 
 .transfer
-	JSR transfer_adsr
+	JSR TransferAdsrTable
 
-	LDA.w $0133 : STA.w $012C
+	LDA.w $0133
+	STA.w $012C
 	STZ.w $0133
 
 	RTL
@@ -50,13 +51,13 @@ mute_music:
 	REP #$20
 
 	LDA.w #MutedInstruments
-	JSR transfer_adsr
+	JSR TransferAdsrTable
 
 	RTL
 
 ;===================================================================================================
 
-transfer_adsr:
+TransferAdsrTable:
 	STA.w $0000
 
 	LDA.w #$0000
@@ -65,7 +66,9 @@ transfer_adsr:
 
 	SEP #$30
 
-	LDA.b #$FF : STA.w APUIO0
+	LDA.b #$FF
+	STA.w APUIO0
+
 	STZ.w NMITIMEN
 
 	LDA.b #^UnmutedInstruments

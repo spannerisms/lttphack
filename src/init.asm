@@ -7,9 +7,11 @@ org $008004
 	NOP
 
 org $00802F
-	JML jlong(init_hook)
-	NOP
-init_done:
+	JML jlong(InitializeCpus)
+
+
+safeorg $008034
+MainLoop:
 
 ; optimize message pointer creation by a lot
 org $1CF37A
@@ -68,7 +70,7 @@ pullpc
 
 ;===================================================================================================
 
-init_hook:
+InitializeCpus:
 	SEP #$30
 
 	LDA.b #$03 : STA.l BMAPS ; image 3 for page $60
@@ -208,7 +210,7 @@ init_hook:
 
 	LDA.b #$81 : STA.w NMITIMEN
 
-	JML init_done
+	JML MainLoop
 
 ;===================================================================================================
 
@@ -377,7 +379,6 @@ ResetConfig:
 	db %00000000
 	db %01010000
 
-ZeroLand:
 	db %00000000
 	db %00000000
 	db %00000000

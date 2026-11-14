@@ -1,3 +1,5 @@
+;===================================================================================================
+
 !SELECTED = $3480
 !UNSELECTED = $3800
 !SHORTCUTTING = $3C80
@@ -5,7 +7,7 @@
 
 ;===================================================================================================
 
-cm_mainmenu:
+CM_ROOT:
 %menu_header("ALTTP Practice Hack !VERSION")
 	%submenu_variable("Presets", PRESET_SUBMENU)
 	%submenu("Y items", ITEMS_SUBMENU)
@@ -32,7 +34,7 @@ CM_Main:
 	PEA.w IRAM
 	PLD
 
-	JSL SNES_ENABLE_CUSTOM_NMI
+	JSL EnableCustomNMI
 
 	JSR CM_PrepPPU
 	JSL CM_CacheWRAM
@@ -52,7 +54,6 @@ CM_Main:
 
 	; assume something went wrong if it's not 2
 	STZ.b IRAM.cm_submodule
-
 	BRA .loop
 
 .fine
@@ -62,8 +63,10 @@ CM_Main:
 	BEQ .loop
 
 	JSR EmptyEntireMenu
-	JSR CM_ResetStackAndMenu
+	JSR ResetCMStack
 	JSR DrawCurrentMenu
+
+;---------------------------------------------------------------------------------------------------
 
 .loop
 	SEP #$30
@@ -81,6 +84,8 @@ CM_Main:
 
 	JSR (.submodules,X)
 	BRA .loop
+
+;---------------------------------------------------------------------------------------------------
 
 .submodules
 	dw CM_Init              ; 00
@@ -166,9 +171,7 @@ CM_Exiting:
 	STZ.b $12
 	STA.b $15
 
-	JSL SNES_DISABLE_CUSTOM_NMI
-
-	RTL
+	JML DisableCustomNMI
 
 ;===================================================================================================
 
@@ -178,7 +181,7 @@ ClearLineSentryLine:
 	ASL
 	ASL
 	ASL
-	ADC.w #$60E5
+	ADC.w #vram($C1CA)
 	STA.w VMADDR
 
 	LDA.w #!EMPTY
@@ -225,8 +228,9 @@ ClearLineSentryLine:
 
 CM_ShortcutConfig:
 	REP #$30
+
 	LDY.w #$0001
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	REP #$20
 	LDA.b IRAM.joy1
@@ -310,7 +314,8 @@ CM_DeleteLiteState:
 CM_PrepPPU:
 	SEP #$30
 
-	LDA.b #$80 : STA.w INIDISP
+	LDA.b #$80
+	STA.w INIDISP
 	STZ.w NMITIMEN
 
 	; transfer menu tileset
@@ -318,12 +323,12 @@ CM_PrepPPU:
 
 	LDA.b #$80 : STA.w VMAIN
 
-	LDX.w #vram($E000) : STX.w VMADDR
-	LDX.w #cm_gfx : STX.w DMA5ADDRL
-	LDA.b #^cm_gfx : STA.w DMA5ADDRB
-	LDX.w #$2000 : STX.w DMA5SIZE
-	LDX.w #$01][VMDATA : STX.w DMAP5
-	LDA.b #$20 : STA.w MDMAEN
+	LDX.w #vram($E000)   : STX.w VMADDR
+	LDX.w #cm_gfx        : STX.w DMA5ADDRL
+	LDA.b #^cm_gfx       : STA.w DMA5ADDRB
+	LDX.w #$2000         : STX.w DMA5SIZE
+	LDX.w #$01][VMDATA   : STX.w DMAP5
+	LDA.b #$20           : STA.w MDMAEN
 
 	RTS
 
@@ -333,7 +338,7 @@ CM_PrepPPU:
 CM_CacheWRAM:
 	SEP #$30
 
-	; Bow
+	; bow
 	LDA.l $7EF340 : BEQ .no_bow
 	CMP.b #$03
 	LDA.b #$01
@@ -342,7 +347,7 @@ CM_CacheWRAM:
 .no_bow
 	STA.w BWRAM.cm_item_bow
 
-	; MaxHP
+	; max hp
 	LDA.l $7EF36C
 	LSR
 	LSR
@@ -395,12 +400,11 @@ GetHighestActiveLine:
 .exit
 	RTS
 
-
 ;===================================================================================================
 
 CM_Init:
 	JSR EmptyEntireMenu
-	JSR CM_ResetStackAndMenu
+	JSR ResetCMStack
 
 	SEP #$20
 
@@ -493,7 +497,7 @@ MenuSFX:
 CM_BackToTipTop:
 	JSL MenuSFX.submenuback
 	JSR EmptyCurrentMenu
-	JSR CM_ResetStackAndMenu
+	JSR ResetCMStack
 	JMP DrawCurrentMenu
 
 ;===================================================================================================
@@ -509,7 +513,7 @@ CM_Active:
 	SEP #$30
 	LDY.b IRAM.cm_cursor
 
-	JSR CM_getcontroller
+	JSR CM_ParseController
 	BNE .actionable_action
 	BCS CM_GoBack
 
@@ -577,15 +581,19 @@ CM_AdjustForWrap:
 	BNE .not_max
 	BRA .reset_too_far ; oops!
 
+;---------------------------------------------------------------------------------------------------
+
 #CM_DontGoBack:
 	STZ.b IRAM.cm_cursor
 	CPY.b #$00 ; are we at the top of the menu
 	BNE .moved_cursor
 	RTS ; just leave if we're already at the top too
 
+;---------------------------------------------------------------------------------------------------
+
 #CM_GoBack:
 	JSR EmptyCurrentMenu
-	JSR CM_PullMenuFromStack
+	JSR PopMenuState
 	JSR DrawCurrentMenu
 	JSL MenuSFX.submenuback
 	RTS
@@ -618,7 +626,7 @@ CM_AdjustForWrap:
 
 ;===================================================================================================
 
-CM_ReDrawCursorPosition:
+CM_RedrawCursorPosition:
 	JSR DrawCurrentRow_ShiftY
 
 	LDY.b IRAM.cm_cursor
@@ -631,7 +639,7 @@ CM_ReDrawCursorPosition:
 ; Carry = B
 ; Zero  = No actions
 ;===================================================================================================
-CM_getcontroller:
+CM_ParseController:
 	REP #$20
 	SEP #$10
 	STZ.b IRAM.cm_leftright
@@ -726,16 +734,18 @@ CM_getcontroller:
 ;===================================================================================================
 ; X points to first empty slot
 ;===================================================================================================
-CM_ResetStackAndMenu:
+ResetCMStack:
 	REP #$20
 
 	STZ.w BWRAM.submenu_index
 
-	LDA.w #cm_mainmenu<<8
+	LDA.w #CM_ROOT<<8
 	STA.b IRAM.cm_cursor+0
 
-	LDA.w #>&cm_mainmenu
+	LDA.w #>&CM_ROOT
 	STA.b IRAM.cm_cursor+2
+
+;===================================================================================================
 
 CM_UpdateCurrentSelection:
 	REP #$20
@@ -756,7 +766,7 @@ CM_UpdateCurrentSelection:
 
 ;===================================================================================================
 
-CM_PushMenuToStack:
+PushMenuState:
 	PHX
 	PHY
 	PHP
@@ -788,7 +798,7 @@ CM_PushMenuToStack:
 ;===================================================================================================
 
 ; carry = successful pull
-CM_PullMenuFromStack:
+PopMenuState:
 	PHX
 	PHY
 
@@ -826,6 +836,6 @@ CM_PullMenuFromStack:
 	PLX
 
 	CLC
-	JMP CM_ResetStackAndMenu
+	JMP ResetCMStack
 
 ;===================================================================================================

@@ -46,7 +46,7 @@ org $05AFD5 : JSL UpdateOnOWMirror
 org $0794DB : JSL UpdateOnOWPitTransition
 org $07A995 : JSL UpdateOnOWMirror
 org $08E06A : JSL UpdateOnFlute
-org $1BBD73 : JSL UpdateOnOWUWTransition ; THIS CANNOT BE AN RTL
+org $1BBD73 : JML UpdateOnOWUWTransition ; RTL after in vanilla
 org $1BC209 : JSL UpdateOnBombableWallOW
 org $1EEE92 : JSL UpdateOnOWMirror
 org $1EEEDA : JSL UpdateOnWhirlpool
@@ -288,6 +288,7 @@ UpdateOnMovingWallEndDesert:
 UpdateOnOWUWTransition:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
 	STZ.b $11 : STZ.b $B0
+	SEP #$30 ; required to make X=8
 	RTL
 
 UpdateOnOWTransition:
@@ -306,8 +307,8 @@ UpdateOnOWPitTransition:
 
 UpdateOnOWToSpecial:
 	LDA.b #!RESET_TIMER : STA.w IRAM.TIMER_FLAG
-	SEP #$30 ; vanilla is still in 16-bit X
 	LDA.b #$0B : STA.b $10
+	SEP #$30 ; required to make X=8
 	RTL
 
 UpdateOnSpecialToOW:

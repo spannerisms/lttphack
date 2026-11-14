@@ -106,6 +106,7 @@ nmi_expand:
 	; enters AI=16
 	SEP #$30
 	; this covers the PHK : PLB we overwrote
+	if !RANDO : LDA.b #$80 : endif
 	PHA ; A is 0 from right before the hook
 	PLB ; and that happens to be the bank we want
 
@@ -239,7 +240,7 @@ NoBonusRoutine:
 
 ;===================================================================================================
 
-SNES_ENABLE_CUSTOM_NMI:
+EnableCustomNMI:
 	REP #$20
 
 	LDA.w #NoBonusRoutine
@@ -265,7 +266,7 @@ SNES_ENABLE_CUSTOM_NMI:
 
 ;===================================================================================================
 
-SNES_DISABLE_CUSTOM_NMI:
+DisableCustomNMI:
 .retry
 	SEP #$21
 

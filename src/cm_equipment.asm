@@ -81,10 +81,12 @@ draw_sword:
 	BCS .bad
 
 	REP #$30
+	; set bank while keeping index in low byte
 	AND.w #$00FF
 	ORA.w #(^draw_sword)<<8
 	STA.b IRAM.cm_writer+1
 
+	; reisolate low byte for list pointer
 	AND.w #$00FF
 	ASL
 	ADC.w #.list

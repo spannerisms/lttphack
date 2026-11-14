@@ -63,12 +63,9 @@ ValidateLiteState:
 .fail
 	CLC
 
-	; set carry flag for P pulled
+	; set carry flag for after P is pulled
 .set_return
-	LDA 6,S
-	AND.b #$FE
-	ADC.b #$00
-	STA 6,S
+	ROL
 
 	PLB
 
@@ -76,6 +73,8 @@ ValidateLiteState:
 	PLY
 	PLX
 	PLP
+
+	LSR
 
 	RTL
 
@@ -97,14 +96,14 @@ DeleteLiteState:
 	TAX
 
 	LDA.w #$0000
-	STA.l LiteStateData+$0,X
-	STA.l LiteStateData+$2,X
-	STA.l LiteStateData+$4,X
-	STA.l LiteStateData+$6,X
-	STA.l LiteStateData+$8,X
-	STA.l LiteStateData+$A,X
-	STA.l LiteStateData+$C,X
-	STA.l LiteStateData+$E,X
+	STA.l LiteStateData+$00,X
+	STA.l LiteStateData+$02,X
+	STA.l LiteStateData+$04,X
+	STA.l LiteStateData+$06,X
+	STA.l LiteStateData+$08,X
+	STA.l LiteStateData+$0A,X
+	STA.l LiteStateData+$0C,X
+	STA.l LiteStateData+$0E,X
 
 	PLY
 	PLX
@@ -227,7 +226,7 @@ DMALiteStates:
 
 	STA.w DMAP5
 
-	LDA.b #WMDATA : STA.w BBAD5 ; wram
+	LDA.b #WMDATA : STA.w BBAD5
 
 	STY.w DMA5ADDRL
 	LDA.b #^LiteStateData : STA.w DMA5ADDRB
@@ -264,8 +263,6 @@ DMALiteStates:
 	LDY.w #$0002 : STY.w DMA5SIZE
 	LDA.b #$20 : STA.w MDMAEN
 
-	NOP
-
 	STZ.w WMADDB
 
 	; back to normal transfers
@@ -298,9 +295,12 @@ DMALiteStates:
 	SEP #$20
 	LDA.b #$01 : STA.w NMITIMEN
 
-	PLA : JSL HandlePegState
+	PLA
+	JSL HandlePegState
+
 	SEP #$20
-	PLA : JSL HandleOpenShutters
+	PLA
+	JSL HandleOpenShutters
 
 	REP #$20
 	LDA.w #$0007 : STA.b $10
@@ -334,7 +334,6 @@ DMALiteStates:
 	CMP.b #$17 : BEQ .leave_state
 
 .leave_state
-
 .done_loading
 .done_set
 	RTS
@@ -458,6 +457,8 @@ SaveATonLiteState:
 	SEP #$30
 
 	RTS
+
+;===================================================================================================
 
 PullATonLiteState:
 	REP #$30

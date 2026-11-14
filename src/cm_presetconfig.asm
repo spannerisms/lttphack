@@ -107,6 +107,8 @@ SAFETIES_SUBMENU:
 
 	RTL
 
+;---------------------------------------------------------------------------------------------------
+
 ; PRESET LIST
 .pointers
 	dl presetsafeties_nmg
@@ -219,6 +221,8 @@ BOSSRTA_SUBMENU:
 %submenu_variable("Trinexx", BOSSPRESET_SUBMENU)
 %submenu_variable("Agahnim 2", BOSSPRESET_SUBMENU)
 
+;===================================================================================================
+
 BOSSPRESET_SUBMENU:
 	LDA.b IRAM.cm_cursor
 	ASL
@@ -236,9 +240,9 @@ BOSSPRESET_SUBMENU:
 	LDA.l .pointers+1,X
 	STA.b IRAM.cm_cursor+2
 
-	JSL SetPresetMenuArea
+	JML SetPresetMenuArea
 
-	RTL
+;---------------------------------------------------------------------------------------------------
 
 .pointers
 	dl presetheader_defeatarmos

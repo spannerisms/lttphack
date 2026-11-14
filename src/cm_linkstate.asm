@@ -36,9 +36,6 @@ LINKSTATE_SUBMENU:
 	STZ.b $5D
 	JML MenuSFX.poof
 
-StateChangeBeep:
-	JML MenuSFX.error
-
 ;===================================================================================================
 
 %func_filtered("Activate Lonk", this)
@@ -48,6 +45,11 @@ StateChangeBeep:
 	LDA.b #$17
 	STA.b $5D
 	JML MenuSFX.oof
+
+;===================================================================================================
+
+StateChangeBeep:
+	JML MenuSFX.error
 
 ;===================================================================================================
 
@@ -66,9 +68,8 @@ StateChangeBeep:
 ;===================================================================================================
 
 %func_filtered("Create portal", this)
-	LDA.b $10 : CMP.b #$09 : BNE .no
-
-	LDA.b $8A : CMP.b #$40 : BCS .no
+	LDA.b $10 : CMP.b #$09 : BNE StateChangeBeep
+	LDA.b $8A : CMP.b #$40 : BCS StateChangeBeep
 
 	LDA.b $20 : STA.w $1ADF
 	LDA.b $21 : STA.w $1AEF
@@ -78,8 +79,5 @@ StateChangeBeep:
 	LDA.b #$3A : STA.w $031F
 
 	JML jlong($09AF89)
-
-.no
-	JMP MenuSFX.error
 
 ;===================================================================================================

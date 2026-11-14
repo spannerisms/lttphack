@@ -110,7 +110,7 @@ GO_TO_SENTRY_PICKER:
 	BIT.b IRAM.cm_ax
 	BEQ .nothing
 
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	BIT.b IRAM.cm_ax
 	BMI .setting
@@ -315,7 +315,7 @@ SetSentry_Init:
 	INX
 	STX.w BWRAM.sentry_submodule
 
-	JSR CM_PushMenuToStack
+	JSR PushMenuState
 
 	JMP RedrawSentryMenu
 
@@ -332,13 +332,13 @@ SetSentry_Exit:
 ;===================================================================================================
 
 SetSentry_CloseMenu:
-	JSR CM_PullMenuFromStack
+	JSR PopMenuState
 	JMP CM_ExitTime
 
 ;===================================================================================================
 
 SetSentry_Choose:
-	JSR CM_getcontroller
+	JSR CM_ParseController
 	LDA.b IRAM.cm_ax
 	BPL .no_a_press
 
