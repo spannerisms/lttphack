@@ -43,7 +43,7 @@ CM_Main:
 
 	STZ.b IRAM.shortcut_used
 	STZ.b IRAM.joy1
-	STZ.b IRAM.joy1_filtered
+	STZ.b IRAM.joy1_new
 
 	LDA.w #15
 	STA.w BWRAM.cm_input_timer
@@ -656,7 +656,7 @@ CM_ParseController:
 	LDX.b #15
 	STX.w BWRAM.cm_input_timer
 
-	CMP.b IRAM.joy1_filtered
+	CMP.b IRAM.joy1_new
 	SEP #$20
 	BNE .no_presses
 

@@ -21,7 +21,7 @@ DoShortCuts:
 
 	REP #$30 ; This REP © Lui 2020
 
-	LDA.b IRAM.joy1_filtered : BEQ .nothingused
+	LDA.b IRAM.joy1_new : BEQ .nothingused
 
 	LDX.w #0
 
@@ -36,7 +36,7 @@ DoShortCuts:
 	CMP.b (IRAM.SCRATCH+0)
 	BNE .fail
 
-	AND.b IRAM.joy1_filtered
+	AND.b IRAM.joy1_new
 	BEQ .fail
 
 	LDA.w .shortcut_routine+2,X

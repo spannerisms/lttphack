@@ -33,7 +33,7 @@ IRAM:
 	.copyof_F2 :: 1
 	.copyof_F0 :: 1
 
-	.joy1_filtered
+	.joy1_new
 	.copyof_F6 :: 1
 	.copyof_F4 :: 1
 

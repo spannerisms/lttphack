@@ -11,7 +11,7 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - Presets
   - Adjusted wallmaster timer for Mummy Hellway presets
 - Game state
-  - Renamed "Enemy drops" to "Prize packs" and added bushes as well as the RNG control items
+  - Renamed "Enemy drops" to "Prize packs" and added bushes and copies of the RNG control items
   - Renamed "Prize packs" (the list item) to "Enemy drops"
 - RNG control
   - Added bush prizes
@@ -20,6 +20,7 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - Misc
   - Various optimizations
   - Improved fastrom implementation in rando
+  - Input display now shows the current frame for more accurate frame dissection
 - Other
   - Migrated to Futaba!!!
 
@@ -222,7 +223,7 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 
 ### [v14.3.1](https://github.com/spannerisms/lttphack/releases/tag/14.3.1) &mdash; 2 December 2021
 
-- Nevermind. I hate this font and so does everyone else.
+- Never mind. I hate this font and so does everyone else.
 - Fixed shortcut button display.
 - Added arrow decay timer for Sirius.
 

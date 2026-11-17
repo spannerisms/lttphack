@@ -300,7 +300,7 @@ hud_draw_input_display:
 	AND.w #$0003
 	ASL : TAX
 
-	LDA.b IRAM.joy1
+	LDA.b IRAM.joy1_new
 	XBA
 
 	JMP (InputDisplayOptions,X)
