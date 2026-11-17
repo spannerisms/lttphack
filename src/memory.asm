@@ -383,7 +383,7 @@ CONFIG:
 
 %def_config("rerandomize", !ON)
 
-%def_config("hide_lines", !OFF)
+%def_config("show_lines", !ON)
 
 %def_config("qw_toggle", !ON)
 %def_config("hudlag_spinner", !OFF)

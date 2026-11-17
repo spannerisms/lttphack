@@ -17,6 +17,8 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - Added bush prizes
   - Decoupled rerandomization from frame rule fixing
   - Added a "Preserve" option to frame rule (only really useful with savestates)
+- HUD Extras
+  - Renamed "Hide lines" to "Line sentries"
 - Misc
   - Various optimizations
   - Improved fastrom implementation in rando

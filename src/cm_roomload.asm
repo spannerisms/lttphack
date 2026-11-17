@@ -43,9 +43,9 @@ ROOMLOAD_SUBMENU:
 ROOMLOADCONFIGURATION_SUBMENU:
 %menu_header("ROOM LOAD CONFIGURATION")
 
-%toggle_onoff("Open shutters", BWRAM.loadroom_shutters)
+%toggle("Open shutters", BWRAM.loadroom_shutters)
 
-%toggle_onoff("Kill sprites", BWRAM.loadroom_kill)
+%toggle("Kill sprites", BWRAM.loadroom_kill)
 
 %choice_here("Peg state", BWRAM.loadroom_pegset, 3)
 	%add_list_item(CMTEXT_RED)

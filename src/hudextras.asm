@@ -277,7 +277,7 @@ DrawSentries:
 ;===================================================================================================
 
 draw_hud_linesentrys:
-	LDA.w CONFIG.hide_lines : BNE .no_line_sentries
+	LDA.w CONFIG.show_lines : BEQ .no_line_sentries
 
 	LDY.w #16*0 : LDX.w #HUDProxyOffset($014A)
 	PEA.w rtn(.return_1) : JMP.w (IRAM.line_vector1) : .return_1

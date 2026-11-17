@@ -235,15 +235,9 @@ macro toggle_onoff(name, addr)
 	%toggle({name}, {addr})
 endmacro
 
-macro toggle_func_onoff(name, addr, pfunc)
-;	%toggle_func_customtext("{name}", "{addr}", "{pfunc}", CMDRAW_ONOFF)
-	%toggle_func("{name}", "{addr}", "{pfunc}")
-endmacro
-
-macro toggle_func_onoff_here(name, addr)
-;	%toggle_func_customtext("{name}", "{addr}", {?}here, CMDRAW_ONOFF)
-	%toggle_func("{name}", "{addr}", {?}here)
-#{?}here:
+macro toggle_onoffbig(name, addr)
+;	%toggle_customtext("{name}", "{addr}", CMDRAW_ONOFFLONG)
+	%toggle({name}, {addr})
 endmacro
 
 ;---------------------------------------------------------------------------------------------------

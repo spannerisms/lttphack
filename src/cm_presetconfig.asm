@@ -22,7 +22,7 @@ PRESETCONFIG_SUBMENU:
 
 ;===================================================================================================
 
-%toggle_onoff("Death reload", CONFIG.death_reload)
+%toggle("Death reload", CONFIG.death_reload)
 %toggle("Random bats", BWRAM.ganon_bats)
 
 ;===================================================================================================
@@ -127,7 +127,7 @@ SAFETIES_SUBMENU:
 presetsafeties_nmg:
 %menu_header("NMG SAFETIES")
 
-%toggle_onoff("Sanc heart", CONFIG.safeties_nmg_sanc_heart)
+%toggle("Sanc heart", CONFIG.safeties_nmg_sanc_heart)
 
 %choice_here("Powder", CONFIG.safeties_nmg_powder, 5)
 	%add_list_item(CMTEXT_NO)
@@ -146,7 +146,7 @@ presetsafeties_nmg:
 	%list_item("Early")
 	%list_item("Late")
 
-%toggle_onoff("Red mail", CONFIG.safeties_nmg_red_mail)
+%toggle("Red mail", CONFIG.safeties_nmg_red_mail)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ presetsafeties_nmg:
 presetsafeties_100nmg:
 %menu_header("100% NMG SAFETIES")
 
-%toggle_onoff("Blue boom", CONFIG.safeties_100nmg_trinexx_boom)
+%toggle("Blue boom", CONFIG.safeties_100nmg_trinexx_boom)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
@@ -175,21 +175,21 @@ presetsafeties_lowleg:
 ;===================================================================================================
 presetsafeties_ad2020:
 %menu_header("ALL DUNGEONS SAFETIES")
-%toggle_onoff("Silvers", CONFIG.safeties_ad2020_silvers)
+%toggle("Silvers", CONFIG.safeties_ad2020_silvers)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetsafeties_adold:
 %menu_header("ALL DUNGEONS (OLD) SAFETIES")
-%toggle_onoff("Silvers", CONFIG.safeties_adold_silvers)
+%toggle("Silvers", CONFIG.safeties_adold_silvers)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------
 ;===================================================================================================
 presetsafeties_anyrmg:
 %menu_header("ANY% RMG SAFETIES")
-%toggle_onoff("Hookshot", CONFIG.safeties_anyrmg_hook)
+%toggle("Hookshot", CONFIG.safeties_anyrmg_hook)
 
 ;===================================================================================================
 ;---------------------------------------------------------------------------------------------------

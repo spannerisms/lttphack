@@ -12,6 +12,20 @@ CMTEXT_VANILLA:     %cmstr("Vanilla")
 CMTEXT_DEFAULT:     %cmstr("Default")
 CMTEXT_CURRENT:     %cmstr("Current")
 
+CMTEXT_OFF:         %cmstr("Off")
+CMTEXT_ON:          %cmstr("On")
+
+;---------------------------------------------------------------------------------------------------
+
+CMDRAW_ONOFF:
+%list_header(2)
+	%add_list_item(CMTEXT_ON)
+	%add_list_item(CMTEXT_OFF)
+
+CMDRAW_ONOFFLONG:
+%list_header(2)
+	%list_item("No")
+	%list_item("Yes")
 
 ;===================================================================================================
 
@@ -516,11 +530,6 @@ CMDRAW_WORD_FUNCEND:
 	PLB
 	JSR CMDRAW_WORD
 	RTL
-
-;===================================================================================================
-
-CMDRAW_ONOFF:
-%toggletext("Off", "On")
 
 ;===================================================================================================
 

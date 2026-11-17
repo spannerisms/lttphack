@@ -371,8 +371,7 @@ ConfigMenuSize:
 ;===================================================================================================
 
 GetHighestActiveLine:
-	LDY.w CONFIG.hide_lines
-	BNE .hide
+	LDY.w CONFIG.show_lines : BEQ .hide
 
 	LDY.w CONFIG.linesentry4 : BEQ .no_line_4
 	LDY.w #8

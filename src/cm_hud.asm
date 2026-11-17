@@ -32,14 +32,14 @@ HUDEXTRAS_SUBMENU:
 
 ;===================================================================================================
 
-%toggle_onoff("Hide lines", CONFIG.hide_lines)
+%toggle_onoffbig("Line sentries", CONFIG.show_lines)
 
-%toggle_onoff("HUD spinner", CONFIG.hudlag_spinner)
+%toggle_onoffbig("HUD spinner", CONFIG.hudlag_spinner)
 
-%toggle_onoff("State icons", CONFIG.state_icons)
+%toggle_onoffbig("State icons", CONFIG.state_icons)
 
-%toggle_onoff("Quick warp icon", CONFIG.qw_toggle)
+%toggle_onoffbig("Quick warp icon", CONFIG.qw_toggle)
 
-%toggle_onoff("Boss cycles", CONFIG.boss_cycles)
+%toggle_onoffbig("Boss cycles", CONFIG.boss_cycles)
 
 ;===================================================================================================
