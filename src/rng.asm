@@ -47,7 +47,6 @@ rng_pokey:
 ; Agahnim
 rng_agahnim:
 	LDA.w BWRAM.agahnim_rng : BEQ VanillaRNG
-	DEC
 	RTL
 
 ;===================================================================================================
