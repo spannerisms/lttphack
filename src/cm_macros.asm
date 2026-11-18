@@ -77,6 +77,10 @@ macro add_list_item(item)
 endmacro
 
 macro list_item(text)
+	if len("{text}") > 12
+		warn "LONG TEXT: {text}"
+	endif
+
 	%add_list_item(!:here)
 	%cmstr("{text}")
 endmacro

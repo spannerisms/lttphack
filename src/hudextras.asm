@@ -163,10 +163,15 @@ DrawHudExtras:
 
 ;===================================================================================================
 
+DrawLife:
 	LDA.w CONFIG.heart_display
 	ASL
 	TAX
-	JMP (DrawLifeOptions,X)
+	JMP (.options,X)
+
+.options
+	dw NumericalHearts
+	dw VanillaHearts
 
 DoneLifeDraw:
 
@@ -295,15 +300,21 @@ draw_hud_linesentrys:
 
 ;===================================================================================================
 
-hud_draw_input_display:
+DrawInputDisplay:
 	LDA.w CONFIG.input_display
 	AND.w #$0003
 	ASL : TAX
 
-	LDA.b IRAM.joy1_new
+	LDA.b IRAM.joy1
 	XBA
 
-	JMP (InputDisplayOptions,X)
+	JMP (.options,X)
+
+.options
+	dw DoneInputDisplay
+	dw InputDisplayCool
+	dw InputDisplayClassic
+	dw InputDisplayClassicGray
 
 DoneInputDisplay:
 
@@ -385,13 +396,7 @@ DrawBossCycles:
 
 ;===================================================================================================
 
-DrawLifeOptions:
-	dw .practicehack
-	dw .vanilla
-
-;---------------------------------------------------------------------------------------------------
-
-.practicehack
+NumericalHearts:
 	SEP #$21
 	LDA.b IRAM.copyof_7EF36C
 	SBC.b IRAM.copyof_7EF36D
@@ -446,9 +451,9 @@ DrawLifeOptions:
 
 	JMP DoneLifeDraw
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 
-.vanilla
+VanillaHearts:
 	; --LIFE--
 	LDA.w #$288B : STA.w BWRAM.HUD+$02C
 	LDA.w #$288F : STA.w BWRAM.HUD+$02E
@@ -473,18 +478,18 @@ DrawLifeOptions:
 	STA.b IRAM.SCRATCH+0
 	STA.b IRAM.SCRATCH+2
 
-..next_filled_heart
+.next_filled_heart
 	CPX.b #1 ; do we have at least 1 HP?
-	BMI ..done_hearts
+	BMI .done_hearts
 
 	LDA.w #$24A0
 
 	CPY.b #1
-	BPL ..add_heart
+	BPL .add_heart
 
 	LDA.w #$24A2
 
-..add_heart
+.add_heart
 	STA.b (IRAM.SCRATCH+0)
 
 	DEY
@@ -494,41 +499,41 @@ DrawLifeOptions:
 	INC
 	INC
 	CMP.w #BWRAM.HUD+$07C
-	BEQ ..nextrow
+	BEQ .nextrow
 
 	CMP.w #BWRAM.HUD+$0BC
-	BNE ..fine
+	BNE .fine
 
-..nextrow
+.nextrow
 	ADC.w #$002B ; +1 carry +2 from inc
 
-..fine
+.fine
 	STA.b IRAM.SCRATCH+0
 
 	CPY.b #$00
-	BNE ..next_filled_heart ; save pointer when we have 0 hearts left to add
+	BNE .next_filled_heart ; save pointer when we have 0 hearts left to add
 
 	STA.b IRAM.SCRATCH+2
-	BRA ..next_filled_heart
+	BRA .next_filled_heart
 
-..done_hearts
+.done_hearts
 	LDA.b IRAM.copyof_7EF36D
 	AND.w #$0007
-	BEQ ..skip_partial
+	BEQ .skip_partial
 
 	CMP.w #$0005
 	LDA.w #$24A0
-	BCS ..more_than_half
+	BCS .more_than_half
 
 	INC ; 1-4 means half heart
 
-..more_than_half
+.more_than_half
 	STA.b (IRAM.SCRATCH+2)
 
-..skip_partial
+.skip_partial
 	LDA.w IRAM.relocated_0209
 	BIT.w #$FF00
-	BEQ ..done
+	BEQ .done
 
 	AND.w #$00FF
 	ASL
@@ -537,21 +542,12 @@ DrawLifeOptions:
 	LDA.l $0DFA29,X
 	STA.b (IRAM.SCRATCH+2)
 
-..done
+.done
 	JMP DoneLifeDraw
 
 ;===================================================================================================
 
-; wrap at 7A
-InputDisplayOptions:
-	dw DoneInputDisplay
-	dw .cool
-	dw .classic
-	dw .classicgray
-
-;---------------------------------------------------------------------------------------------------
-
-.cool
+InputDisplayCool:
 	STA.b IRAM.SCRATCH ; dpad
 	AND.w #$000F : ORA.w #$2D70 : STA.w BWRAM.HUD+$66+2
 
@@ -591,14 +587,15 @@ InputDisplayOptions:
 
 	JMP DoneInputDisplay
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 
-.classic
-	REP #$70 ; clear overflow means classic
+InputDisplayClassic:
+	CLV ; clear overflow means classic
 	BRA ++
 
-.classicgray
-	REP #$20
+;---------------------------------------------------------------------------------------------------
+
+InputDisplayClassicGray:
 	SEP #$40 ; set overflow means classic gray
 
 	; Y will hold the current input character
@@ -612,32 +609,32 @@ InputDisplayOptions:
 
 	LDX.w #$0000
 
-..next_button
+.next_button
 	LDY.w .classic_locations,X
 
 	TXA
 	LSR
 
 	LSR.b IRAM.SCRATCH
-	BCC ..nopress
+	BCC .nopress
 
-..press
+.press
 	ORA.w #$2570
-	BRA ..addchr
+	BRA .addchr
 
-..nopress
-	BVC ..nochar
+.nopress
+	BVC .nochar
 
 	ORA.w #$3170
 
-..addchr
+.addchr
 	STA.w BWRAM.HUD,Y
 
-..nochar
+.nochar
 	INX
 	INX
 	CPX.w #23
-	BCC ..next_button
+	BCC .next_button
 
 	JMP DoneInputDisplay
 
