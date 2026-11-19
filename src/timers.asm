@@ -228,6 +228,7 @@ UpdateOnInterRoomStairs:
 UpdateOnBombableWallUW:
 	LDA.b #!UPDATE_TIMER : STA.w IRAM.TIMER_FLAG
 	LDA.b #$09 : STA.b $11
+	SEP #$30 ; required to make X=8
 	RTL
 
 UpdateOnBombableFloor:
