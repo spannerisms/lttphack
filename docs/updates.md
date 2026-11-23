@@ -6,7 +6,7 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 
 ## Latest update
 
-### [v15.1.0](https://github.com/spannerisms/lttphack/releases/tag/15.0.1) &mdash; 
+### [v15.1.0](https://github.com/spannerisms/lttphack/releases/tag/15.1.0) &mdash; 23 November 2026
 
 - Presets
   - Adjusted wallmaster timer for Mummy Hellway presets
