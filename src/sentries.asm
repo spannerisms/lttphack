@@ -766,7 +766,7 @@ RawSentryDraw:
 %sentry_icon($1B, !REDYELLOW)
 	STY.b HUDProxy+6,X
 
-	LDY.b IRAM.copyof_1B
+	LDY.b IRAM.copyof_1B-1
 	CPY.w #$0100
 	BCC .no
 

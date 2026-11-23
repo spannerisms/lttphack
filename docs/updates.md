@@ -18,6 +18,7 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - Decoupled rerandomization from frame rule fixing
   - Added a "Preserve" option to frame rule (only really useful with savestates)
 - HUD Extras
+  - Fixed plaid tile index showing in overworld
   - Renamed "Hide lines" to "Line sentries"
 - Misc
   - Various optimizations
