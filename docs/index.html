@@ -502,6 +502,10 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 	<dt>Drops</dt>
 	<dd>Submenu for controlling drop luck, rupee pulls, and prize packs.
 		<dl class="subDefinition">
+			<dd>Enemy drops<dd>
+			<dt>Vanilla, Always, Never</dt>
+			<dd>Bush drops<dd>
+			<dt>Vanilla, Always, Never</dt>
 			<dt>Drop luck</dt>
 			<dd>Pond of Happiness luck: Normal (50%), Great (100%), Trouble (0%)
 				<br/>Note that this option is distinct from the RNG control option and will take precedence.
@@ -514,6 +518,8 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 			<dd>Number of hits taken since last rupee pull</dd>
 			<dt>Prize pack [1-7]</dt>
 			<dd>Current position in the given prize pack</dd>
+			<dt>Bush pack</dt>
+			<dd>Current position in the bush prize pack</dd>
 		</dl>
 	</dd>
 	<dt>Follower</dt>
@@ -642,7 +648,7 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 <h3 id="menuRNGControl">RNG Control</h3>
 
 <dl>
-	<dt>Prize packs</dt>
+	<dt>Enemy drops</dt>
 	<dd>Modifies drop percentages. This option only affects prize packs from a normal random roll, not other guaranteed drops such as the stun drop or keys. Drop luck from the Pond of Happiness will override this setting.
 		<dl class="subDefinition">
 			<dt>Vanilla</dt>
@@ -653,8 +659,25 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 			<dd>No enemy drops prize packs, except the 100% chance pack 4.</dd>
 		</dl>
 	</dd>
+	<dt>Bush drops</dt>
+	<dd class="optionList">Behavior of the 50% failure rate for bushes and grass
+		<ol>
+			<li>Random</li>
+			<li>Yellow</li>
+			<li>Blue</li>
+		</ol>
+	</dd>
 	<dt>Frame rule</dt>
-	<dd>Forces the frame counter to a specific value on preset or savestate load.</dd>
+	<dd>Forces the frame counter to a specific value on preset or savestate load.
+		<dl class="subDefinition">
+			<dt>Random</dt>
+			<dd>Randomizes the frame counter.</dd>
+			<dt>Preserve</dt>
+			<dd>Frame counter is left alone.</dd>
+			<dt>[$00-$3F]</dt>
+			<dd>Sets the frame counter to the specified value.</dd>
+		</dl>
+	</dd>
 </dl>
 <dl class="inlineDefinition dinkyList">
 	<dt>Pokeys</dt>
@@ -778,8 +801,8 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 		<strong class="lag"><b>NOTE:</b> Line sentries require slightly more work for the CPU than can be accounted for and thus may effect lag frames where they would otherwise not occur.</strong>
 		<strong class="lag"><b>NOTE:</b> Lines 3 and 4 will cover part of the text box when it is in the higher position. The select menu, however, will cover lines.</strong>
 	</dd>
-	<dt>Hide lines</dt>
-	<dd>Removes the line sentries from the HUD without the need to disable them.</dd>
+	<dt>Line sentries</dt>
+	<dd>Toggles the visibility of line sentries on the HUD without the need to disable them all individually.</dd>
 	<dt>HUD spinner</dt>
 	<dd>Animated spinning icon that indicates the SA1 is running. Can also be used to see when HUD lag is relevant.</dd>
 	<dt>State icons</dt>
@@ -945,7 +968,7 @@ ogdesc: "The Zelda 3 Practice Hack is the principal tool for anyone wanting to p
 			<li class="colorDefine"><div class="colorBlock" style="background:#2AA8D9">2AA8D9</div>Siriusly?</li>
 			<li class="colorDefine"><div class="colorBlock" style="background:#B8D850">B8D850</div>Chartreuse</li>
 			<li class="colorDefine"><div class="colorBlock" style="background:#FFBFFF">FFBFFF</div>Blunt pink</li>
-			<li class="colorDefine"><div class="colorBlock" style="background:#78886A">78886A</div>Igarashi Futaba</li>
+			<li class="colorDefine"><div class="colorBlock" style="background:#78886A">788868</div>Igarashi Futaba</li>
 		</ul>
 	</dd>
 </dl>

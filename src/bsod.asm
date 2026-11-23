@@ -1,13 +1,13 @@
-check bankcross off
+bankguard off
 
 Pekola:
-incbin resources/pekola.8bpp
-fillbyte $00 : fill $40
+incbin "resources/pekola.8bpp"
+fill byte count $40 :: $00
 .end
 
-check bankcross on
+bankguard half
 
-table resources/menu.tbl
+encoder MenuEncoding
 
 ;===================================================================================================
 
@@ -17,22 +17,22 @@ CorruptionCrash:
 	PHK
 	PLB
 
-	STZ.w $4200
-	STZ.w $420C
+	STZ.w NMITIMEN
+	STZ.w HDMAEN
 
 	PEA.w $2100
 	PLD
 
-	LDX.b #$80 : STX.b $2100
-	STX.b $2115
+	LDX.b #$80 : STX.b INIDISP
+	STX.b VMAIN
 
 	REP #$30
 
-	LDA.w #$7800 : STA.b $2116
+	LDA.w #$7800 : STA.b VMADDR
 
 	LDA.w #$203F
 	LDX.w #36*32
---	STA.b $2118
+--	STA.b VMDATA
 	DEX
 	BNE --
 
@@ -41,7 +41,7 @@ CorruptionCrash:
 
 	JSR DrawPekola
 
---	BRA --
+	BRA <
 
 .text
 	; "012345678901234567890123456789012"
@@ -57,15 +57,15 @@ SA1CRASHED:
 
 .draw
 	LDA.w #$2966
-	STA.l SA1RAM.HUD+$90
-	STA.l SA1RAM.HUD+$92
-	STA.l SA1RAM.HUD+$94
-	STA.l SA1RAM.HUD+$96
-	STA.l SA1RAM.HUD+$98
-	STA.l SA1RAM.HUD+$9A
-	STA.l SA1RAM.HUD+$9C
-	STA.l SA1RAM.HUD+$9E
-	STA.l SA1RAM.HUD+$A0
+	STA.l BWRAM.HUD+$90
+	STA.l BWRAM.HUD+$92
+	STA.l BWRAM.HUD+$94
+	STA.l BWRAM.HUD+$96
+	STA.l BWRAM.HUD+$98
+	STA.l BWRAM.HUD+$9A
+	STA.l BWRAM.HUD+$9C
+	STA.l BWRAM.HUD+$9E
+	STA.l BWRAM.HUD+$A0
 	BRA .draw
 
 ;===================================================================================================
@@ -89,36 +89,36 @@ OOPS:
 .snes_crash
 	SEP #$34
 
-	LDX.b #$80 : STX.w $2100
-	STX.w $2115
+	LDX.b #$80 : STX.w INIDISP
+	STX.w VMAIN
 
-	STZ.w $4200
-	STZ.w $420C
+	STZ.w NMITIMEN
+	STZ.w HDMAEN
 
 	REP #$30
 
 	LDA.w #$2100
 	TCD
 
-	LDA.w #$05F0 : STA.b $2140
-	LDA.w #$2B0C : STA.b $2142
+	LDA.w #$05F0 : STA.b APUIO0
+	LDA.w #$2B0C : STA.b APUIO2
 
-	LDA.w #$7800 : STA.b $2116
+	LDA.w #$7800 : STA.b VMADDR
 
 	LDA.w #$203F
 	LDX.w #36*32
---	STA.b $2118
+--	STA.b VMDATA
 	DEX
 	BNE --
 
 ;---------------------------------------------------------------------------------------------------
 	; Upload stack
-	LDA.w #$F0FA>>1 : STA.b $2116
+	LDA.w #vram($F0FA) : STA.b VMADDR
 
-	TSC : XBA : AND.w #$00FF : CLC : ADC.w #$2070 : STA.b $2118
-	TSC : AND.w #$00FF : CLC : ADC.w #$2070 : STA.b $2118
+	TSC : XBA : AND.w #$00FF : CLC : ADC.w #$2070 : STA.b VMDATA
+	TSC : AND.w #$00FF : CLC : ADC.w #$2070 : STA.b VMDATA
 
-	LDA.w #$F102>>1 : STA.b $2116
+	LDA.w #vram($F102) : STA.b VMADDR
 
 	TSX
 	BMI .done_stack
@@ -127,26 +127,26 @@ OOPS:
 	LDY.w #$FFFF
 
 	INX
-	STX.w $4350
+	STX.w DMAP5
 
 	LDX.w #$0200
 
 --	DEX
-	CPX.w $4350 : BCC .done_stack
+	CPX.w DMAP5 : BCC .done_stack
 	INY
 	CPY.w #$001E : BCC ++
 
 	LDY.w #$0000
 	TSC
 	ADC.w #$001F
-	STA.b $2116
+	STA.b VMADDR
 	TCS
 
 ++	LDA.l $000000,X
 	AND.w #$00FF
 	CLC
 	ADC.w #$2070
-	STA.b $2118
+	STA.b VMDATA
 	BRA --
 
 .done_stack
@@ -158,7 +158,7 @@ OOPS:
 
 	JSR DrawPekola
 
---	BRA --
+	BRA <
 
 .text
 	; "012345678901234567890123456789012"
@@ -173,7 +173,7 @@ DrawCrashText:
 	LDA.w #$2100
 	TCD
 
-	LDY.w #$F042>>1 : STY.b $2116
+	LDY.w #vram($F042) : STY.b VMADDR
 
 .next
 	INX
@@ -187,14 +187,14 @@ DrawCrashText:
 
 	TYA
 	ADC.w #$0020-1 ; carry set if equal
-	STA.b $2116
+	STA.b VMADDR
 	TAY
 
 	BRA .next
 
 .not_newline
 	ORA.w #$2000
-	STA.b $2118
+	STA.b VMDATA
 	BRA .next
 
 .done_text
@@ -209,53 +209,53 @@ DrawPekola:
 	LDA.w #$2100
 	TCD
 
-	LDX.b #$80 : STX.b $2115
+	LDX.b #$80 : STX.b VMAIN
 
-	LDY.b #$FD : STY.b $210E : STY.b $210E : STY.b $210E
+	LDY.b #$FD : STY.b BG1VOFS : STY.b BG1VOFS : STY.b BG1VOFS
 
 	LDY.b #$00
-	STY.b $210D : STY.b $210D
-	STZ.b $210F : STZ.b $210F
+	STY.b BG1HOFS : STY.b BG1HOFS
+	STZ.b BG2HOFS : STZ.b BG2HOFS
 
-	STZ.b $212E
-	STZ.b $2130
-	STZ.b $2133
+	STZ.b TMW
+	STZ.b CGWSEL
+	STZ.b SETINI
 
-	STY.b $2106
-	STY.b $2121
+	STY.b MOSAIC
+	STY.b CGADD
 
-	LDA.w #$0303 : STA.b $212C
-	LDY.b #$04 : STY.b $2105
+	LDA.w #$0303 : STA.b TM
+	LDY.b #$04 : STY.b BGMODE
 
-	LDA.w #$7870 : STA.b $2107
-	LDA.w #$6060 : STA.b $2109
-	STA.b $210B
+	LDA.w #$7870 : STA.b BG1SC
+	LDA.w #$6060 : STA.b BG3SC
+	STA.b BG12NBA
 
-	LDA.w #$7000 : STA.b $2116
+	LDA.w #$7000 : STA.b VMADDR
 
 	REP #$10
 
 	LDA.w #$02C0
 	LDX.w #6*32
---	STA.b $2118
+--	STA.b VMDATA
 	DEX
 	BNE --
 
 	LDX.w #22*32
 	LDA.w #$0000
---	STA.b $2118
+--	STA.b VMDATA
 	INC
 	DEX
 	BNE --
 
 	LDX.w #3*32
 
---	STZ.b $2118
+--	STZ.b VMDATA
 	DEX
 	BNE --
 
 	LDX.w #1*32
---	STA.b $2118
+--	STA.b VMDATA
 	DEX
 	BNE --
 
@@ -263,45 +263,44 @@ DrawPekola:
 
 	LDA.w #$4300 : TCD
 
-	LDA.w #$6000 : STA.w $2116
-	LDA.w #$1809 : STA.b $4300
-	LDX.b #ZeroLand>>16 : STX.b $4304
-	LDA.w #ZeroLand+1 : STA.b $4302
-	LDA.w #$0080 : STA.b $4305
-	LDY.b #$01 : STY.w $420B
+	LDA.w #vram($C000) : STA.w VMADDR
+	LDA.w #$1809 : STA.b DMAP0
+	LDX.b #^ZeroLand : STX.b DMA0ADDRB
+	LDA.w #ZeroLand : STA.b DMA0ADDRL
+	LDA.w #$0080 : STA.b DMA0SIZE
+	LDY.b #$01 : STY.w MDMAEN
 
+	STZ.w VMADDR
 
-	STZ.w $2116
+	LDA.w #$01][VMDATA : STA.b DMAP0
 
-	LDA.w #$1801 : STA.b $4300
+	LDX.b #^Pekola : STX.b DMA0ADDRB
+	LDA.w #$8000 : STA.b DMA0ADDRL
+	STA.b DMA0SIZE
+	STY.w MDMAEN
 
-	LDX.b #Pekola>>16 : STX.b $4304
-	LDA.w #$8000 : STA.b $4302
-	STA.b $4305
-	STY.w $420B
+	INX : STX.b DMA0ADDRB
+	STA.b DMA0ADDRL
+	LDA.w #Pekola.end&$7FFF : STA.b DMA0SIZE
+	STY.w MDMAEN
 
-	INX : STX.b $4304
-	STA.b $4302
-	LDA.w #Pekola_end&$7FFF : STA.b $4305
-	STY.w $420B
+	LDA.w #vram($C100) : STA.w VMADDR
+	LDA.w #cm_gfx+$0100 : STA.b DMA0ADDRL
+	LDX.b #^cm_gfx : STX.b DMA0ADDRB
+	LDA.w #16*16*6 : STA.b DMA0SIZE
+	STY.w MDMAEN
 
-	LDA.w #$C100>>1 : STA.w $2116
-	LDA.w #cm_gfx+$0100 : STA.b $4302
-	LDX.b #cm_gfx>>16 : STX.b $4304
-	LDA.w #16*16*6 : STA.b $4305
-	STY.w $420B
+	LDA.w #.hex : STA.b DMA0ADDRL
+	LDX.b #^.hex : STX.b DMA0ADDRB
+	LDA.w #256*16 : STA.b DMA0SIZE
+	STY.w MDMAEN
 
-	LDA.w #.hex>>0 : STA.b $4302
-	LDX.b #.hex>>16 : STX.b $4304
-	LDA.w #256*16 : STA.b $4305
-	STY.w $420B
+	LDA.w #$2200 : STA.b DMAP0
+	LDA.w #.palette : STA.b DMA0ADDRL
+	LDA.w #512 : STA.b DMA0SIZE
+	STY.w MDMAEN
 
-	LDA.w #$2200 : STA.b $4300
-	LDA.w #.palette : STA.b $4302
-	LDA.w #512 : STA.b $4305
-	STY.w $420B
-
-	LDX.b #$0F : STX.w $2100
+	LDX.b #$0F : STX.w INIDISP
 
 	RTS
 

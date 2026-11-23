@@ -560,4 +560,4 @@ presetSRAM_defeatblind:
 ...end
 ;===================================================================================================
 presetend_defeatblind:
-print "defeatblind size: $", hex(presetend_defeatblind-presetheader_defeatblind)
+printf "defeatblind size: ${0:X4}", presetend_defeatblind-presetheader_defeatblind

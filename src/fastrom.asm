@@ -34,7 +34,7 @@ org $0CC2A5
 TitleCardFix:
 	; thankfully, the title screen song ends instead of loops
 	; so we'll just wait for it to end
-	LDA.w $2140
+	LDA.w APUIO0
 	BNE .exit
 
 	LDA.b #$14
@@ -46,7 +46,7 @@ TitleCardFix:
 .exit
 	JML $8CC3D2
 
-warnpc $0CC2B6
+guardpc $0CC2B6
 
 ;===================================================================================================
 ; THESE MOTHERFUCKERS
@@ -66,8 +66,7 @@ org $1BC1CB : db $06
 
 ; Similar problem, except in vanilla the PLB causes the branch to always fail
 ; so I'll just make it always fail here too
-org $1D875C
-	BRA ++ : ++
+org $1D875C : BRA &
 
 ;===================================================================================================
 ; MVNs (annoying to parse from the disassembly)
@@ -5554,4 +5553,3 @@ org $1F877F : db $9F
 pullpc
 
 ;===================================================================================================
-

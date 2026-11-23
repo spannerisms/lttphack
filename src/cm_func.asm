@@ -1,37 +1,37 @@
-CMDO_SAVE_ADDRESS:
+GetMenuItemAddress:
 	REP #$20
 
-	LDA.b [SA1IRAM.cm_current_selection],Y
+	LDA.b [IRAM.cm_current_selection],Y
 	INY
 	INY
 
-	STA.b SA1IRAM.cm_writer+0
+	STA.b IRAM.cm_writer+0
 
 	SEP #$20
 
-	LDA.b [SA1IRAM.cm_current_selection],Y
-	STA.b SA1IRAM.cm_writer+2
+	LDA.b [IRAM.cm_current_selection],Y
+	STA.b IRAM.cm_writer+2
 	INY
 
 	RTS
 
 ;===================================================================================================
 
-CMDO_GET_FUNC_ADDRESS:
+GetMenuItemFunctionVector:
 	SEP #$31
 
-	LDA.b SA1IRAM.cm_action_length
+	LDA.b IRAM.cm_action_length
 	SBC.b #3
 	TAY
 
 	REP #$20
 
-	LDA.b [SA1IRAM.cm_current_selection],Y
-	STA.b SA1IRAM.cm_writer+0
+	LDA.b [IRAM.cm_current_selection],Y
+	STA.b IRAM.cm_writer+0
 	INY
 
-	LDA.b [SA1IRAM.cm_current_selection],Y
-	STA.b SA1IRAM.cm_writer+1
+	LDA.b [IRAM.cm_current_selection],Y
+	STA.b IRAM.cm_writer+1
 
 	SEP #$20
 
@@ -93,54 +93,54 @@ CMDO_TOGGLEBIT7_FUNC_CUSTOMTEXT:
 
 CMDO_TOGGLEBIT0:
 CMDO_TOGGLEBIT0_CUSTOMTEXT:
-	LDA.b #1<<0 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(0) : BRA CMDO_TOGGLEBIT
 
 CMDO_TOGGLEBIT1:
 CMDO_TOGGLEBIT1_CUSTOMTEXT:
-	LDA.b #1<<1 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(1) : BRA CMDO_TOGGLEBIT
 
 CMDO_TOGGLEBIT2:
 CMDO_TOGGLEBIT2_CUSTOMTEXT:
-	LDA.b #1<<2 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(2) : BRA CMDO_TOGGLEBIT
 
 CMDO_TOGGLEBIT3:
 CMDO_TOGGLEBIT3_CUSTOMTEXT:
-	LDA.b #1<<3 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(3) : BRA CMDO_TOGGLEBIT
 
 CMDO_TOGGLEBIT4:
 CMDO_TOGGLEBIT4_CUSTOMTEXT:
-	LDA.b #1<<4 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(4) : BRA CMDO_TOGGLEBIT
 
 CMDO_TOGGLEBIT5:
 CMDO_TOGGLEBIT5_CUSTOMTEXT:
-	LDA.b #1<<5 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(5) : BRA CMDO_TOGGLEBIT
 
 CMDO_TOGGLEBIT6:
 CMDO_TOGGLEBIT6_CUSTOMTEXT:
-	LDA.b #1<<6 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(6) : BRA CMDO_TOGGLEBIT
 
 CMDO_TOGGLEBIT7:
 CMDO_TOGGLEBIT7_CUSTOMTEXT:
-	LDA.b #1<<7 : BRA CMDO_TOGGLEBIT
+	LDA.b #bitn(7) : BRA CMDO_TOGGLEBIT
 
 ;===================================================================================================
 
 CMDO_TOGGLEBIT:
 	PHA
 
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	PLA
 
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BMI .toggle
 	BVS .clear
 
-	BIT.b SA1IRAM.cm_leftright
+	BIT.b IRAM.cm_leftright
 	BMI .toggle
 	BVS .toggle
 
-	BIT.b SA1IRAM.cm_y
+	BIT.b IRAM.cm_y
 	BMI .enable
 
 	CLC
@@ -148,19 +148,19 @@ CMDO_TOGGLEBIT:
 
 .clear
 	EOR.b #$FF ; get complement for the AND
-	STZ.b SA1IRAM.cm_writer_args+0 ; EOR in nothing
-	JSL MenuSFX_empty
+	STZ.b IRAM.cm_writer_args+0 ; EOR in nothing
+	JSL MenuSFX.empty
 	BRA CMDO_TOGGLE_SAVE_A
 
 .enable
-	STA.b SA1IRAM.cm_writer_args+0 ; EOR will toggle but
-	STA.b SA1IRAM.cm_writer_args+2 ; it also gets ORA'd in
+	STA.b IRAM.cm_writer_args+0 ; EOR will toggle but
+	STA.b IRAM.cm_writer_args+2 ; it also gets ORA'd in
 
-	JSL MenuSFX_fill
+	JSL MenuSFX.fill
 	BRA CMDO_TOGGLE_SAVE_B
 
 .toggle
-	STA.b SA1IRAM.cm_writer_args+0
+	STA.b IRAM.cm_writer_args+0
 
 	LDA.b #$FF
 	BRA CMDO_TOGGLE_SAVE_A
@@ -169,22 +169,22 @@ CMDO_TOGGLEBIT:
 
 CMDO_TOGGLE:
 CMDO_TOGGLE_CUSTOMTEXT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	SEP #$20
 
 	LDA.b #$01
-	STA.b SA1IRAM.cm_writer_args+0
+	STA.b IRAM.cm_writer_args
 
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BVS .clear
 	BMI .toggle
 
-	BIT.b SA1IRAM.cm_leftright
+	BIT.b IRAM.cm_leftright
 	BMI .toggle
 	BVS .toggle
 
-	BIT.b SA1IRAM.cm_y
+	BIT.b IRAM.cm_y
 	BMI .enable
 
 	CLC
@@ -194,31 +194,31 @@ CMDO_TOGGLE_CUSTOMTEXT:
 
 .toggle
 #CMDO_TOGGLE_SAVE_A:
-	STZ.b SA1IRAM.cm_writer_args+2
+	STZ.b IRAM.cm_writer_args+2
 
 #CMDO_TOGGLE_SAVE_B:
-	STA.b SA1IRAM.cm_writer_args+1
+	STA.b IRAM.cm_writer_args+1
 
 #CMDO_PERFORM_TOGGLE:
 	SEC ; set the carry here, since that means something happened
 
-	LDA.b [SA1IRAM.cm_writer]
-	EOR.b SA1IRAM.cm_writer_args+0
-	AND.b SA1IRAM.cm_writer_args+1
-	ORA.b SA1IRAM.cm_writer_args+2
-	STA.b [SA1IRAM.cm_writer]
+	LDA.b [IRAM.cm_writer]
+	EOR.b IRAM.cm_writer_args+0
+	AND.b IRAM.cm_writer_args+1
+	ORA.b IRAM.cm_writer_args+2
+	STA.b [IRAM.cm_writer]
 
-	JSL MenuSFX_bink
+	JSL MenuSFX.bink
 	RTS
 
 .clear
-	JSL MenuSFX_empty
+	JSL MenuSFX.empty
 	LDA.b #$00
 	BRA CMDO_TOGGLE_SAVE_A
 
 .enable
-	STA.b SA1IRAM.cm_writer_args+2
-	JSL MenuSFX_fill
+	STA.b IRAM.cm_writer_args+2
+	JSL MenuSFX.fill
 	BRA CMDO_TOGGLE_SAVE_B
 
 ;===================================================================================================
@@ -231,22 +231,22 @@ CMDO_TOGGLE_FUNC_CUSTOMTEXT:
 ;===================================================================================================
 
 CMDO_FUNC_FILTERED:
-	LDA.b SA1IRAM.cm_ax
+	LDA.b IRAM.cm_ax
 	ASL
 	BCC .exit
 
 #CMDO_PERFORM_FUNC_FILTERED:
-	JSR CMDO_GET_FUNC_ADDRESS
+	JSR GetMenuItemFunctionVector
 
 	PHD
 	PEA.w $0000
 	PLD
 
 	PHK
-	PEA.w .return-1
+	PEA.w rtn(.return)
 
 	SEP #$30
-	JML.w [SA1IRAM.cm_writer]
+	JML.w [IRAM.cm_writer]
 
 	SEP #$20
 	STZ.b $15
@@ -254,7 +254,7 @@ CMDO_FUNC_FILTERED:
 .return
 	PLD
 	SEC
-	JSL MenuSFX_switch
+	JSL MenuSFX.switch
 
 .exit
 	RTS
@@ -265,7 +265,7 @@ CMDO_FUNC_FILTERED:
 ; expects Y to point to the current function argument
 ; carry means a function should happen
 CMDO_FUNC:
-	LDA.b SA1IRAM.cm_ax ; get A press in carry
+	LDA.b IRAM.cm_ax ; get A press in carry
 
 CMDO_PERFORM_FUNC_asl:
 	ASL
@@ -273,21 +273,20 @@ CMDO_PERFORM_FUNC_asl:
 CMDO_PERFORM_FUNC:
 	BCC .exit
 
-	JSR CMDO_GET_FUNC_ADDRESS
+	JSR GetMenuItemFunctionVector
 
 	PHK
-	PEA.w .return-1
+	PEA.w rtn(.return)
 
 	SEP #$30
-	JML.w [SA1IRAM.cm_writer]
+	JML.w [IRAM.cm_writer]
 
 .return
 	SEC
-	JSL MenuSFX_switch
+	JSL MenuSFX.switch
 
 .exit
 	RTS
-
 
 ;===================================================================================================
 
@@ -297,13 +296,13 @@ CMDO_CHOICEPICK_PRGTEXT:
 	JMP CMDO_FUNC
 
 CMDO_CHOICEPICK_LOADOUT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	JSR CMDO_CHOICE_NOEMPTY
 
 	SEP #$20
-	LDA.b SA1IRAM.cm_ax
-	ORA.b SA1IRAM.cm_y
+	LDA.b IRAM.cm_ax
+	ORA.b IRAM.cm_y
 
 	JMP CMDO_PERFORM_FUNC_asl
 
@@ -338,15 +337,15 @@ CMDO_NUMFIELD_HEX_UPDATEWHOLEMENU:
 
 CMDO_CHOICE:
 CMDO_CHOICE_PRGTEXT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BVS .empty
 
 #CMDO_CHOICE_NOEMPTY:
-	LDA.b [SA1IRAM.cm_writer]
+	LDA.b [IRAM.cm_writer]
 
-	BIT.b SA1IRAM.cm_leftright
+	BIT.b IRAM.cm_leftright
 	BMI .decrement
 	BVS .increment
 	INY
@@ -358,7 +357,7 @@ CMDO_CHOICE_PRGTEXT:
 	BNE .not_max
 
 	; the max value needs to be decremented too
-	LDA.b [SA1IRAM.cm_current_selection],Y
+	LDA.b [IRAM.cm_current_selection],Y
 
 .not_max
 	DEC
@@ -366,58 +365,58 @@ CMDO_CHOICE_PRGTEXT:
 
 .increment
 	INC
-	CMP.b [SA1IRAM.cm_current_selection],Y
+	CMP.b [IRAM.cm_current_selection],Y
 	BCC .set
 
 .clear
 	LDA.b #$00
 
 .set
-	STA.b [SA1IRAM.cm_writer]
+	STA.b [IRAM.cm_writer]
 	INY
 	SEC ; carry set = actionable, so do functions
-	JSL MenuSFX_bink
+	JSL MenuSFX.bink
 	RTS
 
 .empty
-	JSL MenuSFX_empty
+	JSL MenuSFX.empty
 	BRA .clear
 
 ;===================================================================================================
 
 CMDO_SUBMENU:
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BPL .no
 
 	JSR EmptyCurrentMenu
-	JSR CM_PushMenuToStack
+	JSR PushMenuState
 
 	REP #$30
-	LDA.b [SA1IRAM.cm_current_selection]
+	LDA.b [IRAM.cm_current_selection]
 	AND.w #$FF00
-	STA.b SA1IRAM.cm_cursor+0
+	STA.b IRAM.cm_cursor+0
 
 	LDY.w #$0002
-	LDA.b [SA1IRAM.cm_current_selection],Y
-	STA.b SA1IRAM.cm_cursor+2
+	LDA.b [IRAM.cm_current_selection],Y
+	STA.b IRAM.cm_cursor+2
 
 .drawmenu
 	JSR DrawCurrentMenu
 
 	JSR CM_UpdateCurrentSelection
-	JSL MenuSFX_submenu
+	JSL MenuSFX.submenu
 
 .no
-	RTS
+--	RTS
 
 #CMDO_SUBMENU_VARIABLE:
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BPL .no
 
 	JSR EmptyCurrentMenu
-	JSR CM_PushMenuToStack
+	JSR PushMenuState
 
-	JSL MenuSFX_submenu
+	JSL MenuSFX.submenu
 	SEC
 
 	JSR CMDO_PERFORM_FUNC
@@ -427,183 +426,183 @@ CMDO_SUBMENU:
 
 CMDO_PRESET_UW:
 CMDO_PRESET_OW:
-	BIT.b SA1IRAM.cm_ax
-	BMI .go
+	BIT.b IRAM.cm_ax
+	BPL --
 
-	RTS
-
-.go
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	REP #$20
 	TXA
 	AND.w #$00FF
-	STA.b SA1IRAM.preset_type
+	STA.b IRAM.preset_type
 
-	LDA.b SA1IRAM.cm_writer+0
-	STA.b SA1IRAM.preset_addr+0
+	LDA.b IRAM.cm_writer+0
+	STA.b IRAM.preset_addr+0
 
 	JSL CM_Exiting
 
 	SEP #$30
 
-	LDA.b SA1IRAM.cm_current_menu+2
-	STA.b SA1IRAM.preset_addr+2
+	LDA.b IRAM.cm_current_menu+2
+	STA.b IRAM.preset_addr+2
 
 	JML LoadPreset
 
 ;===================================================================================================
 
 CMDO_CTRL_SHORTCUT:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	LDA.b #$C0
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BEQ .no
 
 	REP #$20
 
-	LDA.b SA1IRAM.cm_writer
+	LDA.b IRAM.cm_writer
 	CMP.w #PracMenuShortcut
-	BEQ .banned
+	BEQ InvalidLiteState
 
-	STZ.b SA1IRAM.preset_scratch
+	STZ.b IRAM.preset_scratch
 
 	LDA.w #$0000
-	STA.b [SA1IRAM.cm_writer]
+	STA.b [IRAM.cm_writer]
 	BVS .delete
 
 	LDA.w #$0008
-	STA.b SA1IRAM.cm_submodule
-	JSL MenuSFX_setshortcut
+	STA.b IRAM.cm_submodule
+	JSL MenuSFX.setshortcut
 	RTS
 
 .delete
-	JSL MenuSFX_empty
+	JSL MenuSFX.empty
 
 .no
 	RTS
 
-.banned
-	JSL MenuSFX_error
-	RTS
+;===================================================================================================
+
+InvalidLiteState:
+	JSL MenuSFX.error
+
+--	RTS
 
 ;===================================================================================================
 
 CMDO_LITESTATE:
-	LDA.b [SA1IRAM.cm_current_selection],Y
-	STA.w SA1IRAM.litestate_act
+	LDA.b [IRAM.cm_current_selection],Y
+	STA.w IRAM.litestate_act
 
-	BIT.b SA1IRAM.cm_ax
+	BIT.b IRAM.cm_ax
 	BMI .load
 	BVS .delete
 
-	BIT.b SA1IRAM.cm_y
-	BMI .save
+	BIT.b IRAM.cm_y
+	BPL --
 
-	RTS
+;---------------------------------------------------------------------------------------------------
 
 .save
 	REP #$30
 	LDA.w #$000A
-	STA.b SA1IRAM.cm_submodule
-	STZ.b SA1IRAM.preset_scratch
+	STA.b IRAM.cm_submodule
+	STZ.b IRAM.preset_scratch
 
 	RTS
 
 .delete
-	LDA.w SA1IRAM.litestate_act
+	LDA.w IRAM.litestate_act
 	JSL ValidateLiteState
-	BCC .invalid
+	BCC InvalidLiteState
 
 	REP #$30
 	LDA.w #$000C
-	STA.b SA1IRAM.cm_submodule
-	STZ.b SA1IRAM.preset_scratch
+	STA.b IRAM.cm_submodule
+	STZ.b IRAM.preset_scratch
 	RTS
 
 .load
 	JSL ValidateLiteState
-	BCC .invalid
+	BCC InvalidLiteState
 
 	JSL CM_Exiting
 
 	REP #$20
-	LDA.w SA1IRAM.litestate_act
-	STA.w SA1IRAM.litestate_last
+	LDA.w IRAM.litestate_act
+	STA.w IRAM.litestate_last
 	JML LoadLiteState
-
-.invalid
-	JSL MenuSFX_error
-	RTS
 
 ;===================================================================================================
 
 CMDO_TOGGLE_ROOMFLAG:
 	REP #$20
 
-	LDA.b [SA1IRAM.cm_current_selection],Y
+	LDA.b [IRAM.cm_current_selection],Y
 	AND.w #$00FF
 	ASL
 	TAY
 
-	LDA.w SA1RAM.loadroomid
+	LDA.w BWRAM.loadroom_id
 	AND.w #$00FF
 	ASL
 	TAX
 
 	LDA.w CM_BITS_ASCENDING,Y
 
-	BIT.b SA1IRAM.cm_ax-1
+	BIT.b IRAM.cm_ax-1
 	BVS .clear
 	BMI .toggle
 
-	BIT.b SA1IRAM.cm_leftright-1
+	BIT.b IRAM.cm_leftright-1
 	BMI .toggle
 	BVS .toggle
 
-	BIT.b SA1IRAM.cm_y-1
-	BMI .enable
+	BIT.b IRAM.cm_y-1
+	BPL .exit
 
+;---------------------------------------------------------------------------------------------------
+
+.enable
+	ORA.l $7EF000,X
+	STA.l $7EF000,X
+	JSL MenuSFX.fill
+
+.exit
 	RTS
+
+;---------------------------------------------------------------------------------------------------
 
 .clear
 	EOR.w #$FFFF
 	AND.l $7EF000,X
 	STA.l $7EF000,X
-	JSL MenuSFX_empty
+	JSL MenuSFX.empty
 	RTS
 
 .toggle
 	EOR.l $7EF000,X
 	STA.l $7EF000,X
-	JSL MenuSFX_bink
-	RTS
-
-.enable
-	ORA.l $7EF000,X
-	STA.l $7EF000,X
-	JSL MenuSFX_fill
+	JSL MenuSFX.bink
 	RTS
 
 ;===================================================================================================
 
 ; very dumb hack
 CMDO_NUMFIELD_CAPACITY:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 	REP #$30
 
 	PHY
-	PEI.b (SA1IRAM.cm_current_selection+2)
-	PEI.b (SA1IRAM.cm_current_selection+0)
+	PEI.b (IRAM.cm_current_selection+2)
+	PEI.b (IRAM.cm_current_selection+0)
 
 	PHX
 
 	LDX.w #$7EF371
 	LDY.w #$0DDB58
 
-	LDA.b SA1IRAM.cm_writer
+	LDA.b IRAM.cm_writer
 	CMP.w #$7EF377
 	BEQ .arrows
 
@@ -613,20 +612,20 @@ CMDO_NUMFIELD_CAPACITY:
 .arrows
 	LDA.l $7E0000,X
 	AND.w #$00FF
-	STY.b SA1IRAM.cm_current_selection
+	STY.b IRAM.cm_current_selection
 	CLC
-	ADC.b SA1IRAM.cm_current_selection
+	ADC.b IRAM.cm_current_selection
 	TAX
 
-	LDA.l $0D0000,X
+	LDA.l jlong($0D0000),X
 	AND.w #$00FF
 	ORA.w #$0500
-	STZ.b SA1IRAM.preset_reader2+0
-	STA.b SA1IRAM.preset_reader2+1
+	STZ.b IRAM.preset_reader2+0
+	STA.b IRAM.preset_reader2+1
 
-	STZ.b SA1IRAM.cm_current_selection+1
-	LDA.w #SA1IRAM.preset_reader2
-	STA.b SA1IRAM.cm_current_selection+0
+	STZ.b IRAM.cm_current_selection+1
+	LDA.w #IRAM.preset_reader2
+	STA.b IRAM.cm_current_selection+0
 
 	PLX
 	SEP #$30
@@ -638,9 +637,9 @@ CMDO_NUMFIELD_CAPACITY:
 	REP #$30
 
 	PLY
-	STY.b SA1IRAM.cm_current_selection+0
+	STY.b IRAM.cm_current_selection+0
 	PLY
-	STY.b SA1IRAM.cm_current_selection+2
+	STY.b IRAM.cm_current_selection+2
 	PLY
 
 	RTS
@@ -648,7 +647,7 @@ CMDO_NUMFIELD_CAPACITY:
 ;===================================================================================================
 
 CMDO_NUMFIELD16:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 	REP #$20
 	BRA CMDO_NUMFIELD_MAIN
 
@@ -656,7 +655,7 @@ CMDO_NUMFIELD:
 CMDO_NUMFIELD_HEX:
 CMDO_NUMFIELD_PRGTEXT:
 CMDO_NUMFIELD_2DIGITS:
-	JSR CMDO_SAVE_ADDRESS
+	JSR GetMenuItemAddress
 
 CMDO_NUMFIELD_MAIN:
 	PHX
@@ -666,26 +665,26 @@ CMDO_NUMFIELD_MAIN:
 	LDA.b #$00
 	SEC ; if 16 bit, this will be a high byte
 	XBA ; put 00 in high byte
-	LDA.l .zero
+	LDA.l ZeroLand ; need a bit-mode agnostic zero
 	ROL ; put carry in place
 	TAX
 
-	LDA.b [SA1IRAM.cm_writer]
-	BIT.b SA1IRAM.cm_ax-1,X
+	LDA.b [IRAM.cm_writer]
+	BIT.b IRAM.cm_ax-1,X
 	BVS .delete
 
 	; Y currently points to our minimum value
-	BIT.b SA1IRAM.cm_y-1,X
+	BIT.b IRAM.cm_y-1,X
 	BMI .get_max_min
 
-	BIT.b SA1IRAM.cm_leftright-1,X
+	BIT.b IRAM.cm_leftright-1,X
 	BMI .decrement
 
 	JSR .iny_twice_if_16 ; Y now points to our maximum
 	BVS .increment
 
 	JSR .iny_twice_if_16 ; now point to slider size or whatever you wanna call it
-	BIT.b SA1IRAM.cm_shoulder-1,X
+	BIT.b IRAM.cm_shoulder-1,X
 	BMI .dec_big
 	BVS .inc_big
 
@@ -695,16 +694,18 @@ CMDO_NUMFIELD_MAIN:
 	CLC
 	RTS
 
+;---------------------------------------------------------------------------------------------------
+
 .delete
-	JSL MenuSFX_empty
+	JSL MenuSFX.empty
 	BRA .clear_min
 
 .topoff
-	JSL MenuSFX_fill
+	JSL MenuSFX.fill
 	BRA .get_max_min
 
 .increment
-	CMP.b [SA1IRAM.cm_current_selection],Y
+	CMP.b [IRAM.cm_current_selection],Y
 	INC
 	BCC .in_range_max
 
@@ -712,7 +713,7 @@ CMDO_NUMFIELD_MAIN:
 	JSR .dey_twice_if_16
 
 .clear_min
-	LDA.b [SA1IRAM.cm_current_selection],Y
+	LDA.b [IRAM.cm_current_selection],Y
 
 .in_range_min
 	JSR .iny_twice_if_16 ; point to max
@@ -722,21 +723,21 @@ CMDO_NUMFIELD_MAIN:
 
 .in_range_slide
 .set
-	STA.b [SA1IRAM.cm_writer]
+	STA.b [IRAM.cm_writer]
 
 	JSR .iny_twice_if_16 ; this should now point to after slide
 	SEC
-	JSL MenuSFX_bink
+	JSL MenuSFX.bink
 	PLX
 	RTS
 
 .decrement
-	CMP.l .zero
+	CMP.l ZeroLand ; need a bit-mode agnostic zero
 	BEQ .get_max_min
 	DEC
 
 	; now our new value against the minimum
-	CMP.b [SA1IRAM.cm_current_selection],Y
+	CMP.b [IRAM.cm_current_selection],Y
 	JSR .iny_twice_if_16 ; point this to max, just in case we need it
 	BCS .in_range_max
 	BRA .get_max_max ; since we're already pointed there
@@ -745,32 +746,31 @@ CMDO_NUMFIELD_MAIN:
 	JSR .iny_twice_if_16
 
 .get_max_max
-	LDA.b [SA1IRAM.cm_current_selection],Y
+	LDA.b [IRAM.cm_current_selection],Y
 	BRA .in_range_max
 
 .dec_big ; also these shouldn't wrap on overflow
 	SEC
-	SBC.b [SA1IRAM.cm_current_selection],Y
+	SBC.b [IRAM.cm_current_selection],Y
 	JSR .dey_twice_if_16 ; pointing to max
 	BCC .clear_max ; if we borrowed here, we need to floor ourselves
 
 	JSR .dey_twice_if_16 ; pointing to min
-	CMP.b [SA1IRAM.cm_current_selection],Y
+	CMP.b [IRAM.cm_current_selection],Y
 	BCS .in_range_min ; we're fine
 	BRA .clear_min ; don't go past the minimum
 
 .inc_big
 	CLC
-	ADC.b [SA1IRAM.cm_current_selection],Y
+	ADC.b [IRAM.cm_current_selection],Y
 	JSR .dey_twice_if_16 ; pointing to max
 	BCS .get_max_max ; if we went too high, cap now
 
-	CMP.b [SA1IRAM.cm_current_selection],Y
+	CMP.b [IRAM.cm_current_selection],Y
 	BCS .get_max_max ; will cap if we match, but that's fine
 	BRA .in_range_max
 
-.zero
-	dw 0
+;---------------------------------------------------------------------------------------------------
 
 .iny_twice_if_16
 	INY
@@ -796,12 +796,10 @@ CMDO_NUMFIELD_MAIN:
 
 CMDO_SENTRY_PICKER:
 	LDX.b #$00
-
 	JMP GO_TO_SENTRY_PICKER
 
 CMDO_LINE_SENTRY_PICKER:
 	LDX.b #$02
-
 	JMP GO_TO_SENTRY_PICKER
 
 ;===================================================================================================

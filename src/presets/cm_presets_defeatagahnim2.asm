@@ -409,4 +409,4 @@ presetSRAM_defeatagahnim2:
 ...end
 ;===================================================================================================
 presetend_defeatagahnim2:
-print "defeatagahnim2 size: $", hex(presetend_defeatagahnim2-presetheader_defeatagahnim2)
+printf "defeatagahnim2 size: ${0:X4}", presetend_defeatagahnim2-presetheader_defeatagahnim2

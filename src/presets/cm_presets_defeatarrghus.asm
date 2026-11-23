@@ -532,5 +532,5 @@ presetSRAM_defeatarrghus:
 ...end
 ;===================================================================================================
 presetend_defeatarrghus:
-print "defeatarrghus size: $", hex(presetend_defeatarrghus-presetheader_defeatarrghus)
+printf "defeatarrghus size: ${0:X4}", presetend_defeatarrghus-presetheader_defeatarrghus
 

@@ -34,10 +34,7 @@ LINKSTATE_SUBMENU:
 	BNE StateChangeBeep
 
 	STZ.b $5D
-	JML MenuSFX_poof
-
-StateChangeBeep:
-	JML MenuSFX_error
+	JML MenuSFX.poof
 
 ;===================================================================================================
 
@@ -47,7 +44,12 @@ StateChangeBeep:
 
 	LDA.b #$17
 	STA.b $5D
-	JML MenuSFX_oof
+	JML MenuSFX.oof
+
+;===================================================================================================
+
+StateChangeBeep:
+	JML MenuSFX.error
 
 ;===================================================================================================
 
@@ -66,9 +68,8 @@ StateChangeBeep:
 ;===================================================================================================
 
 %func_filtered("Create portal", this)
-	LDA.b $10 : CMP.b #$09 : BNE .no
-
-	LDA.b $8A : CMP.b #$40 : BCS .no
+	LDA.b $10 : CMP.b #$09 : BNE StateChangeBeep
+	LDA.b $8A : CMP.b #$40 : BCS StateChangeBeep
 
 	LDA.b $20 : STA.w $1ADF
 	LDA.b $21 : STA.w $1AEF
@@ -77,9 +78,6 @@ StateChangeBeep:
 
 	LDA.b #$3A : STA.w $031F
 
-	JML $09AF89
-
-.no
-	JMP MenuSFX_error
+	JML jlong($09AF89)
 
 ;===================================================================================================

@@ -2935,4 +2935,4 @@ presetSRAM_reversebossorder:
 ...end
 ;===================================================================================================
 presetend_reversebossorder:
-print "reversebossorder size: $", hex(presetend_reversebossorder-presetheader_reversebossorder)
+printf "reversebossorder size: ${0:X4}", presetend_reversebossorder-presetheader_reversebossorder

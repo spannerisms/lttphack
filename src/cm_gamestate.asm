@@ -15,7 +15,7 @@ GAMESTATE_SUBMENU:
 
 	LDA.b #$21 : STA.w $012F
 
-	JML $09C44E
+	JML jlong($09C44E)
 
 ;===================================================================================================
 
@@ -27,12 +27,12 @@ GAMESTATE_SUBMENU:
 
 %submenu("Game flags", cm_game_state_game_flags_submenu)
 
-%submenu("Drops", cm_game_state_drops_submenu)
+%submenu("Prize packs", cm_game_state_drops_submenu)
 
 ;===================================================================================================
 
-%choice_func_here("Follower", $7EF3CC, 15, $00D463)
-	%add_list_item(CMTEXT_NO)
+%choice_func_here("Follower", $7EF3CC, 15, jlong($00D463))
+	%list_item("None")
 	%list_item("Zelda") : %ReusableText(CMTEXT_ZELDA)
 	%list_item("Garbage")
 	%list_item("Trash")
@@ -65,12 +65,12 @@ GAMESTATE_SUBMENU:
 
 ;===================================================================================================
 
-%choicepick("M16 cache index", SA1RAM.map16cacheindex, 4, .func, .list)
+%choicepick("M16 cache index", BWRAM.map16cacheindex, 4, .func, .list)
 
 .func
 	REP #$30
 
-	LDA.w SA1RAM.map16cacheindex
+	LDA.w BWRAM.map16cacheindex
 	ASL
 	TAX
 
@@ -78,7 +78,6 @@ GAMESTATE_SUBMENU:
 	STA.w $04AC
 
 	RTL
-
 
 .addresses
 	dw $0000
@@ -100,7 +99,8 @@ cm_game_state_bosses_submenu:
 	%togglebit3_customtext("Armos", $7EF191, bossalivetext)
 	%togglebit3_customtext("Lanmola", $7EF067, bossalivetext)
 	%togglebit3_customtext("Moldorm", $7EF00F, bossalivetext)
-	%togglebit3_func_customtext("Agahnim", $7EF041, toggle_aga1, bossalivetext) : %ReusableText(CMTEXT_AGAHNIM)
+	%togglebit3_func_customtext("Agahnim", $7EF041, toggle_aga1, bossalivetext)
+		%ReusableText(CMTEXT_AGAHNIM)
 	%togglebit3_customtext("Helmasaur", $7EF0B5, bossalivetext)
 	%togglebit3_customtext("Blind", $7EF159, bossalivetext)
 	%togglebit3_customtext("Mothula", $7EF053, bossalivetext)
@@ -154,13 +154,13 @@ toggle_aga1:
 	AND.b #$08
 	ASL
 	ASL
-	STA.b SA1IRAM.cm_writer
+	STA.b IRAM.cm_writer
 	RTS
 
 .set_overlay
 	LDA.l $7EF280,X
 	AND.b #$DF
-	ORA.b SA1IRAM.cm_writer
+	ORA.b IRAM.cm_writer
 	STA.l $7EF280,X
 	RTS
 
@@ -181,7 +181,10 @@ cm_game_state_game_flags_submenu:
 ;===================================================================================================
 
 cm_game_state_drops_submenu:
-%menu_header("ENEMY DROPS")
+%menu_header("PRIZE PACKS")
+
+%add_menu_item(ENEMY_PRIZE_PACKS)
+%add_menu_item(BUSH_PRIZE_PACKS)
 
 %choice_here("Drop luck", $7E0CF9, 3)
 	%list_item("Normal")
@@ -199,6 +202,8 @@ cm_game_state_drops_submenu:
 %choice_prgtext("Prize pack 5", $7E0FCB, 8, draw_prize_pack_5)
 %choice_prgtext("Prize pack 6", $7E0FCC, 8, draw_prize_pack_6)
 %choice_prgtext("Prize pack 7", $7E0FCD, 8, draw_prize_pack_7)
+
+%numfield("Bush pack", $7E0CF7, 0, 7, 1)
 
 ;===================================================================================================
 
@@ -234,6 +239,8 @@ cm_game_reset_dungeons_submenu:
 	%func("Ganon's Tower", reset_dungeon_func)
 	%func("Other", reset_dungeon_func)
 
+;===================================================================================================
+
 !EX = $01 ; escape
 !EP = $02 ; eastern palace
 !DP = $03 ; desert palace
@@ -253,8 +260,7 @@ cm_game_reset_dungeons_submenu:
 !CV = $FF ; caves and houses
 !UU = !CV ; unused caves, just for convenience
 
-#room_to_dungeon_id:
-	; eg1
+room_to_dungeon_id:
 	dw !CV, !EX, !EX, !CV, !TR, !UU, !SP, !TH, !CV, !PD, !PD, !PD, !GT, !GT, !IP, !UU
 	dw !CV, !EX, !EX, !TR, !TR, !TR, !SP, !TH, !CV, !PD, !PD, !PD, !GT, !GT, !IP, !IP
 	dw !AT, !EX, !EX, !TR, !TR, !UU, !SP, !TH, !SP, !SW, !PD, !PD, !CV, !UU, !IP, !CV
@@ -271,44 +277,57 @@ cm_game_reset_dungeons_submenu:
 	dw !AT, !MM, !MM, !CV, !CV, !TR, !TR, !UU, !EP, !EP, !EP, !TT, !TT, !UU, !IP, !CV
 	dw !AT, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !UU, !CV, !CV, !UU, !CV, !CV, !CV
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !UU, !UU, !CV, !CV, !CV, !CV, !UU, !CV, !CV, !CV
-
-	; eg 2
+	; rooms $100+
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV
 	dw !CV, !CV, !CV, !CV, !CV, !CV, !CV, !CV
+^.size
+
+;===================================================================================================
 
 reset_dungeon_func:
 	PHB : PHK : PLB
-	PHD
 
-	LDY.b SA1IRAM.cm_cursor
+	LDY.b IRAM.cm_cursor
 	LDX.w .list,Y
 
 	REP #$30
 
-	LDA.w #$0000
-	TCD
-	STX.b $00
+	STX.b IRAM.cm_writer
 
-	LDX.w #(256+40)*2 ; eg1 size + eg2 size, words
+;---------------------------------------------------------------------------------------------------
 
---	LDY.w room_to_dungeon_id,X
-	CPY.b $00 : BNE ++
+	LDX.w #room_to_dungeon_id.size-2
+
+.room_search
+	LDY.w room_to_dungeon_id,X
+	CPY.b IRAM.cm_writer
+	BNE .skip
+
 	STA.l $7EF000,X
-++	DEX #2 : BPL --
 
-	; check current room
-	INC ; sets accum to #$0001
-	BIT.b $1B : BEQ ++ ; make sure we're indoors
+.skip
+	DEX
+	DEX
+	BPL .room_search
 
-	LDA.b $A0 : ASL : TAX
+;---------------------------------------------------------------------------------------------------
+
+	LDA.w $1B ; make sure we're indoors
+	AND.w #$00FF
+	BEQ .exit
+
+	LDA.w $A0 : ASL : TAX ; check current room
 	LDA.w room_to_dungeon_id,X
-	CMP.b $00 : BNE ++
+	CMP.b IRAM.cm_writer : BNE .exit
+
 	STZ.w $0400 : STZ.w $0402 : STZ.w $0408
 
-++	PLD
+.exit
 	PLB
 	RTL
+
+;---------------------------------------------------------------------------------------------------
 
 .list
 	db !EX
@@ -346,7 +365,7 @@ draw_prize_pack:
 	ADC.w $0FC7,X
 	TAX
 
-	LDA.l $06FA78,X
+	LDA.l jlong($06FA78),X
 	SBC.b #$D8-1
 
 	CMP.b #$0C

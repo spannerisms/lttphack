@@ -3,22 +3,22 @@ GAMEPLAY_SUBMENU:
 
 ;===================================================================================================
 
-%toggle_onoff("Skip Triforce", !config_skip_triforce)
+%toggle("Skip Triforce", CONFIG.skip_triforce)
 
-%toggle("Disable beams", SA1RAM.disable_beams)
+%toggle("Disable beams", BWRAM.disable_beams)
 
-%toggle_onoff("Lit rooms", SA1RAM.light_rooms)
+%toggle("Lit rooms", BWRAM.light_rooms)
 
-%toggle_onoff("Fast walls", !config_fast_moving_walls)
+%toggle("Fast walls", CONFIG.fast_moving_walls)
 
-%toggle_onoff("Visible probes", SA1RAM.visible_probes)
+%toggle("Visible probes", BWRAM.visible_probes)
 
-%toggle_onoff("Show STC pits", !config_somaria_pits)
+%toggle("Show STC pits", CONFIG.somaria_pits)
 
-%togglebit0("Disable BG1", SA1RAM.disabled_layers)
+%togglebit0("Disable BG1", BWRAM.disabled_layers)
 
-%togglebit1("Disable BG2", SA1RAM.disabled_layers)
+%togglebit1("Disable BG2", BWRAM.disabled_layers)
 
-%toggle_onoff("OoB mode", $037F)
+%toggle("OoB mode", $037F)
 
 ;===================================================================================================

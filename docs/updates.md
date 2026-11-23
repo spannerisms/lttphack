@@ -6,6 +6,32 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 
 ## Latest update
 
+### [v15.1.0](https://github.com/spannerisms/lttphack/releases/tag/15.0.1) &mdash; 
+
+- Presets
+  - Adjusted wallmaster timer for Mummy Hellway presets
+- Game state
+  - Renamed "Enemy drops" to "Prize packs" and added bushes and copies of the RNG control items
+  - Renamed "Prize packs" (the list item) to "Enemy drops"
+- RNG control
+  - Added bush prizes
+  - Decoupled rerandomization from frame rule fixing
+  - Added a "Preserve" option to frame rule (only really useful with savestates)
+- HUD Extras
+  - Fixed plaid tile index showing in overworld
+  - Renamed "Hide lines" to "Line sentries"
+- Misc
+  - Various optimizations
+  - Improved fastrom implementation in rando
+- Other
+  - Migrated to Futaba!!!
+
+*The migration was validated against the live version to ensure it did not change the ROM. Any new bugs in this version are solely because I am mentally stupid.*
+
+----
+
+## Older updates
+
 ### [v15.0.1](https://github.com/spannerisms/lttphack/releases/tag/15.0.1) &mdash; 8 February 2026
 
 - Game state:
@@ -13,10 +39,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - HUD Extras:
   - Line sentries for new map 16 buffer overflow tech
   - Made sure sentry icons are drawing and correctly
-
-----
-
-## Older updates
 
 ### [v15.0.0](https://github.com/spannerisms/lttphack/releases/tag/15.0.0) &mdash; 16 January 2026
 
@@ -81,7 +103,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - Bug fixes:
   - Fixed persistent lines when they're changed across savestates (I hope).
 
-
 ### [v14.4.3](https://github.com/spannerisms/lttphack/releases/tag/14.4.3) &mdash; 27 October 2025
 - Bug fixes:
   - Fixed weird HUD race condition with timers
@@ -98,7 +119,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - Bug fixes:
   - I'm sorry, Muffins.
   - Fixed display error with ROM chip versions.
-
 
 ### [v14.4.0](https://github.com/spannerisms/lttphack/releases/tag/14.4.0) &mdash; 16 June 2025
 
@@ -130,10 +150,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - <span class="snesButton snesA">A</span> can no longer be used to advance lists in the menu. It's kind of unintuitive, less dynamic than the d-pad, and I might have future plans for special types of lists that will utilize this button.
   - Added some memory caching for FXPak visibility to $7C00 in BWRAM.
 
-
-
-
-
 ### [v14.3.5](https://github.com/spannerisms/lttphack/releases/tag/14.3.5) &mdash; 19 October 2024
 
 - Presets:
@@ -155,8 +171,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - Fixed initialization bug that affected pokeys RNG.
   - Made the blue screen of death not broken.
 
-
-
 ### [v14.3.4](https://github.com/spannerisms/lttphack/releases/tag/14.3.4) &mdash; 1 March 2023
 
 - Presets:
@@ -169,9 +183,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - Fixed Load Last Preset crashes.
   - Fixed overlay corruption misbehavior.
 
-
-
-
 ### [v14.3.3](https://github.com/spannerisms/lttphack/releases/tag/14.3.3) &mdash; 2 March 2022
 
 - HUD extras:
@@ -179,9 +190,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - Other:
   - Fixed Trinexx crystal.
   - Fixed line sentry 4 ancilla prop.
-
-
-
 
 ### [v14.3.2](https://github.com/spannerisms/lttphack/releases/tag/14.3.2) &mdash; 2 February 2022
 
@@ -197,18 +205,11 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - Added ancilla index to Lite States.
   - Spooky edit.
 
-
-
-
-
 ### [v14.3.1](https://github.com/spannerisms/lttphack/releases/tag/14.3.1) &mdash; 2 December 2021
 
-- Nevermind. I hate this font and so does everyone else.
+- Never mind. I hate this font and so does everyone else.
 - Fixed shortcut button display.
 - Added arrow decay timer for Sirius.
-
-
-
 
 ### [v14.3.0](https://github.com/spannerisms/lttphack/releases/tag/14.3.0) &mdash; 29 November 2021
 
@@ -226,18 +227,11 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - Removed no magic message in randomizer version.
 - Moved the throne room mantle to allow sewers access when rain state is over in randomizer version.
 
-
-
-
 ### [v14.2.2](https://github.com/spannerisms/lttphack/releases/tag/14.2.2) &mdash; 26 September 2021
 
 - Fixed a VRAM issue when saving states on overworld transitions.
 - Fixed enemy drops when loading presets and rooms.
 - Fixed a crash with crystals in the randomizer version.
-
-
-
-
 
 ### [v14.2.1](https://github.com/spannerisms/lttphack/releases/tag/14.2.1) &mdash; 25 September 2021
 
@@ -246,10 +240,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
 - Banned savestates on specific frames that the underworld is loaded on to prevent VRAM issues.
 - Banned lite states in special overworld and specific underworld load frames.
 - Thickened the menu header.
-
-
-
-
 
 ### [v14.2.0](https://github.com/spannerisms/lttphack/releases/tag/14.2.0) &mdash; 22 September 2021
 
@@ -269,9 +259,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - Improved music load logic for Link's house.
   - Reversed the stack printing in the blue screen of death so that it's actually readable.
   - Added a color for BluntBunny since he asked nicely.
-
-
-
 
 ### [v14.1.0](https://github.com/spannerisms/lttphack/releases/tag/14.1.0) &mdash; 12 September 2021
 
@@ -310,10 +297,6 @@ ogdesc: "Index of updates for the ALTTP practice hack, which you should remember
   - Segment timer now resets on preset load.
   - Removed file 3 BAGE functionality, since no one uses it and there are existing functions for max equipment.
 
-
-
-
-
 ### [v14.0.0](https://github.com/spannerisms/lttphack/releases/tag/14.0.0) &mdash; 1 September 2021
 
 #### FULL SA-1 REFACTOR
@@ -322,7 +305,6 @@ Version fourteen point zero point zero is finally here. This represents the bigg
 The SA-1's on-board RAM allows every system to include large save files, so fully fledged savestates are now available to everyone, eliminating the need for a separate SDSNES version. And while we're at it, the vanilla HUD variants are being nixed too (the option still exists, but it is no longer a separate ROM).
 
 Anyone without access to a supported system will be unable to use this version or any future version. I know not everyone who plays on console can afford the more powerful flash carts, and that there are various other reasons people may stick with their current set up. Regardless, this hack is intended for vanilla practice, making accuracy for lag very important. Without a coprocessor, I have to put an aggressive filter on what features I add and count cycles meticulously everywhere. This inhibits improvement while <em>still</em> being too laggy. With the SA-1, I have so much more leeway. And with other cool features of the chip, I've vastly improved the backend of the practice menu to the point where it doesn't interfere with vanilla memory whatsoever. At the very least, I'm confident that this doesn't affect a majority audience. Many people who run on original hardware own an FXPak, and I can't name anyone who plays on the unsupported emulator cores. And, again, for those who can't or won't upgrade, v13.6 will always be available.
-
 
 #### Changes
 
@@ -390,38 +372,23 @@ Anyone without access to a supported system will be unable to use this version o
 - Bug fixes:
   - Accidentally fixed the bug that prevented input display from updating during text.
 
-
-
-
 ### [v13.6.0](https://github.com/spannerisms/lttphack/releases/tag/13.6.0) &mdash; 9 April 2021
 
 - Lui fixed music
-
-
-
 
 ### [v13.5.0](https://github.com/spannerisms/lttphack/releases/tag/13.5.0) &mdash; 5 October 2020
 
 - Lui cannot be stopped
 
-
-
-
 ### [v13.4.0](https://github.com/spannerisms/lttphack/releases/tag/13.4.0) &mdash; 4 October 2020
 
 - Lui added low% presets. Can no one stop this mad man?
-
-
-
 
 ### [v13.3.0](https://github.com/spannerisms/lttphack/releases/tag/13.3.0) &mdash; 24 September 2020
 
 - Lui added any% RMG presets.
 - Added some cool fonts.
 - Added "fill everything" to equipment menu.
-
-
-
 
 ### [v13.2.0](https://github.com/spannerisms/lttphack/releases/tag/13.2.0) &mdash; 15 September 2020
 
@@ -438,17 +405,11 @@ Anyone without access to a supported system will be unable to use this version o
   - Menu sound effects no longer cause problems when changing certain options.
   - Fixed mastersword LSD effect.
 
-
-
-
 ### [v13.1.1](https://github.com/spannerisms/lttphack/releases/tag/13.1.1) &mdash; 23 April 2020
 
 - Added an in-browser JavaScript-based patcher (thanks total).
 - More efficient music muting, accomplished by adjust ADSR (sorry Myramong).
 - Fixed invisible timers caused by MVN.
-
-
-
 
 ### [v13.1.0](https://github.com/spannerisms/lttphack/releases/tag/13.1.0) &mdash; 8 Feb 2020
 
@@ -466,9 +427,6 @@ Anyone without access to a supported system will be unable to use this version o
 - Fluting now resets the timer.
 - Moved some code so that Vanilla HUD variants can enjoy cleaner menu characters.
 
-
-
-
 ### [v13.0.1](https://github.com/spannerisms/lttphack/releases/tag/13.0.1) &mdash; 2 Feb 2020
 
 - Bug fixes:
@@ -477,9 +435,6 @@ Anyone without access to a supported system will be unable to use this version o
   - Fixed Lanmo cycles. Probably
   - Fixed file select E.
   - Fixed segment timer.
-
-
-
 
 ### [v13](https://github.com/spannerisms/lttphack/releases/tag/13.0.0) &mdash; 22 Jan 2020
 
@@ -520,10 +475,6 @@ Anyone without access to a supported system will be unable to use this version o
 - Temporarily removed decimal coordinates.
 - Added SD2SNES debug version to site.
 
-
-
-
-
 ### [v12.1.0](https://github.com/spannerisms/lttphack/releases/tag/12.1.0) &mdash; 26 Oct 2019
 
 - Updated the Emerald font.
@@ -533,9 +484,6 @@ Anyone without access to a supported system will be unable to use this version o
   - Documented all these features on the site.
 - Bug fixes
   - Fixed graphical/memory issue with the Mirror toggle.
-
-
-
 
 ### [v12.0.0](https://github.com/spannerisms/lttphack/releases/tag/12.0.0) &mdash; 24 Oct 2019
 
@@ -565,10 +513,6 @@ Anyone without access to a supported system will be unable to use this version o
 - Fixed some HUD bugs:
   - Lanmolas cycle toggle no longer messes with graphics.
   - Removed heart refill animation without affecting lag.
-
-
-
-
 
 ### [v11.0.0](https://github.com/spannerisms/lttphack/releases/tag/11.0.0) &mdash; 12 Oct 2019
 
@@ -614,14 +558,8 @@ Anyone without access to a supported system will be unable to use this version o
 - Replaced broken graphics in the item menu with placeholder tiles.
 - General refactoring. Practice hack control should be smoother now.
 
-
-
-
 ### v10
 <p class="warped"><span>This version was lost in a time </span><span class="morewarped">paradox.</span></p>
-
-
-
 
 ### v9 &mdash; 8 February 2018
 
@@ -657,34 +595,20 @@ Anyone without access to a supported system will be unable to use this version o
 - Instant lttphack menu (no waiting for menu to go up/down).
 - Improved transition detection (triggers on mirror/warp, reset counters when you start a new file)
 
-
-
-
-
-
 ### v8 &mdash; 24 October 2016
 
 - Complete rewrite.
 - Presets.
 - I don't even remember anymore. This is the same version that's been around for a while, I just arbitrarily decided to remove "beta2" from the version.
 
-
-
-
 ### v7 &mdash; 15 December 2015
 
 - Made save/load state code more robust. Screen should not get messed up anymore by loading during mirror warp. Big thanks to total for this fix.
 - Added a toggle for "always lit rooms".
 
-
-
-
 ### v6 &mdash; 9 December 2015
 
 - Fixed a bug that made the game crash when resetting segment counter.
-
-
-
 
 ### v5 &mdash; 8 December 2015
 
@@ -695,15 +619,10 @@ Anyone without access to a supported system will be unable to use this version o
   - Pause game and frame advance.
   - Displaying Link's coordinates.
 
-
-
 ### v4 &mdash; 05 December 2015
 
 - Fixed a bug where saving or loading would add a frame to your attempts in a room.
 - Added a "Full HP indicator".
-
-
-
 
 ### v3 &mdash; 02 December 2015
 
@@ -713,16 +632,11 @@ Anyone without access to a supported system will be unable to use this version o
 - Removed per-room Game Time counter.
 - Better B. Thanks, Audity.
 
-
-
-
 ### v2 &mdash; 30 November 2015
 
 - Fixed issue where parts of segment timer was erased.
 - Fixed issue where counters didn't run during maiden crystal sequence.
 - Added better transition detection for boss victory &rarr; overworld.
-
-
 
 ### v1 &mdash; 29 November 2015
 

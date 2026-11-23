@@ -1,25 +1,27 @@
 Big stuff
 ----------
 
+"Training" submenu
+	mash counter using 60 byte circular buffer (ABXYLR show x/60 for all, individual, face; exit menu with select; keep record best for session)
+	hover counter (show longest press and longest release, and number of successful; keep record best for session)
+
 trigger points to update timers:
 	at exact X,Y
 	when X is crossed
 	when Y is crossed
 	when X and Y are both crossed
 
-keep track of velocity via link's coordinates on SA-1
 
 pre moldorms with empty tile room
+
+standardize symbol nomenclature
+
 
 
 last frame of crystal fade = bad savestate
 
-submenu for flags for important OW overlays (LJ, HC, Pyramid)
-
 dig game RNG in safeties? (random, 25-38 guaranteed) hook after RNG call for consistency
 chest game RNG in safeties (random, guaranteed) hook after RNG call
-
-fix mushroom gfx for lost woods
 
 Get good entrance caching for every EG 2 room in a table
 replace eg caching in presets with a routine call/preset command
@@ -28,43 +30,3 @@ use bit 7 to indicate left/right half for double entrance rooms
 
 aga 2 rng
 	lui: agah2 submenu -> set positions for each of the agahs for cycles 1, 2, 3 and 4+
-
-
-======== MINIGAMES TODO ========
-
-- Counters (spec below)
-
-- Mashing & Pumping mini-game
-
-
-
-- Mini games (menu)
-
-    Duration: [2s, 5s, 10s]
-
-    [Start Mashing mini game]
-
-    Direction: [up, left]
-
-    [Start Pumping mini game]
-
-- Mashing:
-    * Countdown 3s
-    * Count number of frames where $F0/$F2 is set vs not set
-    * Results:
-        - frames with new input
-        - frames with no new input
-        - hz
-        - average time loss per text box
-        - average time loss per nmg run
-
-- Pumping:
-    * Countdown 3s
-    * Count number of frames where cardinal is held and diagonal is held
-    * Track number of dpad changes
-    * Results:
-        - # of pumps
-        - frames where cardinal is held
-        - frames where diagonal is held
-        - # of pixel boost chances per second on average
-            * for air and for wall, according to my hypothesis
